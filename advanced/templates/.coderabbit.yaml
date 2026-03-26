@@ -1,0 +1,10 @@
+# CodeRabbit auto-review configuration
+# Drop this file in your repo root to enable automated PR review.
+# Free tier: unlimited public repos. Paid tier: private repos.
+# https://coderabbit.ai
+
+reviews:
+  auto_review:
+    enabled: true
+    base_branches: ["main"]
+  review_status: true
