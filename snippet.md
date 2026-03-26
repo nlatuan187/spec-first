@@ -142,6 +142,15 @@ ls lib/services/ app/api/ components/features/ 2>/dev/null | head -40
 For each result: does this new feature read from it or write to it?
 An S3 with no rows is almost always wrong.
 
+**Brownfield addition — find who else touches the same data:**
+
+```bash
+# Replace ServiceName/table_name with what you're changing
+grep -r "ServiceName\|table_name" lib/ app/api/ --include="*.ts" | head -20
+```
+
+`ls` finds files. `grep` finds relationships. For any delta to existing code, run both.
+
 *Derives from: Memory-based enumeration misses features that exist in code but weren't mentioned in conversation. Scanning forces contact with reality.*
 
 ---

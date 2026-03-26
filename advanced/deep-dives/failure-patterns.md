@@ -1,6 +1,8 @@
 # Failure Patterns: What AI Gets Wrong
 
-This document catalogs every category of bug we encountered in 626 commits of AI-generated code. Each pattern includes: frequency, root cause, real examples, and the spec section that prevents it.
+This document catalogs every category of bug encountered in 626 commits of AI-generated code building a production SaaS. Each pattern includes: frequency, root cause, real examples, and the spec section that prevents it.
+
+**Project**: Production SaaS — 107 API routes, 19 DB tables, 119 React components. 2 developers, 24 days.
 
 ---
 
@@ -23,12 +25,14 @@ This ratio is NOT a sign of failure. It's the cost of AI-generated code. The que
 
 **What happens**: AI builds Feature A perfectly. Builds Feature B perfectly. A and B don't talk to each other correctly.
 
-**Real examples from our project:**
+**Real examples:**
 ```
 fix: platform-to-post mapping race condition in non-blocking loading
 fix(chat): align credit deduction branch with pre-check
 fix(review): stale context, overflow, cleanup
 fix: reply uses structured.message, fallback uses contextMessage
+fix(notifications): event not propagating to sidebar badge after creation
+fix: search results not clearing when switching between views
 ```
 
 **Root cause**: AI generates each feature in isolation. It doesn't spontaneously consider how state flows between modules, how events propagate, or how cleanup affects dependent features.
@@ -49,10 +53,12 @@ fix: reply uses structured.message, fallback uses contextMessage
 
 **Real examples:**
 ```
-fix(security): prevent error.message leak in ErrorBoundary + add i18n
+fix(security): prevent error.message leak in ErrorBoundary
 fix(chat): validate session ownership to prevent IDOR vulnerability
 fix: address 5 review issues in PR #155 [error handling gaps]
-fix(ux): adjust position for mobile bottom nav
+fix(ux): missing null check on user.profile before render
+fix: API 429 rate limit not handled — silent failure instead of retry prompt
+fix: form submission proceeds when required fields are empty
 ```
 
 **Root cause**: AI optimizes for the successful case. Error handling is "defensive" code — the AI doesn't generate it unless explicitly asked because it doesn't imagine failure scenarios.
@@ -68,44 +74,47 @@ fix(ux): adjust position for mobile bottom nav
 
 **What happens**: AI doesn't think adversarially. It trusts input, logs sensitive data, and doesn't check authorization.
 
-**Real examples we caught (via automated review):**
+**Real examples caught via automated review:**
 ```
 fix(chat): validate session ownership to prevent IDOR vulnerability
 fix(security): sanitize href in ReactMarkdown to prevent XSS
-fix(security): stop logging full video URL with signed tokens
+fix(security): stop logging full resource URL with signed access tokens
 fix(security): prevent error.message leak in ErrorBoundary
+fix(api): add ownership check before resource update — missing authz
 ```
 
 **Specific vulnerabilities found:**
-- **IDOR**: Chat sessions accessible without ownership check (3 instances)
+- **IDOR**: Resources accessible without ownership check (3 instances)
 - **XSS**: Unsanitized markdown rendering in user-generated content (2 instances)
-- **SSRF**: Video URL logging included signed S3 tokens (1 instance)
+- **Token leakage**: Signed access tokens logged to server logs (1 instance)
 - **Information leakage**: Error messages exposing internal stack traces (4 instances)
 - **Missing input validation**: API endpoints accepting unvalidated payloads (multiple)
 
 **Root cause**: Security is adversarial thinking. AI generates code for cooperative users. It doesn't imagine attackers manipulating parameters, injecting scripts, or escalating privileges.
 
 **Prevention**:
-1. Security rules in CLAUDE.md ("RLS on all tables. Never expose internal IDs.")
-2. Automated security review on every PR (CodeRabbit catches these consistently)
-3. Explicit security requirements in specs for auth-adjacent features
+1. Security rules in constitution ("RLS on all tables. Never expose internal IDs.")
+2. Automated security review on every PR
+3. Explicit security requirements in specs for any auth-adjacent feature
 
 ---
 
-## Pattern 4: Internationalization (10% of fixes)
+## Pattern 4: Hardcoded Strings & Copy (10% of fixes)
 
-**What happens**: AI hardcodes strings in the dominant language. Mixes languages within the same UI. Uses developer jargon in user-facing text.
+**What happens**: AI hardcodes strings inline. Uses developer jargon in user-facing text. Picks terminology inconsistently across features.
 
 **Real examples:**
 ```
-fix(i18n): rename Clone/Nhân bản → Duplicate/Tạo bản sao
-fix: unblock 35 templates stuck on audience selector [i18n key mismatch]
-fix(prompts): revert HUMANSCORE to 5 criteria + CTA to old format
+fix(i18n): rename action label — inconsistent with rest of UI
+fix: 35 items stuck because i18n key referenced before translation loaded
+fix(copy): "Error 500" shown to users instead of plain-language message
+fix(copy): button label uses internal API term, not user-visible term
+fix(copy): loading state shows "Loading..." instead of descriptive text
 ```
 
-**Root cause**: AI generates the string that "makes sense" to it, which is typically English or the most common language in its training data. It doesn't cross-reference i18n key files or check translation completeness.
+**Root cause**: AI generates the string that "makes sense" to it in context. It doesn't cross-reference existing terminology, translation files, or check for consistency across features.
 
-**Prevention**: S4 (UX Copy Review) + strict CLAUDE.md rule: "No hardcoded user-facing strings. All text via translation system."
+**Prevention**: S4 (UX Copy Review) + explicit constitution rule: "No hardcoded user-facing strings. All text via translation system."
 
 ---
 
@@ -115,9 +124,11 @@ fix(prompts): revert HUMANSCORE to 5 criteria + CTA to old format
 
 **Real examples:**
 ```
-fix: keep post status indicators visible + add retry button
-fix(ux): hide adaptive input when item selected, sticky create button
+fix: keep status indicators visible + add retry button
+fix(ux): hide input when item selected, sticky action button
 fix(cleanup): add useEffect unmount cleanup for timer refs
+fix: selected item not cleared when navigating to different section
+fix: form pre-fills from previous session — localStorage not cleared on submit
 ```
 
 **Root cause**: AI doesn't have a consistent mental model of where data should live. It picks useState, Zustand, localStorage, or URL params based on what "seems right" in the moment, not based on a coherent persistence strategy.
@@ -131,23 +142,17 @@ fix(cleanup): add useEffect unmount cleanup for timer refs
 
 ## War Stories
 
-### The Worktree Collision (Day 16)
+### The Parallel Session Collision (Day 16)
 
-Two Claude Code sessions running simultaneously on the same git branch. One session ran `git checkout` which silently reverted files the other session was editing. Hours of work lost.
+Two AI coding sessions running simultaneously on the same git branch. One session ran `git checkout` which silently reverted files the other session was editing. Hours of work lost.
 
 **Lesson**: Never run parallel AI sessions on the same working directory. Always use git worktrees for isolation.
 
-**Permanent fix**: Added to CLAUDE.md memory: "CRITICAL: Multiple Claude Code tabs share the same working directory — ALWAYS use worktrees."
+**Permanent fix**: Added to project constitution: "CRITICAL: Multiple AI sessions share the same working directory — always use worktrees for parallel work."
 
-### The Vietnamese Diacritics Loss (Day 7)
+---
 
-An AI agent generated all documentation without proper Unicode diacritics. Accented characters were stripped throughout — every special character lost. 22 messages of AI interaction produced unusable docs.
-
-**Lesson**: AI strips non-ASCII characters unpredictably, especially in code-adjacent contexts (markdown with code blocks).
-
-**Permanent fix**: Explicit CLAUDE.md rule about preserving Unicode. QA scenario in specs: "Verify all Vietnamese text has correct diacritics."
-
-### The Three Reverted Features (Days 18-22)
+### The Three Reverted Features (Days 18–22)
 
 Three features were built, tested, merged — then fully reverted:
 ```
@@ -158,7 +163,9 @@ Revert "feat(auth): Add phone OTP sign-in/sign-up"
 
 These weren't technical failures. The code worked. They were **product failures** — features that didn't fit the product vision despite being technically sound.
 
-**Lesson**: AI can build anything you spec. The question is whether you should spec it at all. Product judgment is the irreducible human skill.
+**Lesson**: AI can build anything you spec. The question is whether you should spec it at all. Product judgment is the irreducible human skill. Spec-first prevents bad *implementation*. It doesn't prevent bad *decisions*.
+
+---
 
 ### The 113 Context Exhaustions
 
@@ -166,7 +173,9 @@ Over 24 days, we hit context window limits 113 times (~5 per day). Each time req
 
 **Cost estimate**: ~15 minutes per context re-establishment × 113 = ~28 hours lost to context management.
 
-**Lesson**: Keep sessions focused and short. Use CLAUDE.md as persistent context. Don't try to do everything in one mega-conversation.
+**Lesson**: Keep sessions focused and short. Use your project constitution as persistent context. Don't try to accomplish everything in one mega-conversation.
+
+**Permanent fix**: Session handoff rule in snippet.md — at 40–60% context, compress state to a brief file and start a new session. Don't wait until broken.
 
 ---
 
@@ -174,12 +183,14 @@ Over 24 days, we hit context window limits 113 times (~5 per day). Each time req
 
 Before feeding a spec to AI, verify:
 
-- [ ] S1 has a specific user-visible outcome for every error scenario
+- [ ] S1 has a specific user-visible outcome for every error scenario (not vague "show error")
 - [ ] S2 defines where data saves and what happens on refresh/navigation
-- [ ] S3 lists every shared store, trigger, and cleanup action
-- [ ] S4 confirms all strings are in translation files
+- [ ] S3 lists every shared store, trigger, and cleanup action — scanned from codebase, not from memory
+- [ ] S4 confirms all strings are in translation files (or are brand names)
 - [ ] S5 maps every piece of data to storage + lifecycle
-- [ ] S6 includes: happy path, error path, mobile, refresh, back button
+- [ ] S6 includes: happy path, error path, mobile, refresh, double-submit
 
 Time spent on this checklist: ~10 minutes.
-Time saved by preventing bugs: ~2-4 hours per feature.
+Time saved by preventing bugs: ~2–4 hours per feature.
+
+S1 + S3 alone prevent 65% of the patterns listed here.

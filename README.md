@@ -93,13 +93,25 @@ No commands. No orchestration. No new tools.
 
 ## Evidence
 
-Two developers. 24 days. 107 API routes, 19 DB tables, 119 React components.
+Two developers. 24 days. 107 API routes, 19 DB tables, 119 React components. 626 commits.
 
 | Metric | Week 1 → Week 4 |
 |--------|:---------------:|
 | Fix:feat ratio | 5:1 → **1.5:1** |
 | Productivity vs solo dev | — → **10–15x** |
 | Review failures prevented by S1+S3 | **65%** |
+
+**Why the rules exist — from 626 production commits:**
+
+| Bug category | % of fixes | Spec rule that prevents it |
+|---|:---:|---|
+| Cross-module integration failures | **40%** | S3: scan, don't rely on memory |
+| Missing error handling | **25%** | S1: write failures before happy path |
+| Security (IDOR, XSS, input validation) | **15%** | review.md: security pass |
+| i18n hardcoding | **10%** | S4: UX copy review |
+| Stale state, missing cleanup | **10%** | S5: state & persistence matrix |
+
+S1 + S3 alone prevent 65% of fixes. Every other tool in this space derives these rules from theory. These come from the git log.
 
 ---
 
@@ -117,6 +129,7 @@ Two developers. 24 days. 107 API routes, 19 DB tables, 119 React components.
 
 ## Advanced
 
+- [**Failure patterns**](advanced/deep-dives/failure-patterns.md) — 626 commits analyzed: what breaks, why, which spec section prevents it
 - [Team workflow](advanced/team-workflow.md) — approval gate, PR template, constitution ownership
 - [Implementation blueprint](advanced/prp.md) — for complex features
 - [/spec and /spec-check slash commands](advanced/skills/) — for Claude Code

@@ -216,16 +216,19 @@ The most commonly skipped and most expensive sections are S1 (Error States) and 
 
 ---
 
-## Standalone Installation (without gstack)
+## Install as a Claude Code command
 
-To use `/spec` as a standalone Claude Code command:
+To use `/spec` directly in Claude Code:
 
 ```bash
-# Create the commands directory
 mkdir -p .claude/commands
 
-# Copy this skill as a Claude Code command
-cp spec-first/spec-skill/SKILL.md .claude/commands/spec.md
+# If you cloned spec-first locally:
+cp path/to/spec-first/advanced/skills/spec/SKILL.md .claude/commands/spec.md
+
+# Or fetch directly:
+curl -fsSL https://raw.githubusercontent.com/nlatuan187/spec-first/main/advanced/skills/spec/SKILL.md \
+  -o .claude/commands/spec.md
 ```
 
 Claude Code will expose it as `/spec` in any session within this project.
