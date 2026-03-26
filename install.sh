@@ -5,7 +5,7 @@
 #   bash install.sh
 #
 # Usage (one-liner, works from any project directory):
-#   curl -fsSL https://raw.githubusercontent.com/[YOUR_USERNAME]/spec-first/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/nlatuan187/spec-first/main/install.sh | sh
 #
 # What it does:
 #   1. Detects your AI tool and appends snippet.md to the right context file
@@ -14,7 +14,7 @@
 
 set -e
 
-REPO="https://raw.githubusercontent.com/[YOUR_USERNAME]/spec-first/main"
+REPO="https://raw.githubusercontent.com/nlatuan187/spec-first/main"
 PROJECT_DIR="${PWD}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || echo "$PWD")"
 LOCAL=false

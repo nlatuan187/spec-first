@@ -20,7 +20,7 @@ Every AI coding failure is a probability problem. spec-first engineers around th
 ## Install — 30 seconds
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/[YOUR_USERNAME]/spec-first/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/nlatuan187/spec-first/main/install.sh | sh
 ```
 
 Auto-detects your AI tool, appends to the right context file, copies templates, creates `specs/`.
