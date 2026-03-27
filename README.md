@@ -43,6 +43,8 @@ Auto-detects your AI tool, appends to the right context file, copies templates, 
 | GitHub Copilot | `.github/copilot-instructions.md` |
 | Codex / any other | `AGENTS.md` |
 
+**Or ask your AI**: paste the repo URL into your AI chat and say *"install spec-first into my project"* — it will run the installer for you.
+
 **Or manually**: copy [`snippet.md`](snippet.md) into your AI's context file — the file your AI reads at the start of every conversation (CLAUDE.md, .cursorrules, etc.).
 
 ---

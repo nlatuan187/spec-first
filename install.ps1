@@ -48,30 +48,30 @@ if (-not (Test-Path $targetDir)) {
 }
 
 if ((Test-Path $target) -and ((Get-Content $target -Raw -ErrorAction SilentlyContinue) -match "Spec-First — AI Development Methodology")) {
-    Write-Host "[OK]$CONTEXT_FILE already has spec-first methodology (skipping)"
+    Write-Host "[OK] $CONTEXT_FILE already has spec-first methodology (skipping)"
 } else {
     if (Test-Path $target) {
         Add-Content $target "`n`n---`n`n$snippet"
     } else {
         Set-Content $target $snippet
     }
-    Write-Host "[OK]Appended to $CONTEXT_FILE"
+    Write-Host "[OK] Appended to $CONTEXT_FILE"
 }
 
 # ── Step 2: Copy spec.md ───────────────────────────────────────────────────
 
 (Invoke-WebRequest "$REPO/spec.md" -UseBasicParsing).Content | Set-Content "spec.md" -Encoding UTF8
-Write-Host "[OK]spec.md → project root"
+Write-Host "[OK] spec.md -> project root"
 
 # ── Step 3: Copy review.md ─────────────────────────────────────────────────
 
 (Invoke-WebRequest "$REPO/review.md" -UseBasicParsing).Content | Set-Content "review.md" -Encoding UTF8
-Write-Host "[OK]review.md → project root"
+Write-Host "[OK] review.md -> project root"
 
 # ── Step 4: Create specs/ ──────────────────────────────────────────────────
 
 New-Item -ItemType Directory -Force -Path "specs" | Out-Null
-Write-Host "[OK]specs/ ready"
+Write-Host "[OK] specs/ ready"
 
 # ── Step 5: Install Claude Code slash commands (if detected) ───────────────
 
@@ -86,7 +86,7 @@ if ((Test-Path $claudeDir) -or ($CONTEXT_FILE -eq "CLAUDE.md")) {
     (Invoke-WebRequest "$REPO/advanced/skills/spec/SKILL.md"        -UseBasicParsing).Content | Set-Content "$commandsDir\spec.md"         -Encoding UTF8
     (Invoke-WebRequest "$REPO/advanced/skills/spec-review/SKILL.md" -UseBasicParsing).Content | Set-Content "$commandsDir\spec-review.md"  -Encoding UTF8
     (Invoke-WebRequest "$REPO/advanced/skills/spec-check/SKILL.md"  -UseBasicParsing).Content | Set-Content "$commandsDir\spec-check.md"   -Encoding UTF8
-    Write-Host "[OK]/spec → /spec-review → /spec-check installed"
+    Write-Host "[OK] /spec -> /spec-review -> /spec-check installed"
 }
 
 # ── Done ───────────────────────────────────────────────────────────────────
