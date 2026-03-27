@@ -1,21 +1,31 @@
 # spec-first
 
-**Spec discipline for AI coding. One file. Works with any AI tool.**
+**Better code from AI. Fewer rewrites. One file. Works with any tool.**
 
-> **A spec is a short document you write _before_ coding** — it lists what can break, who's affected, and what success looks like. spec-first makes your AI write this document first, before touching a single line of code.
+Two developers. 24 days. Fix:feat ratio: 5:1 → **1.5:1**. The AI didn't get smarter — it got a planning step. Same tools, 3x more features shipped per week because the AI stopped generating bugs at the rate it generated code. These aren't projections — they're from [626 production commits](#evidence).
 
-Two developers. 24 days. Fix:feat ratio: 5:1 → **1.5:1**. Error-state checks (S1) + integration checks (S3) alone prevented **65% of review failures**. These aren't projections — they're from [626 production commits](#evidence).
+## What you get
+
+| Without spec-first | With spec-first |
+|---|---|
+| AI skips error states — they fail in production | Failures written before happy path, every time |
+| Broken integrations — AI forgot what else exists | Every touchpoint enumerated by scanning the codebase |
+| "Looks good" from the AI that just wrote the code | Cold-session review with no motivated reasoning |
+| Third variation of the same wrong fix | Root cause stated before the first fix attempt |
+| Messy codebase? AI hallucinates what's there | Retroactive spec maps reality — then fixes it section by section |
+
+**Better code quality. Better organization. Better refactoring. Faster shipping.**
 
 ---
 
-## The Fundamental Law
+## The Fundamental Law — why this works
 
 ```
 AI generates the most statistically probable next token — not the correct one.
 It has no judgment. Only probability.
 ```
 
-Every AI coding failure is a probability problem.
+Every outcome above is a probability problem.
 
 The most probable token after a vague request is a confident-sounding wrong answer. After a build session, it's "the code is correct." After a happy-path description, it's a missing error state. After two failed fix attempts, it's a third variation of the same wrong approach.
 
@@ -79,7 +89,7 @@ Your AI will:
 3. Write `specs/[feature].md` with S1–S6 filled
 4. Tell you to open a new session to implement
 
-No commands. No orchestration. No new tools.
+Works with your existing AI tool. No new infrastructure required.
 
 ---
 
