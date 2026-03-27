@@ -30,11 +30,51 @@ Threshold logic: `S1 ≤ 3, S3 ≤ 1` → autonomous is safe because integration
 
 ---
 
+## Adapting to your stack
+
+The baseline (40%/25%/15%/10%/10%) comes from a React/Next.js SaaS with real-time state and multiple API integrations. Your stack will have different ratios — and some categories may not apply.
+
+**Read this before starting Step 1.** Your tag categories should match your project, not the baseline.
+
+| If your project is... | Adapt like this |
+|---|---|
+| **Backend API only** (Django, Rails, Go) | Rename `i18n` → `hardcoded-values` (magic strings, config embedded in code, env var misuse) |
+| **Mobile** (iOS / Android / React Native / Flutter) | Expect `state` > 10% baseline — local state, navigation state, offline sync all amplify this category |
+| **Microservices / event-driven** | Expect `integration` > 40% baseline — lower S3 threshold by 1 before starting |
+| **Data pipeline / ML** | Replace `i18n` + `state` with `data-corruption` + `schema-drift`; integration failures map to pipeline stage boundaries |
+| **Internal tool, no auth** | Remove `security` category entirely; add `performance` if relevant |
+| **Monorepo with shared packages** | `integration` failures often come from package boundary mismatches — add `fix(integration/package)` as a sub-tag |
+
+The categories are a starting point. What matters: **5 categories that together cover ≥ 90% of your fix commits.** If one category is always 0%, replace it with something that isn't.
+
+---
+
+## Risk profile adjustments
+
+Apply these to your constitution **before** starting the calibration protocol:
+
+| Risk factor | Adjustment from default |
+|---|---|
+| Heavy external API integrations (>3 third-party APIs) | S3 threshold −1 |
+| No user auth, no PII (pure internal tools) | Remove high-risk override |
+| Regulated industry (fintech, health, legal) | Review required for ALL specs |
+| Solo developer, rapid iteration | S1 threshold +1 |
+| Legacy codebase, many hidden dependencies | S3 threshold −1 |
+| Greenfield, simple domain | Defaults are fine |
+| Mobile app | Start with S5 (state matrix) as required — missing cleanup is the dominant failure mode |
+| Microservices | S3 review required for any spec touching >1 service boundary |
+
+These are heuristics. They let you start calibrated rather than starting blind. Still run the protocol below to verify.
+
+---
+
 ## The calibration protocol
 
 ### Step 1: Tag your fix commits for 2 weeks
 
 Add a category tag to every fix commit. **Minimum 20 fix commits before adjusting thresholds** — fewer data points are noise, not signal. Slow projects: extend to 4 weeks.
+
+Use your adapted categories from above (not necessarily the defaults):
 
 ```bash
 git commit -m "fix(integration): sidebar badge not updating after notification created"
@@ -44,7 +84,7 @@ git commit -m "fix(i18n): hardcoded string in component instead of translation k
 git commit -m "fix(state): selected item not cleared on navigation to different section"
 ```
 
-5 tags only: `integration`, `error`, `security`, `i18n`, `state`. Anything that doesn't fit: use the closest one.
+Use your 5 chosen tags consistently. Anything that doesn't fit: use the closest one.
 
 ### Step 2: Pull your ratios after 2 weeks
 
@@ -52,7 +92,7 @@ git commit -m "fix(state): selected item not cleared on navigation to different 
 # Total fix commits
 git log --oneline --grep="^fix" | wc -l
 
-# By category
+# By category (replace tag names if you adapted them)
 git log --oneline --grep="fix(integration)" | wc -l
 git log --oneline --grep="fix(error)" | wc -l
 git log --oneline --grep="fix(security)" | wc -l
@@ -86,42 +126,6 @@ High-risk override: [auth only / all external APIs / disabled]
 ### Step 5: Repeat after 4 weeks
 
 Second calibration point. By now your thresholds are yours, not spec-first's defaults.
-
----
-
-## Adapting to your stack
-
-The baseline (40%/25%/15%/10%/10%) comes from a React/Next.js SaaS with real-time state and multiple API integrations. Your stack will have different ratios — and some categories may not apply.
-
-| If your project is... | Adapt like this |
-|---|---|
-| **Backend API only** (Django, Rails, Go) | Rename `i18n` → `hardcoded-values` (magic strings, config embedded in code, env var misuse) |
-| **Mobile** (iOS / Android / React Native / Flutter) | Expect `state` > 10% baseline — local state, navigation state, offline sync all amplify this category |
-| **Microservices / event-driven** | Expect `integration` > 40% baseline — lower S3 threshold by 1 before starting |
-| **Data pipeline / ML** | Replace `i18n` + `state` with `data-corruption` + `schema-drift`; integration failures map to pipeline stage boundaries |
-| **Internal tool, no auth** | Remove `security` category entirely; add `performance` if relevant |
-| **Monorepo with shared packages** | `integration` failures often come from package boundary mismatches — tag those separately as `fix(integration/package)` |
-
-The categories are a starting point. What matters: **5 categories that together cover ≥ 90% of your fix commits.** If one category is always 0%, replace it with something that isn't.
-
----
-
-## Risk profile adjustments
-
-If you know your project's profile, apply these before starting:
-
-| Risk factor | Adjustment from default |
-|---|---|
-| Heavy external API integrations (>3 third-party APIs) | S3 threshold −1 |
-| No user auth, no PII (pure internal tools) | Remove high-risk override |
-| Regulated industry (fintech, health, legal) | Review required for ALL specs |
-| Solo developer, rapid iteration | S1 threshold +1 |
-| Legacy codebase, many hidden dependencies | S3 threshold −1 |
-| Greenfield, simple domain | Defaults are fine |
-| Mobile app | Start with S5 (state matrix) as required — missing cleanup is the dominant failure mode |
-| Microservices | S3 review required for any spec touching >1 service boundary |
-
-These are heuristics. They let you start calibrated rather than starting blind. Still run the 2-week protocol to verify.
 
 ---
 
