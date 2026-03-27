@@ -94,10 +94,11 @@ Implementing now. Key risks from S1: [list items].
 ```
 Then immediately, without waiting:
 1. Re-read the spec you just wrote
-2. Implement — handle every S1 error state explicitly in code
-3. If S3 has integration points: verify those touchpoints are covered
-4. If stuck after 2 attempts: follow Debugging Protocol (write debug file, new session)
-5. When done: run `/spec-check specs/[slug].md` and surface any gaps
+2. If the project has a test framework: write failing tests from S6 scenarios before implementing
+3. Implement — handle every S1 error state explicitly in code
+4. If S3 has integration points: verify those touchpoints are covered
+5. If stuck after 2 attempts: follow Debugging Protocol (write debug file, new session)
+6. When done: run `/spec-check specs/[slug].md` and surface any gaps
 
 **Recommend review** — output block, then wait:
 ```
