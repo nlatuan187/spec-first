@@ -18,6 +18,39 @@ Two developers. 24 days. Same AI tools — but with planning first. Fix:feat rat
 
 **Better code quality. Better organization. Safer refactoring. Faster shipping.**
 
+<details>
+<summary><strong>What a spec actually looks like</strong> (click to expand)</summary>
+
+```markdown
+# Feature: Password Reset
+
+## S1: Error States (failures FIRST — happy path last)
+| Condition | User sees |
+|-----------|-----------|
+| Email not found | "Check your email" (same message — don't leak which emails exist) |
+| Token expired (>1hr) | "This link has expired. Request a new one." + link |
+| Token already used | "This link has already been used." |
+| New password = old password | "New password must be different from current password." |
+| ✅ Happy path | Email sent → user clicks → sets new password → redirected to login |
+
+## S3: Cross-Feature Integration
+| Feature | How it's affected |
+|---------|-------------------|
+| Login page | Add "Forgot password?" link |
+| Email service | New template: password-reset |
+| Session management | Invalidate all sessions on password change |
+| Rate limiting | Max 3 reset emails per hour per address |
+
+## S6: Manual QA
+- [ ] Request reset → email arrives < 30 seconds
+- [ ] Click link after 61 minutes → shows expired message
+- [ ] Click link twice → second click shows "already used"
+- [ ] Reset password → old sessions are logged out
+```
+
+→ [More examples](advanced/examples/) — real production specs, anonymized
+</details>
+
 ---
 
 ## The Fundamental Law — why this works
@@ -76,6 +109,24 @@ The Fundamental Law applies at every scale. spec-first is the spec quality layer
 The 5 failure modes (happy-path bias, isolation blindness, etc.) exist at every scale. spec-first's rules apply regardless. What scales up is coordination — not whether to use spec-first.
 
 → [Team & corp workflow guide](advanced/team-workflow.md)
+
+---
+
+## Stack with execution tools
+
+spec-first is the thinking layer — what to build and what can break. Pair it with execution tools for the full cycle:
+
+| What you need | Use |
+|---|---|
+| Better specs, fewer bugs | **spec-first** (this repo) |
+| Subagent-driven autonomous execution | spec-first + [superpowers](https://github.com/obra/superpowers) |
+| Overnight autonomous builds with crash recovery | spec-first + [GSD-2](https://github.com/gsd-build/gsd-2) |
+| Multi-agent team orchestration | spec-first + [BMAD](https://github.com/bmad-code-org/BMAD-METHOD) |
+| Spec-as-executable-artifact pipeline | spec-first + [Spec-Kit](https://github.com/github/spec-kit) |
+
+spec-first writes the plan. These tools execute it. Without the plan, automation runs fast and breaks things. Without automation, the plan is slower to execute. Together: quality at speed.
+
+→ [Detailed integration guides](advanced/INTEGRATIONS.md)
 
 ---
 

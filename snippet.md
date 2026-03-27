@@ -178,14 +178,14 @@ ls lib/services/ app/api/ components/features/ 2>/dev/null | head -40
 Open S1 by answering: *"What breaks? Who is unauthorized? What's missing or null?"*
 List those first. The happy path is last.
 
-Fill **Deployment Constraints** before writing any error rows:
+Fill **Deployment Constraints** before writing any error rows. Check your stack — these are common examples:
 
-| Constraint | Rule |
-|---|---|
-| Serverless timeout | No loops > 10s — Vercel default 10s, max 60s |
-| Bulk DB queries | Always `.range()` paginate — PostgREST truncates at 1000 rows silently, no error |
-| External API auth | `Authorization: Bearer TOKEN` header only — token in URL gets logged in server/CDN/Vercel logs |
-| Background / cron | Atomic lock required: `UPDATE ... WHERE status IS NULL RETURNING id` — second runner gets 0 rows |
+| Constraint | What to check | Examples |
+|---|---|---|
+| Request timeout | Your platform's default limit | Vercel 10s, Lambda 15s, Cloud Run 300s, Railway 30s |
+| Bulk query limits | Does your DB/ORM silently truncate? | PostgREST: 1000 rows (no error). Django: unlimited. Prisma: no default limit |
+| Auth token handling | Where tokens appear in logs | Never in URL — server/CDN/proxy logs capture query strings |
+| Background jobs | Can two runners execute the same job? | Atomic lock: `UPDATE ... WHERE status IS NULL RETURNING id` — second runner gets 0 rows |
 
 *Derives from: Training data is ~10:1 success-to-failure. Low-frequency patterns (serverless timeouts, DB truncation) have low probability — they must be stated explicitly.*
 
