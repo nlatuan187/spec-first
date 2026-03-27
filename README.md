@@ -2,18 +2,18 @@
 
 **Better code from AI. Fewer rewrites. One file. Works with any tool.**
 
-> **How it works:** Before writing a single line of code, your AI writes a 1-page plan — what can break, who's affected, what "done" looks like. With that plan, AI builds the right thing the first time. Without it, you're debugging what AI thought you meant.
+> Before writing code, your AI writes a short plan — what can break, what other features are affected, what "done" looks like. The AI didn't get smarter — it got a planning step.
 
-Two developers. 24 days. Same AI tools — but with planning first. Bug rate dropped 3x. 65% fewer failed code reviews. These aren't projections — they're from [626 production commits](#evidence).
+Two developers. 24 days. Fix:feat ratio: 5:1 → **1.5:1**. Same tools, 3x more features shipped per week because the AI stopped generating bugs at the rate it generated code. 65% fewer failed code reviews. These aren't projections — they're from [626 production commits](#evidence).
 
 ## What you get
 
 | Without spec-first | With spec-first |
 |---|---|
-| Bugs that only appear in production | Failure cases caught before code is written |
-| A "working" feature that breaks 3 others | Changes stay in scope — other features stay intact |
-| "Looks good" from the AI that just wrote it | A second pass catches what the builder missed |
-| Three wrong fixes before the right one | Fixed in one try because root cause is identified first |
+| AI skips error states — they fail in production | Failure cases caught before code is written |
+| Broken integrations — AI forgot what else exists | Changes stay in scope — other features stay intact |
+| "Looks good" from the AI that just wrote the code | A second pass catches what the builder missed |
+| Third variation of the same wrong fix | Fixed in one try because root cause is identified first |
 | Messy codebase? AI hallucinates what's there | Map what actually exists, then fix it section by section |
 
 **Better code quality. Better organization. Safer refactoring. Faster shipping.**
@@ -103,7 +103,7 @@ Open a new AI session and say:
 
 > "Write a retroactive spec for [feature or area you want to fix]. Scan what actually exists in the codebase, list what's broken (failures first), find what other features it touches, define what done looks like. Save to `specs/[name]-retro.md`"
 
-Your AI will map reality — not what it thinks is there. Then you fix one gap at a time.
+Then run `/spec-check specs/[name]-retro.md` — gaps appear immediately.
 
 **What this unlocks:**
 - **Refactoring safely** — understand what actually exists before you touch it
@@ -111,7 +111,7 @@ Your AI will map reality — not what it thinks is there. Then you fix one gap a
 - **Adding to legacy code** — find every integration point before writing a line
 - **Stopping scope creep** — define "done" before the AI builds indefinitely
 
-No rewrite needed. No starting over. Just a clear picture of what you have, and a path forward.
+For each gap: open a new session, load the retro spec, fix that gap. No rewrite needed — just fill what's missing.
 
 ---
 
