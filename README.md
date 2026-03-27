@@ -4,7 +4,7 @@
 
 > Before writing code, your AI writes a short plan — what can break, what other features are affected, what "done" looks like. The AI didn't get smarter — it got a planning step.
 
-Two developers. 24 days. Fix:feat ratio: 5:1 → **1.5:1**. Same tools, 3x more features shipped per week because the AI stopped generating bugs at the rate it generated code. 65% fewer failed code reviews. These aren't projections — they're from [626 production commits](#evidence).
+Two developers. 24 days. Same AI tools — but with planning first. Fix:feat ratio: 5:1 → **1.5:1**. 65% fewer failed code reviews. These aren't projections — they're from [626 production commits](#evidence).
 
 ## What you get
 
