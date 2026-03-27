@@ -99,6 +99,27 @@ echo "✓ review.md → project root"
 mkdir -p "$PROJECT_DIR/specs"
 echo "✓ specs/ ready"
 
+# ── Step 6: Install Claude Code slash commands (optional) ──────────────────
+
+CLAUDE_COMMANDS="$PROJECT_DIR/.claude/commands"
+
+if [ -d "$PROJECT_DIR/.claude" ] || [ "$CONTEXT_FILE" = "CLAUDE.md" ]; then
+  echo ""
+  echo "Claude Code detected — installing /spec /spec-review /spec-check commands..."
+  mkdir -p "$CLAUDE_COMMANDS"
+
+  if [ "$LOCAL" = true ]; then
+    cp "$SCRIPT_DIR/advanced/skills/spec/SKILL.md"        "$CLAUDE_COMMANDS/spec.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec-review/SKILL.md" "$CLAUDE_COMMANDS/spec-review.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec-check/SKILL.md"  "$CLAUDE_COMMANDS/spec-check.md"
+  else
+    curl -fsSL "$REPO/advanced/skills/spec/SKILL.md"        -o "$CLAUDE_COMMANDS/spec.md"
+    curl -fsSL "$REPO/advanced/skills/spec-review/SKILL.md" -o "$CLAUDE_COMMANDS/spec-review.md"
+    curl -fsSL "$REPO/advanced/skills/spec-check/SKILL.md"  -o "$CLAUDE_COMMANDS/spec-check.md"
+  fi
+  echo "✓ /spec → /spec-review → /spec-check installed"
+fi
+
 # ── Done ───────────────────────────────────────────────────────────────────
 
 echo ""
@@ -107,13 +128,6 @@ echo ""
 echo "  Start a new session in this project."
 echo "  Say: \"build [feature]\""
 echo "  AI will write the spec before any code."
-echo ""
-echo "  Optional: install Claude Code slash commands"
-echo "    mkdir -p .claude/commands"
-echo "    curl -fsSL $REPO/advanced/skills/spec/SKILL.md        -o .claude/commands/spec.md"
-echo "    curl -fsSL $REPO/advanced/skills/spec-review/SKILL.md -o .claude/commands/spec-review.md"
-echo "    curl -fsSL $REPO/advanced/skills/spec-check/SKILL.md  -o .claude/commands/spec-check.md"
-echo "    Trilogy: /spec writes → /spec-review verifies → /spec-check checks coverage"
 echo ""
 echo "  Ecosystem pairs → advanced/INTEGRATIONS.md"
 echo ""

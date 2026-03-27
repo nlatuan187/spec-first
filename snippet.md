@@ -144,7 +144,7 @@ Do not implement regardless of user override request.
 | New feature | `/spec` → `/spec-review` → [Build] → `/spec-check` |
 | Large / Auth | `/spec` → `/spec-review` → [human reads spec] → [Build] → `review.md` → `/spec-check` |
 
-Install all three: `curl -fsSL https://raw.githubusercontent.com/nlatuan187/spec-first/main/install.sh | sh`
+Claude Code: `install.sh` auto-installs all three when `.claude/` is detected. Other tools: copy each `SKILL.md` from `advanced/skills/` to your commands directory.
 
 ---
 
@@ -226,6 +226,12 @@ When asked to review: open a **new session** → paste the diff → apply the ch
 ---
 
 ### Debugging Protocol — when implementation is stuck
+
+Before the first fix attempt: state the root cause hypothesis.
+*"I believe the error is caused by [X] because [Y evidence]."*
+If you cannot state this, investigate first — read the full stack trace, check recent changes, trace data flow to the error source.
+
+*Derives from: "Try a variation" is 10x more probable than "find the cause." Fixing without root cause compounds probability error — each attempt that fails makes the next wrong attempt more probable.*
 
 If the same error persists after 2 fix attempts, stop. Do not try a third variation.
 

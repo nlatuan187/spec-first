@@ -1,8 +1,8 @@
 # spec-first
 
-**Spec methodology for AI coding — solo, team, or large corp.**
+**Spec discipline for AI coding. One file. Works with any AI tool.**
 
-Paste one file into your AI context. No CLI. No framework. No commands to remember.
+Two developers. 24 days. Fix:feat ratio: 5:1 → **1.5:1**. S1 + S3 alone prevented **65% of review failures**. These aren't projections — they're from [626 production commits](#evidence).
 
 ---
 
@@ -13,7 +13,11 @@ AI generates the most statistically probable next token — not the correct one.
 It has no judgment. Only probability.
 ```
 
-Every AI coding failure is a probability problem. spec-first engineers around the probability — not against it.
+Every AI coding failure is a probability problem.
+
+The most probable token after a vague request is a confident-sounding wrong answer. After a build session, it's "the code is correct." After a happy-path description, it's a missing error state. After two failed fix attempts, it's a third variation of the same wrong approach.
+
+spec-first engineers around the probability — not against it. Every rule derives from this law. When you understand it, you can engineer AI behavior for any situation not covered here.
 
 ---
 
@@ -148,6 +152,7 @@ The same data determines when human review is required — and when autonomous i
 ## Advanced
 
 - [**Failure patterns**](advanced/deep-dives/failure-patterns.md) — 626 commits analyzed: what breaks, why, which spec section prevents it
+- [**Calibration**](advanced/calibration.md) — start with the defaults, tune thresholds to your codebase in 2 weeks
 - [**Feedback triage**](advanced/feedback-triage.md) — convert raw user feedback batches into verified GitHub issues: 5-phase workflow, 3x token overhead eliminated
 - [Team workflow](advanced/team-workflow.md) — approval gate, PR template, constitution ownership
 - [Implementation blueprint](advanced/prp.md) — for complex features
