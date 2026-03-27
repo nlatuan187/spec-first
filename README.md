@@ -23,11 +23,17 @@ spec-first engineers around the probability — not against it. Every rule deriv
 
 ## Install — 30 seconds
 
+**macOS / Linux / Git Bash:**
 ```bash
 curl -fsSL https://raw.githubusercontent.com/nlatuan187/spec-first/main/install.sh | sh
 ```
 
-Auto-detects your AI tool, appends to the right context file, copies templates, creates `specs/`.
+**Windows (PowerShell):**
+```powershell
+iwr -useb https://raw.githubusercontent.com/nlatuan187/spec-first/main/install.ps1 | iex
+```
+
+Auto-detects your AI tool, appends to the right context file, copies templates, creates `specs/`. Claude Code users also get `/spec`, `/spec-review`, `/spec-check` installed automatically.
 
 | AI tool | Context file updated |
 |---------|---------------------|
