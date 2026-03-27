@@ -103,18 +103,19 @@ Then immediately, without waiting:
 ━━━ Spec written: specs/[slug].md ━━━
 Scope: New feature — [N] error states, [N] integration points.
 Review recommended before implementing.
-→ Say "implement" after reviewing to proceed in a new session.
+→ Run /spec-review specs/[slug].md in a new session — APPROVED to build, BLOCKED to fix.
 → Say "skip review" to implement now — accepts ~25% higher error rate (Pattern 2 data).
 ```
 If user says "skip review": follow the Autonomous steps above in this session.
-If user says "implement": tell user to start a new session with the spec loaded.
+If user says "implement" (after /spec-review returns APPROVED): tell user to start a new session with the spec loaded.
 
 **Review required** — output block, then stop:
 ```
 ━━━ Spec written: specs/[slug].md ━━━
 Scope: [Large / High-risk] — [N] error states, [N] integration points.
 Human review required. [Auth/payment: 15% security bug rate in production data.]
-Open the spec, review, then start a new session to implement.
+Run /spec-review specs/[slug].md — must return APPROVED.
+Then: a human must read specs/[slug].md before implementing. /spec-review is a mechanical gate — it does not replace adversarial judgment for auth/payments/PII.
 ```
 Do not implement regardless of user override request.
 
@@ -133,6 +134,17 @@ Do not implement regardless of user override request.
 | **Brownfield delta** | See Delta Format below | Depends on scope |
 
 *Formality scales down for small scope. Session separation scales down too — bug fixes implement in the same session as the spec. New features and above always use a cold Build session.*
+
+**Skill dial — which tools to use:**
+
+| Scope | Skills |
+|---|---|
+| Bug fix | `/spec` → [Build] → `/spec-check` |
+| Small change | `/spec` → [Build] → `/spec-check` |
+| New feature | `/spec` → `/spec-review` → [Build] → `/spec-check` |
+| Large / Auth | `/spec` → `/spec-review` → [human reads spec] → [Build] → `review.md` → `/spec-check` |
+
+Install all three: `curl -fsSL https://raw.githubusercontent.com/nlatuan187/spec-first/main/install.sh | sh`
 
 ---
 
