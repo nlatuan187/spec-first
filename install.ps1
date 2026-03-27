@@ -10,6 +10,8 @@
 #   4. Installs /spec /spec-review /spec-check for Claude Code (if detected)
 
 $ErrorActionPreference = "Stop"
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
 $REPO = "https://raw.githubusercontent.com/nlatuan187/spec-first/master"
 $PROJECT_DIR = (Get-Location).Path
 
@@ -27,7 +29,7 @@ $CONTEXT_FILE = Get-ContextFile
 
 Write-Host ""
 Write-Host "spec-first installer"
-Write-Host "─────────────────────"
+Write-Host "---------------------"
 Write-Host "Project: $PROJECT_DIR"
 Write-Host "Context file: $CONTEXT_FILE"
 Write-Host ""
@@ -46,30 +48,30 @@ if (-not (Test-Path $targetDir)) {
 }
 
 if ((Test-Path $target) -and ((Get-Content $target -Raw -ErrorAction SilentlyContinue) -match "Spec-First — AI Development Methodology")) {
-    Write-Host "✓ $CONTEXT_FILE already has spec-first methodology (skipping)"
+    Write-Host "[OK]$CONTEXT_FILE already has spec-first methodology (skipping)"
 } else {
     if (Test-Path $target) {
         Add-Content $target "`n`n---`n`n$snippet"
     } else {
         Set-Content $target $snippet
     }
-    Write-Host "✓ Appended to $CONTEXT_FILE"
+    Write-Host "[OK]Appended to $CONTEXT_FILE"
 }
 
 # ── Step 2: Copy spec.md ───────────────────────────────────────────────────
 
 (Invoke-WebRequest "$REPO/spec.md" -UseBasicParsing).Content | Set-Content "spec.md" -Encoding UTF8
-Write-Host "✓ spec.md → project root"
+Write-Host "[OK]spec.md → project root"
 
 # ── Step 3: Copy review.md ─────────────────────────────────────────────────
 
 (Invoke-WebRequest "$REPO/review.md" -UseBasicParsing).Content | Set-Content "review.md" -Encoding UTF8
-Write-Host "✓ review.md → project root"
+Write-Host "[OK]review.md → project root"
 
 # ── Step 4: Create specs/ ──────────────────────────────────────────────────
 
 New-Item -ItemType Directory -Force -Path "specs" | Out-Null
-Write-Host "✓ specs/ ready"
+Write-Host "[OK]specs/ ready"
 
 # ── Step 5: Install Claude Code slash commands (if detected) ───────────────
 
@@ -84,7 +86,7 @@ if ((Test-Path $claudeDir) -or ($CONTEXT_FILE -eq "CLAUDE.md")) {
     (Invoke-WebRequest "$REPO/advanced/skills/spec/SKILL.md"        -UseBasicParsing).Content | Set-Content "$commandsDir\spec.md"         -Encoding UTF8
     (Invoke-WebRequest "$REPO/advanced/skills/spec-review/SKILL.md" -UseBasicParsing).Content | Set-Content "$commandsDir\spec-review.md"  -Encoding UTF8
     (Invoke-WebRequest "$REPO/advanced/skills/spec-check/SKILL.md"  -UseBasicParsing).Content | Set-Content "$commandsDir\spec-check.md"   -Encoding UTF8
-    Write-Host "✓ /spec → /spec-review → /spec-check installed"
+    Write-Host "[OK]/spec → /spec-review → /spec-check installed"
 }
 
 # ── Done ───────────────────────────────────────────────────────────────────
@@ -92,9 +94,18 @@ if ((Test-Path $claudeDir) -or ($CONTEXT_FILE -eq "CLAUDE.md")) {
 Write-Host ""
 Write-Host "Done. Your AI is now spec-first."
 Write-Host ""
-Write-Host "  Start a new session in this project."
-Write-Host "  Say: 'build [feature]'"
-Write-Host "  AI will write the spec before any code."
+Write-Host "  Next steps:"
+Write-Host "  1. Open your AI tool (Claude Code, Cursor, Windsurf, etc.) in this folder"
+Write-Host "  2. Type: build [describe what you want to create]"
+Write-Host "  3. Your AI will ask up to 3 clarifying questions"
+Write-Host "  4. Then write a spec file in specs/ -- no code yet"
+Write-Host "  5. Review the spec, then open a new session to build"
 Write-Host ""
-Write-Host "  Ecosystem pairs → advanced/INTEGRATIONS.md"
+Write-Host "  Files installed:"
+Write-Host "    CLAUDE.md (or your AI context file) -- methodology loaded"
+Write-Host "    spec.md                             -- spec template"
+Write-Host "    review.md                           -- code review checklist"
+Write-Host "    specs/                              -- your specs go here"
+Write-Host ""
+Write-Host "  Not sure where to start? Read README.md"
 Write-Host ""

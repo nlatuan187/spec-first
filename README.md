@@ -43,7 +43,7 @@ Auto-detects your AI tool, appends to the right context file, copies templates, 
 | GitHub Copilot | `.github/copilot-instructions.md` |
 | Codex / any other | `AGENTS.md` |
 
-**Or manually**: copy [`snippet.md`](snippet.md) into whichever context file your AI reads.
+**Or manually**: copy [`snippet.md`](snippet.md) into your AI's context file — the file your AI reads at the start of every conversation (CLAUDE.md, .cursorrules, etc.).
 
 ---
 
@@ -67,7 +67,7 @@ The 5 failure modes (happy-path bias, isolation blindness, etc.) exist at every 
 
 **If your project has no `CLAUDE.md` yet**: open a new session and say: `"Create a minimal project constitution for this project. Tech stack: [X]. Key file paths: [Y]. Auth method: [Z]. Save to CLAUDE.md."` — 2 minutes, done once.
 
-After install, open a new AI session in your project. Say: `build [feature name]`.
+After install, open a new AI session in your project (new chat in Cursor/Windsurf, `/new` in Claude Code). Say: `build [feature name]`.
 
 Your AI will:
 1. Check your project constitution for constraints
@@ -121,7 +121,7 @@ For each gap `/spec-check` surfaces: open a new session, load the retro spec, fi
 
 ## Evidence
 
-Two developers. 24 days. 107 API routes, 19 DB tables, 119 React components. 626 commits.
+Two developers. 24 days. A complete production SaaS — 107 API routes, 19 DB tables, 119 React components. 626 commits.
 
 | Metric | Week 1 → Week 4 |
 |--------|:---------------:|
