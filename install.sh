@@ -99,11 +99,13 @@ echo "✓ review.md → project root"
 mkdir -p "$PROJECT_DIR/specs"
 echo "✓ specs/ ready"
 
-# ── Step 6: Install Claude Code slash commands (optional) ──────────────────
+# ── Step 6: Install Claude Code slash commands + hooks (if detected) ───────
 
-CLAUDE_COMMANDS="$PROJECT_DIR/.claude/commands"
+CLAUDE_DIR="$PROJECT_DIR/.claude"
+CLAUDE_COMMANDS="$CLAUDE_DIR/commands"
+CLAUDE_HOOKS="$CLAUDE_DIR/spec-first"
 
-if [ -d "$PROJECT_DIR/.claude" ] || [ "$CONTEXT_FILE" = "CLAUDE.md" ]; then
+if [ -d "$CLAUDE_DIR" ] || [ "$CONTEXT_FILE" = "CLAUDE.md" ]; then
   echo ""
   echo "Claude Code detected — installing /spec /spec-review /spec-check commands..."
   mkdir -p "$CLAUDE_COMMANDS"
@@ -118,6 +120,73 @@ if [ -d "$PROJECT_DIR/.claude" ] || [ "$CONTEXT_FILE" = "CLAUDE.md" ]; then
     curl -fsSL "$REPO/advanced/skills/spec-check/SKILL.md"  -o "$CLAUDE_COMMANDS/spec-check.md"
   fi
   echo "✓ /spec → /spec-review → /spec-check installed"
+
+  # ── Install SessionStart hook ─────────────────────────────────────────────
+  mkdir -p "$CLAUDE_HOOKS"
+
+  if [ "$LOCAL" = true ]; then
+    cp "$SCRIPT_DIR/hooks/session-start" "$CLAUDE_HOOKS/session-start"
+    cp "$SCRIPT_DIR/hooks/run-hook.cmd"  "$CLAUDE_HOOKS/run-hook.cmd"
+  else
+    curl -fsSL "$REPO/hooks/session-start" -o "$CLAUDE_HOOKS/session-start"
+    curl -fsSL "$REPO/hooks/run-hook.cmd"  -o "$CLAUDE_HOOKS/run-hook.cmd"
+  fi
+  chmod +x "$CLAUDE_HOOKS/session-start" "$CLAUDE_HOOKS/run-hook.cmd" 2>/dev/null || true
+
+  # Register hook in .claude/settings.json (merge safely with python3, fallback to create)
+  SETTINGS_FILE="$CLAUDE_DIR/settings.json"
+  HOOK_CMD=".claude/spec-first/run-hook.cmd session-start"
+
+  if command -v python3 &>/dev/null; then
+    python3 - "$SETTINGS_FILE" "$HOOK_CMD" << 'PYEOF'
+import json, sys, os
+
+settings_path, hook_cmd = sys.argv[1], sys.argv[2]
+settings = {}
+if os.path.exists(settings_path):
+    try:
+        with open(settings_path) as f:
+            settings = json.load(f)
+    except Exception:
+        pass  # corrupt/empty — start fresh
+
+hooks = settings.setdefault("hooks", {})
+session_start = hooks.setdefault("SessionStart", [])
+
+already = any("spec-first" in str(h) for h in session_start)
+if not already:
+    session_start.append({"hooks": [{"type": "command", "command": hook_cmd}]})
+    os.makedirs(os.path.dirname(settings_path), exist_ok=True)
+    with open(settings_path, "w") as f:
+        json.dump(settings, f, indent=2)
+    print("✓ SessionStart hook registered in .claude/settings.json")
+else:
+    print("✓ SessionStart hook already registered (skipping)")
+PYEOF
+  else
+    # No python3 — create settings.json only if it doesn't exist
+    if [ ! -f "$SETTINGS_FILE" ]; then
+      cat > "$SETTINGS_FILE" << JSON
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOOK_CMD"
+          }
+        ]
+      }
+    ]
+  }
+}
+JSON
+      echo "✓ SessionStart hook registered in .claude/settings.json"
+    else
+      echo "  (python3 not found — add hook manually: see hooks/README in spec-first)"
+    fi
+  fi
 fi
 
 # ── Done ───────────────────────────────────────────────────────────────────
@@ -129,5 +198,6 @@ echo "  Start a new session in this project."
 echo "  Say: \"build [feature]\""
 echo "  AI will write the spec before any code."
 echo ""
+echo "  Cross-session memory: append project learnings to KNOWLEDGE.md"
 echo "  Ecosystem pairs → advanced/INTEGRATIONS.md"
 echo ""

@@ -252,6 +252,27 @@ Open a new session → read spec + debug file → fresh context → different ap
 
 ---
 
+### Project Memory — accumulate what you discover
+
+After discovering something non-obvious about this codebase that would affect future sessions, append it to `KNOWLEDGE.md`:
+
+```
+## [YYYY-MM-DD] [area or feature]
+- [specific pattern, gotcha, or rule — concrete enough to act on]
+```
+
+Examples of what belongs here:
+- Ordering constraints: "DeductCredits must be called AFTER the DB write — calling before causes phantom charges on rollback"
+- Silent failures: "PostgREST truncates at 1000 rows with no error — always `.range()` on list queries"
+- Platform specifics: "Vercel timeout is 10s — any loop touching external APIs needs chunking"
+- Convention discovered: "All mutations go through lib/services/db/ — never write direct Supabase calls in API routes"
+
+At the start of every Build session: read KNOWLEDGE.md before writing any code.
+
+*Derives from: Context windows don't persist. A lesson discovered in session 3 is invisible in session 30. KNOWLEDGE.md moves project-specific knowledge from your memory to the codebase — where it survives.*
+
+---
+
 ### Session handoff — when context hits 40–60%
 
 At 40–60% context usage, performance degrades — the spec written at message 5 has low attention weight by message 50. Don't wait until the session is broken.

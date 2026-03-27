@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# spec-first SessionStart hook
+# Injects methodology reminder + project KNOWLEDGE.md at every session start.
+# Installed to .claude/spec-first/ by install.sh
+
+set -euo pipefail
+
+escape_for_json() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/\\r}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+
+# ── Core reminder (brief — full rules are in your project constitution) ──────
+
+context="<spec-first-active>
+spec-first methodology is active.
+REQUIRED: When asked to build/implement/create/add → write spec first. Zero code until spec exists.
+REQUIRED: S1 starts with failures (what breaks, who is unauthorized, what is null) — happy path is last.
+REQUIRED: After spec, run Scope Routing: count S1 error states + S3 integration points → Autonomous / Recommend review / Review required.
+Full rules: read the spec-first section in your project constitution (CLAUDE.md / .cursorrules / etc.)."
+
+# ── Inject KNOWLEDGE.md if it exists ────────────────────────────────────────
+
+KNOWLEDGE_FILE="$(pwd)/KNOWLEDGE.md"
+if [ -f "$KNOWLEDGE_FILE" ] && [ -s "$KNOWLEDGE_FILE" ]; then
+  knowledge=$(cat "$KNOWLEDGE_FILE")
+  context+="
+
+<project-knowledge>
+Patterns and lessons discovered in this codebase — read before writing any code:
+
+${knowledge}
+</project-knowledge>"
+fi
+
+context+="
+</spec-first-active>"
+
+escaped=$(escape_for_json "$context")
+
+# ── Output platform-appropriate JSON ─────────────────────────────────────────
+# Claude Code sets CLAUDE_PLUGIN_ROOT; Cursor sets CURSOR_PLUGIN_ROOT.
+# Other platforms fall back to additional_context.
+
+if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
+  printf '{"additional_context": "%s"}\n' "$escaped"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
+  printf '{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "%s"}}\n' "$escaped"
+else
+  printf '{"additional_context": "%s"}\n' "$escaped"
+fi
+
+exit 0

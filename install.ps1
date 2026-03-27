@@ -73,7 +73,7 @@ Write-Host "[OK] review.md -> project root"
 New-Item -ItemType Directory -Force -Path "specs" | Out-Null
 Write-Host "[OK] specs/ ready"
 
-# ── Step 5: Install Claude Code slash commands (if detected) ───────────────
+# ── Step 5: Install Claude Code slash commands + hooks (if detected) ───────
 
 $claudeDir = Join-Path $PROJECT_DIR ".claude"
 
@@ -87,6 +87,33 @@ if ((Test-Path $claudeDir) -or ($CONTEXT_FILE -eq "CLAUDE.md")) {
     (Invoke-WebRequest "$REPO/advanced/skills/spec-review/SKILL.md" -UseBasicParsing).Content | Set-Content "$commandsDir\spec-review.md"  -Encoding UTF8
     (Invoke-WebRequest "$REPO/advanced/skills/spec-check/SKILL.md"  -UseBasicParsing).Content | Set-Content "$commandsDir\spec-check.md"   -Encoding UTF8
     Write-Host "[OK] /spec -> /spec-review -> /spec-check installed"
+
+    # ── Install SessionStart hook ─────────────────────────────────────────
+    $hooksDir = Join-Path $claudeDir "spec-first"
+    New-Item -ItemType Directory -Force -Path $hooksDir | Out-Null
+
+    (Invoke-WebRequest "$REPO/hooks/session-start" -UseBasicParsing).Content | Set-Content "$hooksDir\session-start" -Encoding UTF8
+    (Invoke-WebRequest "$REPO/hooks/run-hook.cmd"  -UseBasicParsing).Content | Set-Content "$hooksDir\run-hook.cmd"  -Encoding UTF8
+
+    # Register hook in .claude/settings.json (merge safely)
+    $settingsFile = Join-Path $claudeDir "settings.json"
+    $hookCmd = ".claude/spec-first/run-hook.cmd session-start"
+
+    $settings = @{}
+    if (Test-Path $settingsFile) {
+        try { $settings = Get-Content $settingsFile -Raw | ConvertFrom-Json -AsHashtable } catch { $settings = @{} }
+    }
+    if (-not $settings.ContainsKey("hooks"))          { $settings["hooks"] = @{} }
+    if (-not $settings["hooks"].ContainsKey("SessionStart")) { $settings["hooks"]["SessionStart"] = @() }
+
+    $alreadyRegistered = $settings["hooks"]["SessionStart"] | Where-Object { $_ -match "spec-first" }
+    if (-not $alreadyRegistered) {
+        $settings["hooks"]["SessionStart"] += @{ hooks = @(@{ type = "command"; command = $hookCmd }) }
+        $settings | ConvertTo-Json -Depth 10 | Set-Content $settingsFile -Encoding UTF8
+        Write-Host "[OK] SessionStart hook registered in .claude/settings.json"
+    } else {
+        Write-Host "[OK] SessionStart hook already registered (skipping)"
+    }
 }
 
 # ── Done ───────────────────────────────────────────────────────────────────
@@ -101,11 +128,14 @@ Write-Host "  3. Your AI will ask up to 3 clarifying questions"
 Write-Host "  4. Then write a spec file in specs/ -- no code yet"
 Write-Host "  5. Review the spec, then open a new session to build"
 Write-Host ""
+Write-Host "  Cross-session memory: append project learnings to KNOWLEDGE.md"
+Write-Host ""
 Write-Host "  Files installed:"
 Write-Host "    CLAUDE.md (or your AI context file) -- methodology loaded"
 Write-Host "    spec.md                             -- spec template"
 Write-Host "    review.md                           -- code review checklist"
 Write-Host "    specs/                              -- your specs go here"
+Write-Host "    .claude/spec-first/session-start    -- auto-inject hook"
 Write-Host ""
 Write-Host "  Not sure where to start? Read README.md"
 Write-Host ""
