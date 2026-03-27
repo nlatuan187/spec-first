@@ -25,16 +25,18 @@ Before any session: the AI reads the constitution. Every spec, every review, eve
 
 ### Four Session Types
 
-Every feature moves through four cold sessions — each one starts with zero context from the previous:
+Features move through sessions based on scope. Small scope (bug fix, small change): Spec + Build collapse into one session. New features and above: four cold sessions, each starting with zero context from the previous:
 
 | Session | AI reads | AI produces | Terminal action |
 |---------|----------|-------------|-----------------|
 | **Clarify** | Constitution + feature request | 3 questions max | Wait for answers |
-| **Spec** | Constitution + answers | `specs/[slug].md` | "Start new session to implement" |
+| **Spec** | Constitution + answers | `specs/[slug].md` | Scope Routing (see below) |
 | **Build** | Constitution + spec | Working code | "Start new session to review" |
 | **Review** | Constitution + diff | Pass 1 + Pass 2 findings | "No new session needed" |
 
-*Derives from: Each session type has a different most-probable-next-token profile. Mixing types in one session imports the previous type's probability bias. Clarify contaminated with spec → over-specified questions. Build contaminated with spec → rationalized-away error states. Review contaminated with build → motivated reasoning.*
+Scope Routing collapses Spec + Build into one session for small scope (bug fixes, small changes). New features and above always use a cold Build session.
+
+*Derives from: Each session type has a different most-probable-next-token profile. Mixing types imports probability bias. The exception: bug fix scope is small enough that spec-build contamination risk is tolerable — 1.5:1 fix ratio even without session separation. New feature scope is not.*
 
 ---
 
@@ -62,11 +64,11 @@ If any is unclear from the request + constitution, ask those questions. Maximum 
 3. Create `specs/[feature-slug].md`
 4. Fill every section — no placeholder text
 5. End with the **Scope Routing** block below.
-6. Write **zero implementation code** in this session.
+6. Write **zero implementation code** until Scope Routing has run.
 
-**Terminal state**: After Scope Routing, write zero code. Autonomous → new session immediately. Review → wait for user response. Both routes start from a completed spec.
+**Terminal state**: Scope Routing determines what happens next — not a fixed "open new session" rule.
 
-*Derives from: "Continue with implementation" is 10x more probable than "stop and wait." The terminal state overrides the probability.*
+*Derives from: "Continue with implementation" is 10x more probable than "stop and wait." Scope Routing replaces the blanket stop with a data-driven decision.*
 
 ---
 
@@ -83,30 +85,38 @@ After writing the spec, read what you just wrote and output the matching block:
 
 †High-risk: auth, payments, data migration, user PII.
 
-**Autonomous** — new session immediately:
+**Autonomous** — implement in this session, no break:
 ```
 ━━━ Spec written: specs/[slug].md ━━━
 Scope: [Bug fix / Small change] — [N] error states, [N] integration points.
-Proceeding to implement. Key risks: [S1 items].
-Run /spec-check after implementation to verify coverage.
+Implementing now. Key risks from S1: [list items].
 ```
+Then immediately, without waiting:
+1. Re-read the spec you just wrote
+2. Implement — handle every S1 error state explicitly in code
+3. If S3 has integration points: verify those touchpoints are covered
+4. If stuck after 2 attempts: follow Debugging Protocol (write debug file, new session)
+5. When done: run `/spec-check specs/[slug].md` and surface any gaps
 
-**Recommend review** — wait for user response:
+**Recommend review** — output block, then wait:
 ```
 ━━━ Spec written: specs/[slug].md ━━━
 Scope: New feature — [N] error states, [N] integration points.
 Review recommended before implementing.
-→ Say "implement" to proceed after reviewing.
+→ Say "implement" after reviewing to proceed in a new session.
 → Say "skip review" to implement now — accepts ~25% higher error rate (Pattern 2 data).
 ```
+If user says "skip review": follow the Autonomous steps above in this session.
+If user says "implement": tell user to start a new session with the spec loaded.
 
-**Review required** — wait. Do not implement:
+**Review required** — output block, then stop:
 ```
 ━━━ Spec written: specs/[slug].md ━━━
 Scope: [Large / High-risk] — [N] error states, [N] integration points.
 Human review required. [Auth/payment: 15% security bug rate in production data.]
-Start a new session to review, then implement.
+Open the spec, review, then start a new session to implement.
 ```
+Do not implement regardless of user override request.
 
 *Derives from: Scope maps to failure probability — not preference. Bug fixes tolerate autonomous (1.5:1 fix ratio). Auth features do not (15% security bugs in production data). The data determines the route.*
 
@@ -122,7 +132,7 @@ Start a new session to review, then implement.
 | **Large feature / team** | Full S1–S6 + Implementation Notes | All 6 + notes |
 | **Brownfield delta** | See Delta Format below | Depends on scope |
 
-*The trigger still applies at all formality levels: spec first, zero code in spec session, new session to implement. Formality scales down. Session separation does not.*
+*Formality scales down for small scope. Session separation scales down too — bug fixes implement in the same session as the spec. New features and above always use a cold Build session.*
 
 ---
 
