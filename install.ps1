@@ -1,7 +1,7 @@
 # spec-first installer for Windows (PowerShell)
 #
 # Usage (one-liner from any project directory):
-#   iwr -useb https://raw.githubusercontent.com/nlatuan187/spec-first/main/install.ps1 | iex
+#   iwr -useb https://raw.githubusercontent.com/nlatuan187/spec-first/master/install.ps1 | iex
 #
 # What it does:
 #   1. Detects your AI tool and appends snippet.md to the right context file
@@ -10,7 +10,7 @@
 #   4. Installs /spec /spec-review /spec-check for Claude Code (if detected)
 
 $ErrorActionPreference = "Stop"
-$REPO = "https://raw.githubusercontent.com/nlatuan187/spec-first/main"
+$REPO = "https://raw.githubusercontent.com/nlatuan187/spec-first/master"
 $PROJECT_DIR = (Get-Location).Path
 
 # ── Detect which context file to use ───────────────────────────────────────

@@ -227,7 +227,7 @@ mkdir -p .claude/commands
 cp path/to/spec-first/advanced/skills/spec/SKILL.md .claude/commands/spec.md
 
 # Or fetch directly:
-curl -fsSL https://raw.githubusercontent.com/nlatuan187/spec-first/main/advanced/skills/spec/SKILL.md \
+curl -fsSL https://raw.githubusercontent.com/nlatuan187/spec-first/master/advanced/skills/spec/SKILL.md \
   -o .claude/commands/spec.md
 ```
 

@@ -278,6 +278,6 @@ mkdir -p .claude/commands
 cp spec-first/advanced/skills/spec-review/SKILL.md .claude/commands/spec-review.md
 
 # Or fetch directly
-curl -fsSL https://raw.githubusercontent.com/nlatuan187/spec-first/main/advanced/skills/spec-review/SKILL.md \
+curl -fsSL https://raw.githubusercontent.com/nlatuan187/spec-first/master/advanced/skills/spec-review/SKILL.md \
   -o .claude/commands/spec-review.md
 ```
