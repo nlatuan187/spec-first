@@ -137,6 +137,8 @@ S6: Manual QA Scenarios
 
 The `.mdc` format supports: `alwaysApply: true` (all sessions), `alwaysApply: false` with glob-scoped activation (only when editing spec files), or manual `@rule-name` invocation.
 
+**"New session" in Cursor** = close the chat panel, open a new Composer (⌘+I → New Conversation). Each Composer starts with zero context from the previous one.
+
 ---
 
 ## Windsurf
@@ -168,6 +170,8 @@ List all scenarios where the feature can fail...
 ## Step 7: Save
 Write to specs/[feature-slug].md
 ```
+
+**"New session" in Windsurf** = click the new chat icon (top-right of Cascade panel). Each Cascade chat starts cold.
 
 ---
 

@@ -65,6 +65,8 @@ The 5 failure modes (happy-path bias, isolation blindness, etc.) exist at every 
 
 ## First 5 minutes
 
+**If your project has no `CLAUDE.md` yet**: open a new session and say: `"Create a minimal project constitution for this project. Tech stack: [X]. Key file paths: [Y]. Auth method: [Z]. Save to CLAUDE.md."` — 2 minutes, done once.
+
 After install, open a new AI session in your project. Say: `build [feature name]`.
 
 Your AI will:
