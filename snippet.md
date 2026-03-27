@@ -84,6 +84,7 @@ After writing the spec, read what you just wrote and output the matching block:
 | any | any | High-risk† | **Review required** |
 
 †High-risk: auth, payments, data migration, user PII.
+Autonomous requires **both** thresholds met (AND). All other routes trigger on **either** column alone (OR).
 
 **Autonomous** — implement in this session, no break:
 ```

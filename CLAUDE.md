@@ -17,6 +17,7 @@ spec-first/
     ├── INTEGRATIONS.md
     ├── skills/
     │   ├── spec/SKILL.md        ← /spec slash command for Claude Code
+    │   ├── spec-review/SKILL.md ← /spec-review slash command
     │   └── spec-check/SKILL.md  ← /spec-check slash command
     ├── deep-dives/              ← ai-limitations.md, worktree-workflow.md, etc.
     ├── during-coding/           ← implementation-brief.md
@@ -29,7 +30,7 @@ spec-first/
 1. **No application code** — methodology + templates only. No TypeScript or Python except install.sh.
 2. **Markdown quality** — every file must be directly usable. No placeholder text.
 3. **Evidence-based** — claims in README.md and ETHOS.md reference real data. Do not invent metrics.
-4. **Tool-agnostic** — CLAUDE-snippet.md works on Cursor, Windsurf, Copilot, Claude Code. Do not make it Claude Code-specific.
+4. **Tool-agnostic** — snippet.md works on Cursor, Windsurf, Copilot, Claude Code. Do not make it Claude Code-specific.
 5. **snippet.md is the core** — any methodology change goes there first, then propagates to advanced/ files.
 
 ## Consistent numbers (use these everywhere)

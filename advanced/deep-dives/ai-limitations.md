@@ -140,7 +140,7 @@ Every tool has a way to create a cold session:
 The review prompt is always the same:
 ```
 git diff origin/main
-Apply review-checklist at spec-first/templates/review-checklist.md
+Apply review-checklist at spec-first/advanced/templates/review-checklist.md
 Output Pass 1 (Critical) first.
 ```
 

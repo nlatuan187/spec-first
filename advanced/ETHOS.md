@@ -59,7 +59,7 @@ The spec is not documentation. The spec is the primary act of engineering. Writi
 
 ---
 
-## Five Principles
+## Six Principles
 
 ### 1. Specs Compound
 

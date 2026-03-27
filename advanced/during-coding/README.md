@@ -3,7 +3,7 @@
 The spec-first methodology has three moments where AI needs structure:
 
 ```
-BEFORE coding   →  spec-skill/SKILL.md    →  /spec        (generate S1-S6 spec)
+BEFORE coding   →  advanced/skills/spec/SKILL.md    →  /spec        (generate S1-S6 spec)
 DURING coding   →  this folder            →  /spec-check  (verify coverage)
 AFTER coding    →  templates/review-*     →  /review      (security + quality)
 ```
@@ -32,7 +32,7 @@ You write a spec. You implement it. But:
 
 ```bash
 # Install as Claude Code slash command
-cp spec-first/during-coding/spec-check/SKILL.md .claude/commands/spec-check.md
+cp spec-first/advanced/skills/spec-check/SKILL.md .claude/commands/spec-check.md
 
 # Use during or after implementation
 /spec-check specs/user-authentication.md

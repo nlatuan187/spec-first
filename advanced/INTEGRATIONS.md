@@ -11,7 +11,7 @@ The four-phase cycle (Spec → Generate → Review → Ship), the S1-S6 spec tem
 | Tool / Method | What It Does | spec-first Integration |
 |---------------|-------------|------------------------|
 | Claude Code | AI coding agent | Native — CLAUDE.md + /commands |
-| gstack | Runtime slash commands (review, ship, QA) | Plugin — copy `spec-skill/SKILL.md` |
+| gstack | Runtime slash commands (review, ship, QA) | Plugin — copy `advanced/skills/spec/SKILL.md` |
 | Kiro IDE (AWS) | Spec-driven agentic IDE | `.kiro/steering/spec-conventions.md` |
 | Cursor | AI code editor | `.cursorrules` or `.cursor/rules/*.mdc` |
 | Windsurf | AI code editor | `.windsurfrules` + `workflows/spec.md` |
@@ -30,11 +30,11 @@ The four-phase cycle (Spec → Generate → Review → Ship), the S1-S6 spec tem
 All examples in this repo use Claude Code. It is the primary target because it natively supports persistent context files (`CLAUDE.md`), session management, and multi-file implementation.
 
 **Setup:**
-1. `cp spec-first/templates/CLAUDE.md ./CLAUDE.md` — customize with your stack
-2. `cp spec-first/templates/feature-spec.md ./specs/` — write specs here
+1. `cp spec-first/advanced/templates/CLAUDE.md ./CLAUDE.md` — customize with your stack
+2. `cp spec-first/advanced/templates/feature-spec.md ./specs/` — write specs here
 3. Feed specs: `Read CLAUDE.md, then implement specs/feature.md`
 
-**Slash command**: Copy `spec-skill/SKILL.md` to `.claude/commands/spec.md` to get a `/spec` command that generates S1-S6 specs automatically.
+**Slash command**: Copy `advanced/skills/spec/SKILL.md` to `.claude/commands/spec.md` to get a `/spec` command that generates S1-S6 specs automatically.
 
 ---
 
@@ -56,13 +56,13 @@ gstack:                                       → REVIEW → SHIP (30-60 min tot
 ```bash
 # After installing gstack
 mkdir -p ~/.claude/skills/spec
-cp spec-first/spec-skill/SKILL.md ~/.claude/skills/spec/SKILL.md
+cp spec-first/advanced/skills/spec/SKILL.md ~/.claude/skills/spec/SKILL.md
 
 # Available in any Claude Code session
 /spec User Authentication Flow
 ```
 
-`spec-skill/SKILL.md` follows the [Anthropic Agent Skills](https://agentskills.io) open standard — YAML frontmatter + `{{PREAMBLE}}` placeholder + markdown instructions. It works as-is inside gstack's skill loader.
+`advanced/skills/spec/SKILL.md` follows the [Anthropic Agent Skills](https://agentskills.io) open standard — YAML frontmatter + `{{PREAMBLE}}` placeholder + markdown instructions. It works as-is inside gstack's skill loader.
 
 ---
 
@@ -112,7 +112,7 @@ Cursor supports two context formats:
 
 **Legacy (works everywhere):**
 ```bash
-cp spec-first/templates/CLAUDE.md .cursorrules
+cp spec-first/advanced/templates/CLAUDE.md .cursorrules
 ```
 
 **New format (`.cursor/rules/*.mdc`) — scoped and conditionally loaded:**
@@ -147,7 +147,7 @@ Windsurf supports context rules (always-on) and workflows (step-by-step slash co
 
 **Context (`.windsurfrules`):**
 ```bash
-cp spec-first/templates/CLAUDE.md .windsurfrules
+cp spec-first/advanced/templates/CLAUDE.md .windsurfrules
 ```
 
 **Workflow (`.windsurf/workflows/spec.md`)** — invoke with `/spec`:
@@ -179,13 +179,13 @@ Write to specs/[feature-slug].md
 
 These tools read `AGENTS.md` for project context:
 ```bash
-cp spec-first/templates/CLAUDE.md AGENTS.md
+cp spec-first/advanced/templates/CLAUDE.md AGENTS.md
 ```
 
 **GitHub Copilot Chat** reads `.github/copilot-instructions.md`:
 ```bash
 mkdir -p .github
-cp spec-first/templates/CLAUDE.md .github/copilot-instructions.md
+cp spec-first/advanced/templates/CLAUDE.md .github/copilot-instructions.md
 ```
 
 Feature specs work as-is — pass `specs/feature.md` as context in prompts.
@@ -255,7 +255,7 @@ Open a new Claude Code session (separate terminal or tab). Do not carry over any
 Read CLAUDE.md, then:
 git diff origin/main
 
-Apply the review checklist at templates/review-checklist.md.
+Apply the review checklist at advanced/templates/review-checklist.md.
 Output Pass 1 (Critical) first. Then Pass 2 (Informational).
 Format: [file:line] Problem → recommended fix
 ```
@@ -273,7 +273,7 @@ If you have gstack installed, `/review` runs the full checklist automatically �
 | Tool | Stars | Has Native Spec Format? | S1-S6 Integration | Config File | Effort |
 |------|-------|:---:|-------------------|-------------|:------:|
 | **Claude Code** | — | Partial (CLAUDE.md) | Native — SKILL.md + /commands | `.claude/skills/spec/SKILL.md` | Low |
-| **gstack** | 47K | Skill-based | Install `spec-skill/SKILL.md` | `~/.claude/skills/spec/` | Low |
+| **gstack** | 47K | Skill-based | Install `advanced/skills/spec/SKILL.md` | `~/.claude/skills/spec/` | Low |
 | **Kiro IDE** | — | Yes (EARS notation) | `.kiro/steering/spec-conventions.md` | `.kiro/steering/` | Low |
 | **GitHub Spec-Kit** | 72K | Yes — spec/plan/tasks | Extend `.specify/templates/` | `.specify/templates/spec-template.md` | Low |
 | **Cursor** | 1M+ users | Rules (.mdc) | `.cursor/rules/spec-first.mdc` | `.cursor/rules/` | Very Low |

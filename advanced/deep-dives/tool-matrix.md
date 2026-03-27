@@ -149,14 +149,14 @@ Tools we evaluated and chose NOT to use:
 npm install -g @anthropic-ai/claude-code
 
 # 2. Add system context
-cp spec-first/templates/CLAUDE.md ./CLAUDE.md
+cp spec-first/advanced/templates/CLAUDE.md ./CLAUDE.md
 # → Customize for your project
 
 # 3. Add review config
-cp spec-first/templates/.coderabbit.yaml ./.coderabbit.yaml
+cp spec-first/advanced/templates/.coderabbit.yaml ./.coderabbit.yaml
 
 # 4. Write first spec
-cp spec-first/templates/feature-spec.md ./specs/my-feature.md
+cp spec-first/advanced/templates/feature-spec.md ./specs/my-feature.md
 # → Fill in all 6 sections
 
 # 5. Generate
