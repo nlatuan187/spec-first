@@ -94,12 +94,12 @@ else
 fi
 echo "✓ review.md → project root"
 
-# ── Step 5: Create specs/ ──────────────────────────────────────────────────
+# ── Step 4: Create specs/ ──────────────────────────────────────────────────
 
 mkdir -p "$PROJECT_DIR/specs"
 echo "✓ specs/ ready"
 
-# ── Step 6: Install Claude Code slash commands + hooks (if detected) ───────
+# ── Step 5: Install Claude Code slash commands + hooks (if detected) ───────
 
 CLAUDE_DIR="$PROJECT_DIR/.claude"
 CLAUDE_COMMANDS="$CLAUDE_DIR/commands"
@@ -194,10 +194,23 @@ fi
 echo ""
 echo "Done. Your AI is now spec-first."
 echo ""
-echo "  Start a new session in this project."
-echo "  Say: \"build [feature]\""
-echo "  AI will write the spec before any code."
+echo "  Next steps:"
+echo "  1. Open your AI tool (Claude Code, Cursor, Windsurf, etc.) in this folder"
+echo "  2. Type: build [describe what you want to create]"
+echo "  3. Your AI will ask up to 3 clarifying questions"
+echo "  4. Then write a spec file in specs/ -- no code yet"
+echo "  5. Review the spec, then open a new session to build"
 echo ""
 echo "  Cross-session memory: append project learnings to KNOWLEDGE.md"
-echo "  Ecosystem pairs → advanced/INTEGRATIONS.md"
+echo ""
+echo "  Files installed:"
+echo "    $CONTEXT_FILE (AI context file)     -- methodology loaded"
+echo "    spec.md                             -- spec template"
+echo "    review.md                           -- code review checklist"
+echo "    specs/                              -- your specs go here"
+if [ -d "$CLAUDE_DIR" ] || [ "$CONTEXT_FILE" = "CLAUDE.md" ]; then
+echo "    .claude/spec-first/session-start    -- auto-inject hook"
+fi
+echo ""
+echo "  Not sure where to start? Read README.md"
 echo ""

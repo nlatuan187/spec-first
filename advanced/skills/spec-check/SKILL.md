@@ -166,5 +166,5 @@ Minor gaps (fix before merge): [list S4/S6 gaps]
 ```bash
 # Copy as a Claude Code slash command
 mkdir -p .claude/commands
-cp spec-first/during-coding/spec-check/SKILL.md .claude/commands/spec-check.md
+cp spec-first/advanced/skills/spec-check/SKILL.md .claude/commands/spec-check.md
 ```

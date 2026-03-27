@@ -177,33 +177,34 @@ The most commonly skipped and most expensive sections are S1 (Error States) and 
 
 3. Write the spec to `specs/[slug].md`
 
-4. Report to the user:
+4. Apply **Scope Routing** — count S1 error state rows and S3 integration point rows in the spec you just wrote, then output the matching route:
+
+   **If S1 ≤ 3 AND S3 ≤ 1** (bug fix / small change → Autonomous):
    ```
    ✓ Spec written: specs/[slug].md
-
-   ─── STOP HERE ────────────────────────────────────────────────────
-   This session's job is done. END THIS SESSION before implementing.
-
-   Why: Implementation in the same session as spec-writing produces
-   biased output — the AI "knows" the spec and skips error states it
-   just defined. A fresh session reads the spec cold.
-
-   Next steps (each in a NEW session):
-
-   1. [Optional] Review spec:
-      New session → "Read CLAUDE.md, review specs/[slug].md for
-      completeness — S1 error states, S3 integration, S6 QA"
-
-   2. Implement:
-      New session → "Read CLAUDE.md, then implement specs/[slug].md"
-
-   3. Verify coverage:
-      /spec-check specs/[slug].md
-
-   4. Review code:
-      New cold session → "git diff origin/main, apply review-checklist"
-   ──────────────────────────────────────────────────────────────────
+   Scope: [Bug fix / Small change] — [N] error states, [N] integration points.
+   Implementing now. Key risks from S1: [list top items].
    ```
+   Then implement in this session — handle every S1 error state in code. When done, run `/spec-check specs/[slug].md`.
+
+   **If S1 4–7 OR S3 2–3** (new feature → Recommend review):
+   ```
+   ✓ Spec written: specs/[slug].md
+   Scope: New feature — [N] error states, [N] integration points.
+   Review recommended before implementing.
+   → Run /spec-review specs/[slug].md in a new session.
+   → Say "skip review" to implement now.
+   ```
+
+   **If S1 ≥ 8 OR S3 ≥ 4 OR high-risk (auth/payments/PII)** (Review required):
+   ```
+   ✓ Spec written: specs/[slug].md
+   Scope: [Large / High-risk] — [N] error states, [N] integration points.
+   Human review required.
+   → Run /spec-review specs/[slug].md — must return APPROVED.
+   → A human must read the spec before implementing.
+   ```
+   Do not implement regardless of user request.
 
 ---
 
