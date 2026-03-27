@@ -67,6 +67,22 @@ No commands. No orchestration. No new tools.
 
 ---
 
+## Already mid-implementation?
+
+Don't start over. Write a retroactive spec in a new session:
+
+> "Write a retroactive spec for [feature]. Scan what exists, list what's broken (S1 format), find all touchpoints (grep S3), define done (S6 scenarios). Follow the Formality Dial for depth — S1+S3+S6 for small changes, full S1–S6 for new features. Save to `specs/[slug]-retro.md`"
+
+Then run `/spec-check specs/[slug]-retro.md` — gaps appear immediately.
+
+- **S3 grep** finds every integration your memory missed
+- **S1** forces cataloging what's *actually* broken (not what you think is broken)
+- **S6** defines "done" so you stop adding scope
+
+For each gap `/spec-check` surfaces: open a new session, load the retro spec, fix the gap. No rewrite needed — just fill what's missing.
+
+---
+
 ## What it solves
 
 | Failure mode | Root cause | Fix |
