@@ -9,6 +9,10 @@ description: |
   against actual code. Use after implementing a feature, or when asked to
   "check against spec", "verify spec coverage", "did I cover everything",
   or "spec-check [feature]". Returns ✅/⚠️/❌ per section with specific gaps.
+
+  Also the required verification step after Scope Routing autonomous mode —
+  human spec review was skipped, /spec-check is the automated substitute.
+  Run before shipping any autonomous implementation.
 effort: medium
 allowed-tools:
   - Read
