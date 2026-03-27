@@ -61,16 +61,54 @@ If any is unclear from the request + constitution, ask those questions. Maximum 
 2. Choose spec format based on scope (see Formality Dial below)
 3. Create `specs/[feature-slug].md`
 4. Fill every section — no placeholder text
-5. End with exactly:
-   ```
-   ━━━ Spec written: specs/[slug].md ━━━
-   Start a NEW session to implement. Do not continue here.
-   ```
+5. End with the **Scope Routing** block below.
 6. Write **zero implementation code** in this session.
 
-**Terminal state**: After writing the spec, the ONLY valid next action is opening a new session.
+**Terminal state**: After Scope Routing, write zero code. Autonomous → new session immediately. Review → wait for user response. Both routes start from a completed spec.
 
 *Derives from: "Continue with implementation" is 10x more probable than "stop and wait." The terminal state overrides the probability.*
+
+---
+
+### Scope Routing — runs after every spec
+
+After writing the spec, read what you just wrote and output the matching block:
+
+| S1 error states | S3 integration points | Category | Route |
+|---|---|---|---|
+| ≤ 3 | ≤ 1 | Standard | **Autonomous** |
+| 4–7 | 2–3 | Standard | **Recommend review** |
+| ≥ 8 | ≥ 4 | Any | **Review required** |
+| any | any | High-risk† | **Review required** |
+
+†High-risk: auth, payments, data migration, user PII.
+
+**Autonomous** — new session immediately:
+```
+━━━ Spec written: specs/[slug].md ━━━
+Scope: [Bug fix / Small change] — [N] error states, [N] integration points.
+Proceeding to implement. Key risks: [S1 items].
+Run /spec-check after implementation to verify coverage.
+```
+
+**Recommend review** — wait for user response:
+```
+━━━ Spec written: specs/[slug].md ━━━
+Scope: New feature — [N] error states, [N] integration points.
+Review recommended before implementing.
+→ Say "implement" to proceed after reviewing.
+→ Say "skip review" to implement now — accepts ~25% higher error rate (Pattern 2 data).
+```
+
+**Review required** — wait. Do not implement:
+```
+━━━ Spec written: specs/[slug].md ━━━
+Scope: [Large / High-risk] — [N] error states, [N] integration points.
+Human review required. [Auth/payment: 15% security bug rate in production data.]
+Start a new session to review, then implement.
+```
+
+*Derives from: Scope maps to failure probability — not preference. Bug fixes tolerate autonomous (1.5:1 fix ratio). Auth features do not (15% security bugs in production data). The data determines the route.*
 
 ---
 

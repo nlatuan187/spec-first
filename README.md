@@ -113,6 +113,8 @@ Two developers. 24 days. 107 API routes, 19 DB tables, 119 React components. 626
 
 S1 + S3 alone prevent 65% of fixes. Every other tool in this space derives these rules from theory. These come from the git log.
 
+The same data determines when human review is required — and when autonomous is safe. Bug fixes at 1.5:1 fix ratio: autonomous. Auth features at 15% security bug rate: human review required. Not preference. Data.
+
 ---
 
 ## Files

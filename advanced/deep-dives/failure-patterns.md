@@ -179,6 +179,24 @@ Over 24 days, we hit context window limits 113 times (~5 per day). Each time req
 
 ---
 
+## Scope Routing Threshold Derivation
+
+snippet.md's Scope Routing uses these thresholds to determine when human review is required:
+
+| Threshold | Value | Derived from |
+|---|---|---|
+| Autonomous safe: S1 ≤ 3 | Bug fixes average 1–3 error states | Bug commits in this dataset: fix ratio 1.5:1 even without review |
+| Autonomous safe: S3 ≤ 1 | Bug fixes touch 0–1 integration points | Low S3 = isolated change, integration blindness risk minimal |
+| Review recommended: S1 4–7 or S3 2–3 | New feature zone — Pattern 1 (40%) becomes likely | Integration failures spike with S3 ≥ 2 |
+| Review required: S1 ≥ 8 or S3 ≥ 4 | Large feature zone — all 5 patterns in play | Full S1–S6 review needed |
+| Review required: auth/payment/PII | Pattern 3 data: 15% of fixes were security bugs | Security bugs concentrate in auth surfaces |
+
+**These thresholds are calibrated for this dataset.** If your codebase has a different risk profile (e.g., heavy external API integrations → adjust S3 threshold down; pure internal tools with no auth → adjust security override), update the thresholds in your CLAUDE.md constitution.
+
+Competitors cannot copy these thresholds — the numbers require production data to justify. Opinion-based thresholds are arbitrary. Data-based thresholds are defensible.
+
+---
+
 ## Failure Prevention Checklist
 
 Before feeding a spec to AI, verify:

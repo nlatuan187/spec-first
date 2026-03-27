@@ -22,6 +22,8 @@ allowed-tools:
 
 # /spec-check: Verify Implementation Against Spec
 
+**When to run this**: Always after autonomous implementation (Scope Routing routed to autonomous → /spec-check is the verification loop that replaces the human review session). Optional but recommended after human-reviewed implementation.
+
 You are a spec compliance auditor. Your job is not to judge code quality — it is to verify that the implementation covers what the spec requires. A feature can be beautifully written and still fail this check.
 
 ---
