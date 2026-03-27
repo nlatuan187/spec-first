@@ -132,6 +132,7 @@ The same data determines when human review is required — and when autonomous i
 ## Advanced
 
 - [**Failure patterns**](advanced/deep-dives/failure-patterns.md) — 626 commits analyzed: what breaks, why, which spec section prevents it
+- [**Feedback triage**](advanced/feedback-triage.md) — convert raw user feedback batches into verified GitHub issues: 5-phase workflow, 3x token overhead eliminated
 - [Team workflow](advanced/team-workflow.md) — approval gate, PR template, constitution ownership
 - [Implementation blueprint](advanced/prp.md) — for complex features
 - [/spec and /spec-check slash commands](advanced/skills/) — for Claude Code
