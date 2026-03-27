@@ -2,7 +2,9 @@
 
 **Spec discipline for AI coding. One file. Works with any AI tool.**
 
-Two developers. 24 days. Fix:feat ratio: 5:1 → **1.5:1**. S1 + S3 alone prevented **65% of review failures**. These aren't projections — they're from [626 production commits](#evidence).
+> **A spec is a short document you write _before_ coding** — it lists what can break, who's affected, and what success looks like. spec-first makes your AI write this document first, before touching a single line of code.
+
+Two developers. 24 days. Fix:feat ratio: 5:1 → **1.5:1**. Error-state checks (S1) + integration checks (S3) alone prevented **65% of review failures**. These aren't projections — they're from [626 production commits](#evidence).
 
 ---
 
@@ -83,15 +85,15 @@ No commands. No orchestration. No new tools.
 
 ## Already mid-implementation?
 
-Don't start over. Write a retroactive spec in a new session:
+Don't start over. Open a new AI session and say:
 
-> "Write a retroactive spec for [feature]. Scan what exists, list what's broken (S1 format), find all touchpoints (grep S3), define done (S6 scenarios). Follow the Formality Dial for depth — S1+S3+S6 for small changes, full S1–S6 for new features. Save to `specs/[slug]-retro.md`"
+> "Write a retroactive spec for [feature]. Scan what exists, list what's broken (error states first), find all touchpoints (grep the codebase), define done (manual QA scenarios). Follow the Formality Dial for depth — error states + integrations + QA for small changes, full spec for new features. Save to `specs/[slug]-retro.md`"
 
 Then run `/spec-check specs/[slug]-retro.md` — gaps appear immediately.
 
-- **S3 grep** finds every integration your memory missed
-- **S1** forces cataloging what's *actually* broken (not what you think is broken)
-- **S6** defines "done" so you stop adding scope
+- **Codebase scan** finds every integration your memory missed
+- **Error states first** forces cataloging what's *actually* broken (not what you think is broken)
+- **QA scenarios** defines "done" so you stop adding scope
 
 For each gap `/spec-check` surfaces: open a new session, load the retro spec, fix the gap. No rewrite needed — just fill what's missing.
 
