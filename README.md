@@ -151,7 +151,8 @@ The same data determines when human review is required — and when autonomous i
 | [`spec.md`](spec.md) | Spec template — full S1–S6, Delta, and Bug formats. |
 | [`review.md`](review.md) | Two-pass code review checklist. |
 | [`install.sh`](install.sh) | Auto-detect + append installer. |
-| [`advanced/`](advanced/) | Team workflow, implementation blueprint, /spec + /spec-check skills. |
+| [`advanced/examples/`](advanced/examples/) | Real production specs (anonymized) — see what a complete spec looks like before writing your first one. |
+| [`advanced/`](advanced/) | Team workflow, calibration protocol, /spec /spec-review /spec-check skills. |
 
 ---
 
