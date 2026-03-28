@@ -42,7 +42,22 @@ Scope Routing collapses Spec + Build into one session for small scope (bug fixes
 
 ### TRIGGER: When asked to build, implement, create, add, fix, refactor, or debug
 
-**Session 1 — Clarify** (skip if feature is unambiguous):
+**Step 0 — Route the intent** (before anything else):
+
+| User intent | Spec format | Session flow |
+|---|---|---|
+| "fix", "broken", "bug", "error", "crash" | Bug Format | Autonomous (same session) |
+| "refactor", "reorganize", "move", "split", "rename" | Refactor Format | Autonomous (same session) |
+| "change", "update", "modify" existing behavior | Delta Format | Autonomous (same session) |
+| "build", "add", "create", "implement" something new | Full S1–S6 | Scope Routing decides |
+| "explore", "spike", "investigate", "not sure yet" | Spike — explore first, spec the chosen approach after | Same session |
+| "production down", "urgent", "hotfix" | Fix first → retroactive bug spec after | Same session |
+
+If the request doesn't clearly match one row, default to Full S1–S6 and let Scope Routing decide the session flow.
+
+*Derives from: Without explicit routing, AI defaults to Full S1–S6 for everything — the most probable format, not the correct one. A bug fix doesn't need S2/S4/S5. A refactor doesn't need S1. Routing prevents over-speccing small tasks and under-speccing large ones.*
+
+**Step 1 — Clarify** (skip if intent is unambiguous):
 
 Read the constitution. Then check: can you answer all three?
 - What is the exact trigger (user action or system event)?
@@ -57,7 +72,7 @@ If any is unclear from the request + constitution, ask those questions. Maximum 
 
 ---
 
-**Session 2 — Spec:**
+**Step 2 — Spec:**
 
 1. Say "Writing spec first…"
 2. Choose spec format based on scope (see Formality Dial below)
@@ -131,6 +146,7 @@ Do not implement regardless of user override request.
 |---|---|---|
 | **Bug fix** | `[Bug] title` + what breaks + expected behavior | S1 (error states) + S6 (regression) |
 | **Small change** (< 1 day) | S1 + S3 + S6 | 3 sections |
+| **Spike / Exploration** | Explore freely → spec the chosen approach after | S1 + S3 |
 | **Refactor** | See Refactor Format below | S3 (dependencies) + S6 (regression) |
 | **New feature** | Full S1–S6 | All 6 sections |
 | **Large feature / team** | Full S1–S6 + Implementation Notes | All 6 + notes |
@@ -326,18 +342,9 @@ Start new session → read constitution + brief → continue.
 
 ### Spec hygiene — keep specs/ useful
 
-Specs accumulate. After 3 months you have 50 files and can't find anything. Maintain:
+Add `Status: Done` to shipped specs and move them to `specs/done/`. When a done spec contradicts current behavior, update or delete it — a stale spec is worse than no spec.
 
-```
-specs/
-├── active/              ← specs currently being built or reviewed
-├── done/                ← shipped, kept for reference
-└── [slug]-retro.md      ← retroactive specs stay at root until resolved
-```
-
-Move specs to `done/` when the feature ships. When a spec in `done/` contradicts current behavior, delete it — a stale spec is worse than no spec.
-
-*Derives from: 50 unorganized files have the same effect as 0 files — the AI can't find the relevant one. Organization is free. Searching through stale specs costs tokens and attention.*
+*Derives from: 50 unorganized files have the same effect as 0 files — AI can't find the relevant one. The rule that matters: done specs can't mislead if they're accurate.*
 
 ---
 
@@ -345,13 +352,13 @@ Move specs to `done/` when the feature ships. When a spec in `done/` contradicts
 
 If your constitution (CLAUDE.md / .cursorrules) exceeds ~200 lines, AI attention to later rules degrades. Prune:
 
-1. **Move stack-specific details** to separate files: `docs/conventions.md`, `docs/security.md`. Reference them: "See docs/conventions.md for full details."
-2. **Delete rules you've internalized** — if the team no longer makes a mistake, the rule preventing it can go.
-3. **Keep the constitution to high-signal rules only** — constraints the AI would violate without being told.
+1. **Move stack-specific details** to separate files: `docs/conventions.md`, `docs/security.md`. Reference them with one line, not inline content.
+2. **Remove rules encoded in linters, type definitions, or CI checks** — those are enforced without AI reading them.
+3. **Keep high-signal rules only** — constraints the AI would violate without being told.
 
-Review quarterly. A bloated constitution defeats its own purpose.
+*snippet.md is ~400 lines — trim it before pasting. Include sections that apply to your team; delete the rest. A constitution with 10 relevant rules outperforms one with 50 diluted by 40 irrelevant ones.*
 
-*Derives from: Same mechanism as context dilution. The constitution is read at the start of every session. At 500 lines, rules at line 400 have measurably lower compliance than rules at line 50.*
+*Derives from: At 500 lines, rules at line 400 have measurably lower compliance than rules at line 50. The constitution read at every session must be worth reading.*
 
 ---
 
@@ -365,6 +372,8 @@ Review quarterly. A bloated constitution defeats its own purpose.
 | "This is just a refactor, not a change" | Refactors without S3 break hidden dependencies. The grep takes 2 minutes. The broken imports take hours. |
 | "Production is on fire, no time for spec" | Fix first. Then write a 5-minute retroactive bug spec — what broke, what you changed, what else could break. The hotfix that causes a second outage costs more than the spec. |
 | "The spec is in my head" | Unwritten specs have no S1. Every bug is an unwritten S1. |
+| "I don't know what I'm building yet" | Spike: explore freely. When approach is chosen, write the spec for that approach — not what you tried. One chosen approach, one spec. |
+| "Requirements changed mid-build, spec is now wrong" | Update the spec first — 5 minutes. Implement from the updated spec. An outdated spec is an unwritten spec. |
 
 ---
 
