@@ -85,7 +85,7 @@ After writing the spec, read what you just wrote and output the matching block:
 | ≥ 8 | ≥ 4 | Any | **Review required** |
 | any | any | High-risk† | **Review required** |
 
-†High-risk: auth, payments, data migration, user PII.
+†High-risk: auth, payments, data migration, user PII, infrastructure-as-code (Terraform/K8s).
 Autonomous requires **both** thresholds met (AND). All other routes trigger on **either** column alone (OR).
 
 **Autonomous** — implement in this session, no break:
