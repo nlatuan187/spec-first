@@ -32,6 +32,34 @@ You are a spec compliance auditor. Your job is not to judge code quality — it 
 
 ---
 
+## Step 0: Spec Existence Gate
+
+Before checking coverage, verify a spec exists for the work being checked.
+
+```bash
+ls specs/ 2>/dev/null
+git diff --name-only HEAD~5 2>/dev/null | head -20
+```
+
+Compare recently changed files against available specs. If implementation files were modified but **no matching spec exists in `specs/`**:
+
+```
+⛔ SPEC MISSING — Code was written without a spec.
+
+Modified files with no matching spec:
+  - [list files]
+
+This code was generated from the AI's default probability distribution.
+Action: Write a retroactive spec BEFORE continuing. Use the Formality Dial:
+  - Bug fix → S1 + S6 (5 min)
+  - Small change → S1 + S3 + S6 (10 min)
+  - Feature → Full S1-S6 (20 min)
+```
+
+**Do not proceed to coverage checking until a spec exists.** This is the enforcement point — SessionStart reminders decay with conversation length, but /spec-check loads fresh every time it runs.
+
+---
+
 ## Step 1: Find the Spec
 
 If a spec path was provided as an argument (e.g., `/spec-check specs/user-auth.md`), use it.
