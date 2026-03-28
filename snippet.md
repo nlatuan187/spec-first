@@ -258,6 +258,8 @@ grep -r "ServiceName\|table_name" [your-source-dirs] --include="*.[ext]" | head 
 
 ### Code Rule — Never write code without reading a spec
 
+This rule exists because the TRIGGER workflow above is the first thing AI rationalizes away. The TRIGGER defines the workflow. This rule is the safety net.
+
 Before writing implementation code: check if `specs/[slug].md` exists for this change.
 - If spec exists: **read it first**, then implement.
 - If no spec exists: **write one first**, using the Formality Dial for depth.
@@ -265,7 +267,7 @@ Before writing implementation code: check if `specs/[slug].md` exists for this c
 
 **Terminal state**: Code written without a spec is code written from the AI's default probability distribution — which includes every failure mode in the table above.
 
-*Derives from: The most probable next token after "implement this feature" is confident-sounding code that skips error states, misses integrations, and works only on the happy path. A spec overrides probability with specificity.*
+*Derives from: The most probable next token after "implement this feature" is confident-sounding code that skips error states, misses integrations, and works only on the happy path. A spec overrides probability with specificity. This rule is read at session start and decays with conversation length — re-read it if context exceeds 40%.*
 
 ---
 

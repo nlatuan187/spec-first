@@ -136,14 +136,13 @@ spec-first writes the plan. These tools execute it. Without the plan, automation
 4. Scope Routing: S1=8, S3=4 → "Review required"
 5. Run /spec-review → APPROVED
 6. New session: "Read specs/user-auth.md, then implement"
-7. superpowers activates → brainstorming skill reads the spec
-8. superpowers dispatches subagents for each S3 integration point
-9. TDD skill writes failing tests from S6 scenarios
-10. Subagents implement, each handling specific S1 error states
-11. /spec-check verifies all S1/S3/S6 items covered
+7. Skip superpowers brainstorming (spec-first already did it)
+8. superpowers' TDD skill writes failing tests from S6 scenarios
+9. superpowers' subagent-driven-development dispatches implementation
+10. /spec-check verifies all S1/S3/S6 items covered
 ```
 
-spec-first ensures the PLAN is complete. superpowers ensures EXECUTION is disciplined. Neither alone achieves both.
+Note: superpowers runs its OWN brainstorming by default. With spec-first, skip brainstorming and use the spec-first spec as the design doc input to `executing-plans` or `subagent-driven-development`.
 
 </details>
 
@@ -154,18 +153,17 @@ spec-first ensures the PLAN is complete. superpowers ensures EXECUTION is discip
 1. Install both: spec-first (curl | sh) + GSD-2 (npm install -g gsd-pi)
 2. Write spec: "build [feature]" → specs/feature.md created
 3. /spec-review → APPROVED
-4. Feed spec to GSD-2: /gsd auto (reads specs/feature.md as input)
-5. GSD-2 runs autonomously:
-   - Plans from spec's S1/S3 → creates milestone with tasks
+4. Start GSD-2: /gsd discuss — paste spec-first's S1-S6 as requirements input
+5. GSD-2 restructures into its own format (REQUIREMENTS.md, ROADMAP.md)
+6. /gsd auto — runs autonomously:
    - Fresh context per task (no drift)
    - Crash recovery if session dies
    - Cost tracking per unit
-6. Come back → feature built with clean git history
-7. /spec-check specs/feature.md → verify coverage
-8. KNOWLEDGE.md updated with discoveries from the build
+7. Come back → feature built with clean git history
+8. /spec-check specs/feature.md → verify coverage
 ```
 
-spec-first defines WHAT to build and what can break. GSD-2 handles HOW to build it autonomously.
+Note: GSD-2 has its own planning artifacts (PROJECT.md, REQUIREMENTS.md, etc.). Use `/gsd discuss` to translate spec-first's S1-S6 into GSD-2's format before running `/gsd auto`.
 
 </details>
 
