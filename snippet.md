@@ -316,22 +316,24 @@ At the start of every Build session: read KNOWLEDGE.md before writing any code.
 
 ---
 
-### Session handoff — when context hits 40–60%
+### Session state — continuity across sessions
 
-At 40–60% context usage, performance degrades — the spec written at message 5 has low attention weight by message 50. Don't wait until the session is broken.
-
-Write `specs/[slug]-brief.md`:
+At session end (or when context hits 40–60%), write `.claude/session-state.md`:
 
 ```
-Feature: [name] — spec at specs/[slug].md
-Done: [comma-separated completed tasks]
+Goal: [what this session is trying to accomplish]
+Spec: specs/[slug].md
+Status: speccing | building | reviewing | done
+Done: [completed items]
 Current state: [what works / what's broken]
 Next action: [one specific next step]
 Key files: [paths that matter for continuation]
-Open questions: [unresolved decisions]
+Blocked: [current blocker, if any]
 ```
 
-Start new session → read constitution + brief → continue.
+Next session: the SessionStart hook auto-injects this file. No manual copy-paste needed.
+
+For longer handoffs (different developer, next day), also write `specs/[slug]-brief.md` with full context.
 
 *Derives from: Attention mechanism weights recency. At 40-60% context, early tokens have degraded recall. Writing the brief moves critical context to the start of the next session.*
 

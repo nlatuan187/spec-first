@@ -127,24 +127,27 @@ if [ -d "$CLAUDE_DIR" ] || [ "$CONTEXT_FILE" = "CLAUDE.md" ]; then
   if [ "$LOCAL" = true ]; then
     cp "$SCRIPT_DIR/hooks/session-start" "$CLAUDE_HOOKS/session-start"
     cp "$SCRIPT_DIR/hooks/pre-compact"   "$CLAUDE_HOOKS/pre-compact"
+    cp "$SCRIPT_DIR/hooks/session-end"   "$CLAUDE_HOOKS/session-end"
     cp "$SCRIPT_DIR/hooks/run-hook.cmd"  "$CLAUDE_HOOKS/run-hook.cmd"
   else
     curl -fsSL "$REPO/hooks/session-start" -o "$CLAUDE_HOOKS/session-start"
     curl -fsSL "$REPO/hooks/pre-compact"   -o "$CLAUDE_HOOKS/pre-compact"
+    curl -fsSL "$REPO/hooks/session-end"   -o "$CLAUDE_HOOKS/session-end"
     curl -fsSL "$REPO/hooks/run-hook.cmd"  -o "$CLAUDE_HOOKS/run-hook.cmd"
   fi
-  chmod +x "$CLAUDE_HOOKS/session-start" "$CLAUDE_HOOKS/pre-compact" "$CLAUDE_HOOKS/run-hook.cmd" 2>/dev/null || true
+  chmod +x "$CLAUDE_HOOKS/session-start" "$CLAUDE_HOOKS/pre-compact" "$CLAUDE_HOOKS/session-end" "$CLAUDE_HOOKS/run-hook.cmd" 2>/dev/null || true
 
   # Register hooks in .claude/settings.json (merge safely with python3, fallback to create)
   SETTINGS_FILE="$CLAUDE_DIR/settings.json"
   HOOK_CMD=".claude/spec-first/run-hook.cmd session-start"
   HOOK_CMD_COMPACT=".claude/spec-first/run-hook.cmd pre-compact"
+  HOOK_CMD_STOP=".claude/spec-first/run-hook.cmd session-end"
 
   if command -v python3 &>/dev/null; then
-    python3 - "$SETTINGS_FILE" "$HOOK_CMD" "$HOOK_CMD_COMPACT" << 'PYEOF'
+    python3 - "$SETTINGS_FILE" "$HOOK_CMD" "$HOOK_CMD_COMPACT" "$HOOK_CMD_STOP" << 'PYEOF'
 import json, sys, os
 
-settings_path, hook_start, hook_compact = sys.argv[1], sys.argv[2], sys.argv[3]
+settings_path, hook_start, hook_compact, hook_stop = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 settings = {}
 if os.path.exists(settings_path):
     try:
@@ -156,7 +159,7 @@ if os.path.exists(settings_path):
 hooks = settings.setdefault("hooks", {})
 changed = False
 
-for event, cmd in [("SessionStart", hook_start), ("PreCompact", hook_compact)]:
+for event, cmd in [("SessionStart", hook_start), ("PreCompact", hook_compact), ("Stop", hook_stop)]:
     entries = hooks.setdefault(event, [])
     if not any("spec-first" in str(h) for h in entries):
         entries.append({"hooks": [{"type": "command", "command": cmd}]})

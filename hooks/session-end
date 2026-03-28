@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# spec-first Stop hook
+# At session end, prompt AI to capture learnings + update session state.
+# Installed to .claude/spec-first/ by install.sh
+
+set -euo pipefail
+
+escape_for_json() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/\\r}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+
+context="<spec-first-session-end>
+Session ending. Before closing:
+
+1. **Learnings**: Did you discover something non-obvious about this codebase?
+   If it recurred 2+ times or is critical → append to KNOWLEDGE.md.
+   If it's a one-off → skip.
+
+2. **Session state**: Update .claude/session-state.md with:
+   - What was accomplished
+   - What's blocked or unfinished
+   - Next action for whoever continues
+
+3. **Spec status**: If working on a spec, update its YAML frontmatter status field.
+</spec-first-session-end>"
+
+escaped=$(escape_for_json "$context")
+
+if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
+  printf '{"additional_context": "%s"}\n' "$escaped"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
+  printf '{"hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": "%s"}}\n' "$escaped"
+else
+  printf '{"additional_context": "%s"}\n' "$escaped"
+fi
+
+exit 0

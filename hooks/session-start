@@ -38,6 +38,20 @@ ${knowledge}
 </project-knowledge>"
 fi
 
+# ── Inject session state if it exists (continuity from previous session) ───
+
+SESSION_STATE="$(pwd)/.claude/session-state.md"
+if [ -f "$SESSION_STATE" ] && [ -s "$SESSION_STATE" ]; then
+  state=$(cat "$SESSION_STATE")
+  context+="
+
+<previous-session>
+State from last session — continue from here:
+
+${state}
+</previous-session>"
+fi
+
 context+="
 </spec-first-active>"
 
