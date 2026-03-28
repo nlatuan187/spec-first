@@ -1,6 +1,14 @@
+---
+title: "[NAME]"
+status: draft                    # draft | in-review | approved | implementing | done
+scope: new-feature               # bug-fix | small-change | refactor | new-feature | large-feature | spike | delta
+s1_count: 0                     # filled after writing S1 — used by Scope Routing
+s3_count: 0                     # filled after writing S3 — used by Scope Routing
+created: YYYY-MM-DD
+---
+
 # Feature: [NAME]
 
-> **Status**: Draft · **Stack**: [from CLAUDE.md]
 > **Solo**: self-approve, move to Implementing when ready.
 > **Team**: Draft → In Review → **Approved** → Implementing → Done. Build session only starts on Approved specs.
 > **Before writing**: Read your project constitution — it defines stack, conventions, constraints that affect every section here.

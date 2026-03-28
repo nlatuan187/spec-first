@@ -63,10 +63,11 @@ If any is unclear from the request + constitution, ask those questions. Maximum 
 
 1. Say "Writing spec first…"
 2. Use the format from Step 0 (Formality Dial match)
-3. Create `specs/[feature-slug].md`
+3. Create `specs/[feature-slug].md` with YAML frontmatter (title, status, scope, s1_count, s3_count)
 4. Fill every section — no placeholder text
-5. End with the **Scope Routing** block below.
-6. Write **zero implementation code** until Scope Routing has run.
+5. Update `s1_count` and `s3_count` in frontmatter after writing S1 and S3
+6. End with the **Scope Routing** block below.
+7. Write **zero implementation code** until Scope Routing has run.
 
 **Terminal state**: Scope Routing determines what happens next — not a fixed "open new session" rule.
 
