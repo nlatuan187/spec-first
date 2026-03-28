@@ -126,42 +126,49 @@ if [ -d "$CLAUDE_DIR" ] || [ "$CONTEXT_FILE" = "CLAUDE.md" ]; then
 
   if [ "$LOCAL" = true ]; then
     cp "$SCRIPT_DIR/hooks/session-start" "$CLAUDE_HOOKS/session-start"
+    cp "$SCRIPT_DIR/hooks/pre-compact"   "$CLAUDE_HOOKS/pre-compact"
     cp "$SCRIPT_DIR/hooks/run-hook.cmd"  "$CLAUDE_HOOKS/run-hook.cmd"
   else
     curl -fsSL "$REPO/hooks/session-start" -o "$CLAUDE_HOOKS/session-start"
+    curl -fsSL "$REPO/hooks/pre-compact"   -o "$CLAUDE_HOOKS/pre-compact"
     curl -fsSL "$REPO/hooks/run-hook.cmd"  -o "$CLAUDE_HOOKS/run-hook.cmd"
   fi
-  chmod +x "$CLAUDE_HOOKS/session-start" "$CLAUDE_HOOKS/run-hook.cmd" 2>/dev/null || true
+  chmod +x "$CLAUDE_HOOKS/session-start" "$CLAUDE_HOOKS/pre-compact" "$CLAUDE_HOOKS/run-hook.cmd" 2>/dev/null || true
 
-  # Register hook in .claude/settings.json (merge safely with python3, fallback to create)
+  # Register hooks in .claude/settings.json (merge safely with python3, fallback to create)
   SETTINGS_FILE="$CLAUDE_DIR/settings.json"
   HOOK_CMD=".claude/spec-first/run-hook.cmd session-start"
+  HOOK_CMD_COMPACT=".claude/spec-first/run-hook.cmd pre-compact"
 
   if command -v python3 &>/dev/null; then
-    python3 - "$SETTINGS_FILE" "$HOOK_CMD" << 'PYEOF'
+    python3 - "$SETTINGS_FILE" "$HOOK_CMD" "$HOOK_CMD_COMPACT" << 'PYEOF'
 import json, sys, os
 
-settings_path, hook_cmd = sys.argv[1], sys.argv[2]
+settings_path, hook_start, hook_compact = sys.argv[1], sys.argv[2], sys.argv[3]
 settings = {}
 if os.path.exists(settings_path):
     try:
         with open(settings_path) as f:
             settings = json.load(f)
     except Exception:
-        pass  # corrupt/empty — start fresh
+        pass
 
 hooks = settings.setdefault("hooks", {})
-session_start = hooks.setdefault("SessionStart", [])
+changed = False
 
-already = any("spec-first" in str(h) for h in session_start)
-if not already:
-    session_start.append({"hooks": [{"type": "command", "command": hook_cmd}]})
+for event, cmd in [("SessionStart", hook_start), ("PreCompact", hook_compact)]:
+    entries = hooks.setdefault(event, [])
+    if not any("spec-first" in str(h) for h in entries):
+        entries.append({"hooks": [{"type": "command", "command": cmd}]})
+        changed = True
+        print(f"✓ {event} hook registered in .claude/settings.json")
+    else:
+        print(f"✓ {event} hook already registered (skipping)")
+
+if changed:
     os.makedirs(os.path.dirname(settings_path), exist_ok=True)
     with open(settings_path, "w") as f:
         json.dump(settings, f, indent=2)
-    print("✓ SessionStart hook registered in .claude/settings.json")
-else:
-    print("✓ SessionStart hook already registered (skipping)")
 PYEOF
   else
     # No python3 — create settings.json only if it doesn't exist

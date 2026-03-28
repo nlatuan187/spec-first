@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# spec-first PreCompact hook
+# Before context compaction, remind AI to capture learnings to KNOWLEDGE.md.
+# Installed to .claude/spec-first/ by install.sh
+
+set -euo pipefail
+
+escape_for_json() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/\\r}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+
+context="<spec-first-pre-compact>
+Context is about to be compacted. Before losing session memory:
+
+1. Did you discover any non-obvious pattern, gotcha, or constraint in this session?
+2. If yes — append it to KNOWLEDGE.md now (only if it recurred 2+ times or is critical).
+3. If working on a feature — update specs/[slug]-brief.md with current state.
+
+Do this BEFORE the context compacts. After compaction, these learnings are gone.
+</spec-first-pre-compact>"
+
+escaped=$(escape_for_json "$context")
+
+if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
+  printf '{"additional_context": "%s"}\n' "$escaped"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
+  printf '{"hookSpecificOutput": {"hookEventName": "PreCompact", "additionalContext": "%s"}}\n' "$escaped"
+else
+  printf '{"additional_context": "%s"}\n' "$escaped"
+fi
+
+exit 0

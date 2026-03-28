@@ -85,7 +85,7 @@ After writing the spec, read what you just wrote and output the matching block:
 | ≥ 8 | ≥ 4 | Any | **Review required** |
 | any | any | High-risk† | **Review required** |
 
-†High-risk: auth, payments, data migration, user PII, infrastructure-as-code (Terraform/K8s).
+†High-risk: auth, payments, database schema changes, data migration, user PII, infrastructure-as-code (Terraform/K8s).
 Autonomous requires **both** thresholds met (AND). All other routes trigger on **either** column alone (OR).
 
 **Autonomous** — implement in this session, no break:
@@ -309,7 +309,9 @@ Examples of what belongs here:
 
 At the start of every Build session: read KNOWLEDGE.md before writing any code.
 
-*Derives from: Context windows don't persist. A lesson discovered in session 3 is invisible in session 30. KNOWLEDGE.md moves project-specific knowledge from your memory to the codebase — where it survives.*
+**Signal vs noise**: Only append patterns that recur. One-off quirks are noise. If the same issue appears in 2+ sessions, it belongs in KNOWLEDGE.md. If it appears in 3+ sessions, promote it to your constitution — it's a rule now, not an observation.
+
+*Derives from: Context windows don't persist. A lesson discovered in session 3 is invisible in session 30. KNOWLEDGE.md moves project-specific knowledge from your memory to the codebase — where it survives. The 2+ occurrences filter prevents it from becoming a junk drawer.*
 
 ---
 
