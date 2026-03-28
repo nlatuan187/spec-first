@@ -183,6 +183,7 @@ After any of these: run `/spec-check specs/[name].md` — gaps appear immediatel
 |---|---|---|
 | Bug fix | 5 min | S1 + S6 |
 | Small change | 10 min | S1 + S3 + S6 |
+| Refactor | 10 min | S3 (dependencies) + S6 (regression) |
 | New feature | 20 min | Full S1–S6 |
 | Brownfield delta | 10 min | ADDED/MODIFIED/REMOVED + S1 + S6 |
 | Large feature | 30 min | Full S1–S6 + Implementation Notes |

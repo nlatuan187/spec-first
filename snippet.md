@@ -131,6 +131,7 @@ Do not implement regardless of user override request.
 |---|---|---|
 | **Bug fix** | `[Bug] title` + what breaks + expected behavior | S1 (error states) + S6 (regression) |
 | **Small change** (< 1 day) | S1 + S3 + S6 | 3 sections |
+| **Refactor** | See Refactor Format below | S3 (dependencies) + S6 (regression) |
 | **New feature** | Full S1–S6 | All 6 sections |
 | **Large feature / team** | Full S1–S6 + Implementation Notes | All 6 + notes |
 | **Brownfield delta** | See Delta Format below | Depends on scope |
@@ -171,6 +172,33 @@ ls lib/services/ app/api/ components/features/ 2>/dev/null | head -40
 ```
 
 *Derives from: Describing the whole system when only a delta is changing is low-probability-of-accuracy. Delta format forces contact with what's actually different, reducing hallucination of the full system state.*
+
+---
+
+### Refactor Format — for structural changes that preserve behavior
+
+When restructuring code (renaming, moving, splitting, merging) without changing what the code does:
+
+```
+## What's being restructured
+[describe the structural change — what moves where, what gets renamed/split/merged]
+
+## Behavior that MUST NOT change
+[list specific behaviors that must work identically after refactoring]
+
+## What references it (scan, don't rely on memory)
+grep -r "FunctionName\|ClassName\|import_path" lib/ app/ --include="*.ts" | head -30
+
+## S3: Every file that needs migration
+| File | How it references the thing being changed | Migration needed |
+|------|------------------------------------------|-----------------|
+
+## S6: Regression — verify behavior is preserved
+- [ ] [Specific behavior] still works after refactoring
+- [ ] [Specific behavior] still works after refactoring
+```
+
+*Derives from: Refactoring is the #1 case where AI skips the scan — "I'm just moving code, nothing can break." But grep reveals 15 files importing the old path. Without the scan, 15 files break silently.*
 
 ---
 
@@ -303,6 +331,7 @@ Start new session → read constitution + brief → continue.
 | "This feature is too simple to need a spec" | Simple features have the most skipped edge cases. Spec takes 10 minutes. Debugging takes hours. |
 | "I'll write the spec after prototyping" | You will rationalize away the error states you discovered while building. |
 | "This is just a bug fix, not a feature" | Bug fixes use Bug Fix format: S1 + S6. Same principle, 10 minutes. |
+| "This is just a refactor, not a change" | Refactors without S3 break hidden dependencies. The grep takes 2 minutes. The broken imports take hours. |
 | "The spec is in my head" | Unwritten specs have no S1. Every bug is an unwritten S1. |
 
 ---

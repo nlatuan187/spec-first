@@ -63,6 +63,34 @@ Integration effects: [for each relevant result above: read or write?]
 
 ---
 
+## Refactor Format (for structural changes that preserve behavior)
+
+<!-- Use this when renaming, moving, splitting, or merging code without changing what it does. Delete this section if writing a feature, delta, or bug fix. -->
+
+**What's being restructured**: [what moves where / what gets renamed / what gets split or merged]
+
+**Behavior that MUST NOT change**:
+- [specific behavior 1 — must work identically after refactoring]
+- [specific behavior 2]
+
+**What references it** (run this — don't rely on memory):
+```bash
+grep -r "FunctionName\|ClassName\|import_path" lib/ app/ --include="*.ts" | head -30
+```
+
+**S3 — Every file that needs migration**
+
+| File | How it references the thing being changed | Migration needed |
+|------|------------------------------------------|-----------------|
+| [file path] | [import / function call / type reference] | [rename import / update path / change API] |
+
+**S6 — Regression (verify behavior is preserved)**
+- [ ] [Specific behavior] still works after refactoring
+- [ ] [Specific behavior] still works after refactoring
+- [ ] All existing tests pass
+
+---
+
 ## Overview
 
 **Goal**: [What the user accomplishes — one sentence]
