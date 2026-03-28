@@ -171,6 +171,22 @@ Note: GSD-2 has its own planning artifacts (PROJECT.md, REQUIREMENTS.md, etc.). 
 
 ---
 
+## New to AI coding?
+
+Use your AI tool directly for a few sessions first — no methodology needed. Build something, fix a bug, refactor some code. When you notice the AI skipping error states, breaking other features, or generating the same wrong fix three times — come back here. spec-first solves problems you can only appreciate after experiencing them.
+
+## Joining a team that uses spec-first?
+
+Your onboarding checklist:
+1. Read `CLAUDE.md` — your team's conventions, constraints, and stack decisions
+2. Read `KNOWLEDGE.md` — gotchas and patterns discovered by your teammates
+3. Read one spec in `specs/` — see what a real spec looks like in this project
+4. Your first task: pick a small bug or change, say `fix [describe the bug]` — the AI will write a spec before fixing
+
+You'll produce consistent specs that teammates can review from day one.
+
+---
+
 ## First 5 minutes
 
 **If your project has no `CLAUDE.md` yet**: open a new session and say: `"Create a minimal project constitution for this project. Tech stack: [X]. Key file paths: [Y]. Auth method: [Z]. Save to CLAUDE.md."` — 2 minutes, done once.
