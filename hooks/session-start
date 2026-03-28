@@ -18,11 +18,18 @@ escape_for_json() {
 # ── Core reminder (brief — full rules are in your project constitution) ──────
 
 context="<spec-first-active>
-spec-first methodology is active.
-REQUIRED: When asked to build/implement/create/add → write spec first. Zero code until spec exists.
-REQUIRED: S1 starts with failures (what breaks, who is unauthorized, what is null) — happy path is last.
-REQUIRED: After spec, run Scope Routing: count S1 error states + S3 integration points → Autonomous / Recommend review / Review required.
-Full rules: read the spec-first section in your project constitution (CLAUDE.md / .cursorrules / etc.)."
+<IMPORTANT>
+spec-first methodology is active for this project.
+
+BEFORE writing ANY implementation code:
+1. Check: does a spec exist in specs/ for this change?
+2. If NO → write one FIRST. Bug fix = 5 min. Feature = 15 min. Emergency = fix first, spec after.
+3. If YES → read it before implementing. Handle every S1 error state in code.
+
+AFTER writing spec, run Scope Routing: count S1 + S3 → Autonomous / Review / Required.
+
+This is not optional. Code without a spec uses the AI's default probability — which is wrong 65% of the time on error states and integrations.
+</IMPORTANT>"
 
 # ── Inject KNOWLEDGE.md if it exists ────────────────────────────────────────
 

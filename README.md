@@ -126,6 +126,49 @@ spec-first is the thinking layer — what to build and what can break. Pair it w
 
 spec-first writes the plan. These tools execute it. Without the plan, automation runs fast and breaks things. Without automation, the plan is slower to execute. Together: quality at speed.
 
+<details>
+<summary><strong>Example: spec-first + superpowers workflow</strong></summary>
+
+```
+1. Install both: spec-first (curl | sh) + superpowers (/plugin install)
+2. Say: "build user authentication"
+3. spec-first activates → writes specs/user-auth.md (S1-S6)
+4. Scope Routing: S1=8, S3=4 → "Review required"
+5. Run /spec-review → APPROVED
+6. New session: "Read specs/user-auth.md, then implement"
+7. superpowers activates → brainstorming skill reads the spec
+8. superpowers dispatches subagents for each S3 integration point
+9. TDD skill writes failing tests from S6 scenarios
+10. Subagents implement, each handling specific S1 error states
+11. /spec-check verifies all S1/S3/S6 items covered
+```
+
+spec-first ensures the PLAN is complete. superpowers ensures EXECUTION is disciplined. Neither alone achieves both.
+
+</details>
+
+<details>
+<summary><strong>Example: spec-first + GSD-2 workflow</strong></summary>
+
+```
+1. Install both: spec-first (curl | sh) + GSD-2 (npm install -g gsd-pi)
+2. Write spec: "build [feature]" → specs/feature.md created
+3. /spec-review → APPROVED
+4. Feed spec to GSD-2: /gsd auto (reads specs/feature.md as input)
+5. GSD-2 runs autonomously:
+   - Plans from spec's S1/S3 → creates milestone with tasks
+   - Fresh context per task (no drift)
+   - Crash recovery if session dies
+   - Cost tracking per unit
+6. Come back → feature built with clean git history
+7. /spec-check specs/feature.md → verify coverage
+8. KNOWLEDGE.md updated with discoveries from the build
+```
+
+spec-first defines WHAT to build and what can break. GSD-2 handles HOW to build it autonomously.
+
+</details>
+
 → [Detailed integration guides](advanced/INTEGRATIONS.md)
 
 ---

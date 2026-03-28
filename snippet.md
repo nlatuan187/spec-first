@@ -256,6 +256,19 @@ grep -r "ServiceName\|table_name" [your-source-dirs] --include="*.[ext]" | head 
 
 ---
 
+### Code Rule — Never write code without reading a spec
+
+Before writing implementation code: check if `specs/[slug].md` exists for this change.
+- If spec exists: **read it first**, then implement.
+- If no spec exists: **write one first**, using the Formality Dial for depth.
+- Emergency hotfix: fix first, write retroactive bug spec after.
+
+**Terminal state**: Code written without a spec is code written from the AI's default probability distribution — which includes every failure mode in the table above.
+
+*Derives from: The most probable next token after "implement this feature" is confident-sounding code that skips error states, misses integrations, and works only on the happy path. A spec overrides probability with specificity.*
+
+---
+
 ### Session Rule — Never review code you just wrote
 
 When asked to review: open a **new session** → paste the diff → apply the checklist.
