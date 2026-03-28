@@ -331,7 +331,7 @@ Key files: [paths that matter for continuation]
 Blocked: [current blocker, if any]
 ```
 
-Next session: the SessionStart hook auto-injects this file. No manual copy-paste needed.
+Next session: the SessionStart hook auto-injects this file. No manual copy-paste needed. Add `.claude/session-state.md` to `.gitignore` — it's volatile per-session data, not shared.
 
 For longer handoffs (different developer, next day), also write `specs/[slug]-brief.md` with full context.
 
