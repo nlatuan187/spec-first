@@ -40,7 +40,7 @@ Scope Routing collapses Spec + Build into one session for small scope (bug fixes
 
 ---
 
-### TRIGGER: When asked to build, implement, create, or add any feature
+### TRIGGER: When asked to build, implement, create, add, fix, refactor, or debug
 
 **Session 1 — Clarify** (skip if feature is unambiguous):
 

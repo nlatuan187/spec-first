@@ -148,21 +148,20 @@ Works with your existing AI tool. No new infrastructure required.
 
 ## Already have a codebase? Start here.
 
-Most people come to spec-first mid-project — not at the beginning. That's fine. You don't need a clean start.
+Most people come to spec-first mid-project — not at the beginning. That's fine. Pick your situation:
 
-Open a new AI session and say:
+**Fix a bug** (5 minutes):
+> "Fix [describe the bug]. Write a bug spec first: what currently happens, what should happen, exact steps to reproduce, what else could break from the fix. Save to `specs/[name]-bug.md`, then fix it."
 
-> "Write a retroactive spec for [feature or area you want to fix]. Scan what actually exists in the codebase, list what's broken (failures first), find what other features it touches, define what done looks like. Save to `specs/[name]-retro.md`"
+**Refactor safely** (10 minutes):
+> "I want to refactor [area]. Before changing anything: scan what currently exists, list every file and feature that touches this area, identify what could break if the structure changes. Save to `specs/[name]-refactor.md`, then refactor one piece at a time."
 
-Then run `/spec-check specs/[name]-retro.md` — gaps appear immediately.
+**Add a feature to existing code** (15–20 minutes):
+> "Write a retroactive spec for [feature or area]. Scan what actually exists in the codebase, list what's broken (failures first), find what other features it touches, define what done looks like. Save to `specs/[name]-retro.md`"
 
-**What this unlocks:**
-- **Refactoring safely** — understand what actually exists before you touch it
-- **Fixing a mess** — catalog what's broken first, then fix in order
-- **Adding to legacy code** — find every integration point before writing a line
-- **Stopping scope creep** — define "done" before the AI builds indefinitely
+After any of these: run `/spec-check specs/[name].md` — gaps appear immediately. For each gap: open a new session, load the spec, fix that gap.
 
-For each gap: open a new session, load the retro spec, fix that gap. No rewrite needed — just fill what's missing.
+**Don't know where to start?** Say: *"Scan this codebase. List what's broken, what's fragile, and what's missing. Prioritize by user impact."* — then pick the first item and use the matching flow above.
 
 ---
 
