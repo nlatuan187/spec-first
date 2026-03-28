@@ -170,7 +170,7 @@ MODIFIED: [existing behavior → new behavior]
 REMOVED: [behavior being deleted and why]
 
 ## What it touches (scan, don't rely on memory)
-ls lib/services/ app/api/ components/features/ 2>/dev/null | head -40
+ls [your-source-dirs] 2>/dev/null | head -40
 
 ## S1: What breaks if this delta regresses
 [error states specific to the change — not the whole feature]
@@ -195,7 +195,7 @@ When restructuring code (renaming, moving, splitting, merging) without changing 
 [list specific behaviors that must work identically after refactoring]
 
 ## What references it (scan, don't rely on memory)
-grep -r "FunctionName\|ClassName\|import_path" lib/ app/ --include="*.ts" | head -30
+grep -r "FunctionName\|ClassName\|import_path" [your-source-dirs] --include="*.[ext]" | head -30
 
 ## S3: Every file that needs migration
 | File | How it references the thing being changed | Migration needed |
@@ -215,14 +215,15 @@ grep -r "FunctionName\|ClassName\|import_path" lib/ app/ --include="*.ts" | head
 Open S1 by answering: *"What breaks? Who is unauthorized? What's missing or null?"*
 List those first. The happy path is last.
 
-Fill **Deployment Constraints** before writing any error rows. Check your stack — these are common examples:
+Fill **Deployment Constraints** before writing any error rows. Check your stack — common constraints by platform:
 
-| Constraint | What to check | Examples |
-|---|---|---|
-| Request timeout | Your platform's default limit | Vercel 10s, Lambda 15s, Cloud Run 300s, Railway 30s |
-| Bulk query limits | Does your DB/ORM silently truncate? | PostgREST: 1000 rows (no error). Django: unlimited. Prisma: no default limit |
-| Auth token handling | Where tokens appear in logs | Never in URL — server/CDN/proxy logs capture query strings |
-| Background jobs | Can two runners execute the same job? | Atomic lock: `UPDATE ... WHERE status IS NULL RETURNING id` — second runner gets 0 rows |
+| Constraint | Web / Serverless | Mobile | Backend / Infra |
+|---|---|---|---|
+| **Timeout** | Vercel 10s, Lambda 15s, Cloud Run 300s | iOS background task 30s, Android ANR 5s | Queue visibility timeout, gRPC deadline |
+| **Data limits** | PostgREST 1000-row silent truncation | Core Data batch fetch limits, SQLite page size | Connection pool exhaustion, Redis maxmemory |
+| **Auth / secrets** | Never token in URL (server logs capture) | Keychain / Keystore only (not UserDefaults/SharedPrefs) | Secrets in env vars, not config files (rotate via vault) |
+| **Concurrency** | Atomic lock for cron/background jobs | App killed mid-write → atomic save required | Dead-letter queue for failed messages, circuit breaker for downstream |
+| **Offline / network** | Service worker cache strategy | Offline queue + sync on reconnect (mandatory for mobile) | Health checks, DNS propagation, cert expiry |
 
 *Derives from: Training data is ~10:1 success-to-failure. Low-frequency patterns (serverless timeouts, DB truncation) have low probability — they must be stated explicitly.*
 
@@ -233,8 +234,10 @@ Fill **Deployment Constraints** before writing any error rows. Check your stack 
 Before writing S3, enumerate existing features from the codebase — not from memory:
 
 ```bash
-# Find what actually exists (adapt paths to your project)
-ls lib/services/ app/api/ components/features/ 2>/dev/null | head -40
+# Find what actually exists — adapt paths to your stack:
+# Web: lib/services/ app/api/ components/   Mobile: src/screens/ src/services/ src/navigation/
+# Backend: cmd/ internal/ pkg/ src/main/    Infra: modules/ terraform/ k8s/
+ls [your-source-dirs] 2>/dev/null | head -40
 ```
 
 For each result: does this new feature read from it or write to it?
@@ -243,8 +246,7 @@ An S3 with no rows is almost always wrong.
 **Brownfield addition — find who else touches the same data:**
 
 ```bash
-# Replace ServiceName/table_name with what you're changing
-grep -r "ServiceName\|table_name" lib/ app/api/ --include="*.ts" | head -20
+grep -r "ServiceName\|table_name" [your-source-dirs] --include="*.[ext]" | head -20
 ```
 
 `ls` finds files. `grep` finds relationships. For any delta to existing code, run both.

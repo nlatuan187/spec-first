@@ -28,7 +28,7 @@ REMOVED:  [what's being deleted and why]
 
 **What it touches** (run this — don't rely on memory):
 ```bash
-ls lib/services/ app/api/ components/features/ 2>/dev/null | head -40
+ls [your-source-dirs] 2>/dev/null | head -40
 ```
 Integration effects: [for each relevant result above: read or write?]
 
@@ -75,7 +75,7 @@ Integration effects: [for each relevant result above: read or write?]
 
 **What references it** (run this — don't rely on memory):
 ```bash
-grep -r "FunctionName\|ClassName\|import_path" lib/ app/ --include="*.ts" | head -30
+grep -r "FunctionName\|ClassName\|import_path" [your-source-dirs] --include="*.[ext]" | head -30
 ```
 
 **S3 — Every file that needs migration**
@@ -124,35 +124,34 @@ grep -r "FunctionName\|ClassName\|import_path" lib/ app/ --include="*.ts" | head
 
 ## S1: Error States & Validation
 
-**Deployment Constraints** (fill BEFORE error rows):
-- Runtime: [serverless timeout? e.g., "Vercel: 10s default, 60s max" → no polling loops]
-- DB limits: [e.g., "Supabase PostgREST: 1000 rows silent truncate" → always paginate bulk queries]
-- External API: [rate limits? auth method? e.g., "Bearer header only, not query param"]
-- Background jobs: [cron? → add concurrency row below]
+**Deployment Constraints** (fill BEFORE error rows — adapt to your stack):
+- Timeout: [Web: Vercel 10s, Lambda 15s | Mobile: iOS background 30s, Android ANR 5s | Backend: gRPC deadline, queue visibility timeout]
+- Data limits: [DB truncation? Batch size? Connection pool? Redis maxmemory?]
+- Auth / secrets: [Never in URL params or logs | Mobile: Keychain/Keystore only | Backend: env vars, rotate via vault]
+- Concurrency: [Cron dedup? Offline sync? Circuit breaker? Idempotency keys?]
 
 | Condition | User sees / System does |
 |-----------|------------------------|
-| Not authenticated | [Redirect to /login? Toast? Modal?] |
-| Session expired | [Auto-refresh token? Redirect? Toast?] |
-| API returns 500 | [Toast with message? Retry button?] |
-| API returns 404 | [Empty state? "Not found" message?] |
-| Required field missing | [Inline validation. Specify exact text.] |
-| Data is null / undefined | [Skeleton loader? Default? Error boundary?] |
-| [If cron] Concurrent runs | [Atomic lock: `UPDATE WHERE status IS NULL RETURNING id`] |
-| [If bulk query] Row count > 1000 | [Paginate with `.range()` — silent truncation otherwise] |
-| [If external API] Credentials | [Bearer header only — never token in URL query param] |
+| Not authenticated | [Web: redirect to /login | Mobile: present login screen | API: 401 response] |
+| Session / token expired | [Auto-refresh? Re-prompt? Redirect?] |
+| Service unavailable (500 / timeout) | [User-facing message + retry option | Queue retry with backoff] |
+| Resource not found (404) | [Empty state? "Not found" message? Fallback?] |
+| Invalid input | [Inline validation with specific text | API: 422 with field-level errors] |
+| Data missing / null | [Placeholder UI? Default value? Error boundary? Log + skip?] |
+| Network unavailable | [Web: banner | Mobile: offline queue + sync | Backend: circuit breaker] |
+| Concurrent / duplicate operation | [Idempotency key? Atomic lock? Optimistic locking?] |
 
 ## S2: Post-Completion Flow
 
-- **On success**: [Auto-save where? Show what? Navigate where? Toast what?]
-- **User navigates away mid-flow**: [Auto-save? Warning dialog? Discard?]
-- **User refreshes page**: [Restore from localStorage? DB? Start over?]
-- **Output constraints**: [Max length? File size? Rate limits?]
+- **On success**: [Navigate where? Show what confirmation? Auto-save where?]
+- **User leaves mid-flow**: [Auto-save? Warning? Discard? Mobile: app backgrounded?]
+- **App/page restart mid-flow**: [Restore from local storage / DB? Start over?]
+- **Output constraints**: [Max length? File size? Rate limits? Payload size?]
 
 ## S3: Cross-Feature Integration
 
 <!-- Before writing this section, enumerate existing features from the codebase:
-     ls lib/services/ app/api/ components/features/ 2>/dev/null | head -40
+     ls [your-source-dirs] 2>/dev/null | head -40
      Do not enumerate from memory. Scan what actually exists. -->
 
 - **Triggers**: [Creating X here → refreshes list in Feature Y? Updates count in Feature Z?]
@@ -170,11 +169,11 @@ grep -r "FunctionName\|ClassName\|import_path" lib/ app/ --include="*.ts" | head
 
 ## S5: State & Persistence Matrix
 
-| Data | Stored where | Persists on refresh? | Cleared when |
+| Data | Stored where | Persists on restart? | Cleared when |
 |------|-------------|:-------------------:|-------------|
-| [Form input] | [Zustand / useState / localStorage] | [Yes/No] | [Leave page / Submit] |
-| [Selected item] | [Zustand / URL param] | [Yes/No] | [Leave page / Deselect] |
-| [API response] | [SWR cache / Zustand] | [Yes/No] | [Stale time / Leave page] |
+| [User input] | [Memory / local storage / DB / cache] | [Yes/No] | [Leave flow / Submit / Timeout] |
+| [Selection state] | [Memory / URL param / ViewModel] | [Yes/No] | [Navigate away / Deselect] |
+| [Fetched data] | [Cache / store / in-memory] | [Yes/No] | [Stale time / Leave scope / TTL] |
 
 ## S6: Manual QA Scenarios
 
@@ -183,8 +182,8 @@ grep -r "FunctionName\|ClassName\|import_path" lib/ app/ --include="*.ts" | head
 - [ ] **Error — invalid input**: submit [specific bad input] → user sees [specific inline message]
 - [ ] **Empty state**: no existing data → user sees [specific UI], can [next action]
 - [ ] **Loading**: click [action] → result appears within [X] seconds; indicator visible
-- [ ] **Mobile (375px)**: all elements accessible, no horizontal scroll
-- [ ] **Refresh mid-flow**: refresh at [step N] → [data preserved / user returned to start]
+- [ ] **Small screen / mobile**: all elements accessible, no overflow, touch targets adequate
+- [ ] **Restart mid-flow**: app/page restart at [step N] → [data preserved / user returned to start]
 - [ ] **Double-submit**: click twice rapidly → [prevented / deduplicated]
 
 ---

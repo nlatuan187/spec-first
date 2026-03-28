@@ -2,6 +2,8 @@
 
 Two parts: (1) one-time pipeline setup, (2) per-PR review checklist.
 
+> **Stack note**: Pass 1 (auth, security, data safety, race conditions) is universal. Pass 2 examples target TypeScript/React/Next.js/Supabase — adapt items to your stack. The structure and two-pass methodology apply to any codebase.
+
 ---
 
 ## Part 1: Pipeline Setup (30 minutes, one time)
