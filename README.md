@@ -171,22 +171,6 @@ Note: GSD-2 has its own planning artifacts (PROJECT.md, REQUIREMENTS.md, etc.). 
 
 ---
 
-## New to AI coding?
-
-Use your AI tool directly for a few sessions first — no methodology needed. Build something, fix a bug, refactor some code. When you notice the AI skipping error states, breaking other features, or generating the same wrong fix three times — come back here. spec-first solves problems you can only appreciate after experiencing them.
-
-## Joining a team that uses spec-first?
-
-Your onboarding checklist:
-1. Read `CLAUDE.md` — your team's conventions, constraints, and stack decisions
-2. Read `KNOWLEDGE.md` — gotchas and patterns discovered by your teammates
-3. Read one spec in `specs/` — see what a real spec looks like in this project
-4. Your first task: pick a small bug or change, say `fix [describe the bug]` — the AI will write a spec before fixing
-
-You'll produce consistent specs that teammates can review from day one.
-
----
-
 ## First 5 minutes
 
 **If your project has no `CLAUDE.md` yet**: open a new session and say: `"Create a minimal project constitution for this project. Tech stack: [X]. Key file paths: [Y]. Auth method: [Z]. Save to CLAUDE.md."` — 2 minutes, done once.
@@ -219,6 +203,28 @@ Most people come to spec-first mid-project — not at the beginning. That's fine
 After any of these: run `/spec-check specs/[name].md` — gaps appear immediately. For each gap: open a new session, load the spec, fix that gap.
 
 **Don't know where to start?** Say: *"Scan this codebase. List what's broken, what's fragile, and what's missing. Prioritize by user impact."* — then pick the first item and use the matching flow above.
+
+<details>
+<summary><strong>Building with AI but quality isn't there yet?</strong></summary>
+
+If your AI builds features that "work" on the demo but break in real use — that's not an AI problem. It's a planning problem. AI only handles what you ask about. You don't know to ask about rate limiting, session expiry, or what happens when 2 users click the same button at the same time. Neither does the AI — unless something tells it to check.
+
+**spec-first is that something.** Install it, and your AI will automatically check for error cases, integration breakages, and edge cases you didn't know existed — before writing a single line of code. You don't need to understand the spec. The spec is instructions for the AI, not a document for you.
+
+</details>
+
+<details>
+<summary><strong>Joining a team that uses spec-first?</strong></summary>
+
+Your onboarding checklist:
+1. Read `CLAUDE.md` — your team's conventions, constraints, and stack decisions
+2. Read `KNOWLEDGE.md` — gotchas and patterns discovered by your teammates
+3. Read one spec in `specs/` — see what a real spec looks like in this project
+4. Your first task: pick a small bug or change, say `fix [describe the bug]` — the AI will write a spec before fixing
+
+You'll produce consistent specs that teammates can review from day one.
+
+</details>
 
 ---
 
