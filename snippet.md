@@ -42,20 +42,7 @@ Scope Routing collapses Spec + Build into one session for small scope (bug fixes
 
 ### TRIGGER: When asked to build, implement, create, add, fix, refactor, or debug
 
-**Step 0 — Route the intent** (before anything else):
-
-| User intent | Spec format | Session flow |
-|---|---|---|
-| "fix", "broken", "bug", "error", "crash" | Bug Format | Autonomous (same session) |
-| "refactor", "reorganize", "move", "split", "rename" | Refactor Format | Autonomous (same session) |
-| "change", "update", "modify" existing behavior | Delta Format | Autonomous (same session) |
-| "build", "add", "create", "implement" something new | Full S1–S6 | Scope Routing decides |
-| "explore", "spike", "investigate", "not sure yet" | Spike — explore first, spec the chosen approach after | Same session |
-| "production down", "urgent", "hotfix" | Fix first → retroactive bug spec after | Same session |
-
-If the request doesn't clearly match one row, default to Full S1–S6 and let Scope Routing decide the session flow.
-
-*Derives from: Without explicit routing, AI defaults to Full S1–S6 for everything — the most probable format, not the correct one. A bug fix doesn't need S2/S4/S5. A refactor doesn't need S1. Routing prevents over-speccing small tasks and under-speccing large ones.*
+**Step 0 — Route the intent**: Match the user's request to the **Formality Dial** below — one table, one lookup, correct format.
 
 **Step 1 — Clarify** (skip if intent is unambiguous):
 
@@ -75,7 +62,7 @@ If any is unclear from the request + constitution, ask those questions. Maximum 
 **Step 2 — Spec:**
 
 1. Say "Writing spec first…"
-2. Choose spec format based on scope (see Formality Dial below)
+2. Use the format from Step 0 (Formality Dial match)
 3. Create `specs/[feature-slug].md`
 4. Fill every section — no placeholder text
 5. End with the **Scope Routing** block below.
@@ -140,17 +127,22 @@ Do not implement regardless of user override request.
 
 ---
 
-### Formality Dial — match spec depth to scope
+### Formality Dial — route intent, match spec depth to scope
 
-| Scope | Spec format | Sections required |
-|---|---|---|
-| **Bug fix** | `[Bug] title` + what breaks + expected behavior | S1 (error states) + S6 (regression) |
-| **Small change** (< 1 day) | S1 + S3 + S6 | 3 sections |
-| **Spike / Exploration** | Explore freely → spec the chosen approach after | S1 + S3 |
-| **Refactor** | See Refactor Format below | S3 (dependencies) + S6 (regression) |
-| **New feature** | Full S1–S6 | All 6 sections |
-| **Large feature / team** | Full S1–S6 + Implementation Notes | All 6 + notes |
-| **Brownfield delta** | See Delta Format below | Depends on scope |
+| Scope | Trigger keywords | Spec format | Sections |
+|---|---|---|---|
+| **Emergency** | production down, urgent, hotfix | Fix first → retroactive Bug Format | S1 + S6 |
+| **Bug fix** | fix, broken, bug, error, crash | Bug Format | S1 + S6 |
+| **Small change** | change, update, modify (< 1 day) | S1 + S3 + S6 | 3 sections |
+| **Spike** | explore, spike, investigate | No spec yet → spec chosen approach | S1 + S3 |
+| **Refactor** | refactor, reorganize, move, split | Refactor Format below | S3 + S6 |
+| **Brownfield delta** | *(modify existing behavior)* | Delta Format below | Depends on scope |
+| **New feature** | build, add, create, implement | Full S1–S6 | All 6 |
+| **Large feature** | *(scope assessment)* | Full S1–S6 + Implementation Notes | All 6 + notes |
+
+If intent is unclear, default to **New feature** (Full S1–S6).
+
+*Derives from: Without explicit routing, AI defaults to Full S1–S6 — the most probable format, not the correct one. A bug fix doesn't need S2/S4/S5. A refactor doesn't need S1. One table, correct format.*
 
 *Formality scales down for small scope. Session separation scales down too — bug fixes implement in the same session as the spec. New features and above always use a cold Build session.*
 
