@@ -324,6 +324,37 @@ Start new session → read constitution + brief → continue.
 
 ---
 
+### Spec hygiene — keep specs/ useful
+
+Specs accumulate. After 3 months you have 50 files and can't find anything. Maintain:
+
+```
+specs/
+├── active/              ← specs currently being built or reviewed
+├── done/                ← shipped, kept for reference
+└── [slug]-retro.md      ← retroactive specs stay at root until resolved
+```
+
+Move specs to `done/` when the feature ships. When a spec in `done/` contradicts current behavior, delete it — a stale spec is worse than no spec.
+
+*Derives from: 50 unorganized files have the same effect as 0 files — the AI can't find the relevant one. Organization is free. Searching through stale specs costs tokens and attention.*
+
+---
+
+### Constitution maintenance — when your context file gets too long
+
+If your constitution (CLAUDE.md / .cursorrules) exceeds ~200 lines, AI attention to later rules degrades. Prune:
+
+1. **Move stack-specific details** to separate files: `docs/conventions.md`, `docs/security.md`. Reference them: "See docs/conventions.md for full details."
+2. **Delete rules you've internalized** — if the team no longer makes a mistake, the rule preventing it can go.
+3. **Keep the constitution to high-signal rules only** — constraints the AI would violate without being told.
+
+Review quarterly. A bloated constitution defeats its own purpose.
+
+*Derives from: Same mechanism as context dilution. The constitution is read at the start of every session. At 500 lines, rules at line 400 have measurably lower compliance than rules at line 50.*
+
+---
+
 ### Rationalizations — reject these
 
 | If you think this | The answer is |
@@ -332,6 +363,7 @@ Start new session → read constitution + brief → continue.
 | "I'll write the spec after prototyping" | You will rationalize away the error states you discovered while building. |
 | "This is just a bug fix, not a feature" | Bug fixes use Bug Fix format: S1 + S6. Same principle, 10 minutes. |
 | "This is just a refactor, not a change" | Refactors without S3 break hidden dependencies. The grep takes 2 minutes. The broken imports take hours. |
+| "Production is on fire, no time for spec" | Fix first. Then write a 5-minute retroactive bug spec — what broke, what you changed, what else could break. The hotfix that causes a second outage costs more than the spec. |
 | "The spec is in my head" | Unwritten specs have no S1. Every bug is an unwritten S1. |
 
 ---
