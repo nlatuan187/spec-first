@@ -51,6 +51,44 @@ Two developers. 24 days. Same AI tools — but with planning first. Fix:feat rat
 → [More examples](advanced/examples/) — real production specs, anonymized
 </details>
 
+<details>
+<summary><strong>Same feature, with and without spec-first</strong> (click to expand)</summary>
+
+**Without spec-first** — you say "build password reset." AI generates:
+
+```javascript
+async function resetPassword(email) {
+  const user = await db.users.findByEmail(email);
+  const token = generateToken();
+  await sendEmail(user.email, token);
+  return { success: true };
+}
+```
+
+Works in the demo. Crashes in production: email not found → `user.email` throws. No token expiry. No rate limiting. No session invalidation. **4 bugs you'll find after users hit them.**
+
+**With spec-first** — AI writes the spec above first, then generates:
+
+```javascript
+async function resetPassword(email) {
+  const user = await db.users.findByEmail(email);
+  if (!user) return { success: true }; // Don't leak email existence
+
+  const recent = await db.resetTokens.countRecent(email, '1h');
+  if (recent >= 3) return { error: 'Too many requests. Try again later.' };
+
+  await db.resetTokens.invalidateExisting(email);
+  const token = generateToken({ expiresIn: '1h' });
+  await db.resetTokens.create({ email, token, used: false });
+  await sendEmail(email, token);
+  return { success: true };
+}
+```
+
+Same AI. Same prompt. The spec told it what to check — so it checked. **The AI didn't get smarter. It got a checklist.**
+
+</details>
+
 ---
 
 ## The Fundamental Law — why this works
@@ -207,9 +245,15 @@ After any of these: run `/spec-check specs/[name].md` — gaps appear immediatel
 <details>
 <summary><strong>Building with AI but quality isn't there yet?</strong></summary>
 
-If your AI builds features that "work" on the demo but break in real use — that's not an AI problem. It's a planning problem. AI only handles what you ask about. You don't know to ask about rate limiting, session expiry, or what happens when 2 users click the same button at the same time. Neither does the AI — unless something tells it to check.
+Your AI builds features that "work" in the demo but break with real users. That's not an AI problem — it's a planning problem. The AI handles what you ask about. You don't know to ask about rate limiting, session expiry, or what happens when 2 users click the same button. Neither does the AI — unless something tells it to check.
 
-**spec-first is that something.** Install it, and your AI will automatically check for error cases, integration breakages, and edge cases you didn't know existed — before writing a single line of code. You don't need to understand the spec. The spec is instructions for the AI, not a document for you.
+**Try this right now (2 minutes, no install needed):**
+
+1. Open your AI tool. Say: *"Build a password reset feature."* Look at the code. Count the error cases it handles.
+2. Now say: *"Wait — before coding, list every way this can fail. For each failure, what should the user see? What other features does this touch? Write this as a table, then implement."*
+3. Count again. The second version handles 3-5x more cases.
+
+That's spec-first in one sentence: **make the AI list what can break before it writes code.** The install just automates this for every task.
 
 </details>
 
@@ -223,6 +267,21 @@ Your onboarding checklist:
 4. Your first task: pick a small bug or change, say `fix [describe the bug]` — the AI will write a spec before fixing
 
 You'll produce consistent specs that teammates can review from day one.
+
+</details>
+
+<details>
+<summary><strong>How do I know it's working?</strong></summary>
+
+After 1 week, check 3 things:
+
+1. **Count spec rows vs production bugs.** Your spec listed 8 error states. Did a 9th break in production? If not — the spec caught them. If yes — add it to the spec and the AI handles it next time.
+2. **Did something break that WAS in the spec?** → Implementation bug, not spec bug. Re-read the spec, fix the code.
+3. **Did something break that WASN'T in the spec?** → Spec gap. That's your learning signal — add it for next time.
+
+The pattern: bugs move from "surprise in production" to "row in a spec." Over time, fewer surprises.
+
+Run `/spec-stats` for hard numbers: fix:feat ratio, spec coverage, health score out of 10.
 
 </details>
 
@@ -290,7 +349,7 @@ The same data determines when human review is required — and when autonomous i
 | [`review.md`](review.md) | Two-pass code review checklist. |
 | [`install.sh`](install.sh) | Auto-detect + append installer. |
 | [`advanced/examples/`](advanced/examples/) | Real production specs (anonymized) — see what a complete spec looks like before writing your first one. |
-| [`advanced/`](advanced/) | Team workflow, calibration protocol, /spec /spec-review /spec-check skills. |
+| [`advanced/`](advanced/) | Team workflow, calibration protocol, /spec /spec-review /spec-check /spec-stats skills. |
 
 ---
 
@@ -301,6 +360,6 @@ The same data determines when human review is required — and when autonomous i
 - [**Feedback triage**](advanced/feedback-triage.md) — convert raw user feedback batches into verified GitHub issues: 5-phase workflow, 3x token overhead eliminated
 - [Team workflow](advanced/team-workflow.md) — approval gate, PR template, constitution ownership
 - [Implementation blueprint](advanced/prp.md) — for complex features
-- [/spec, /spec-review, /spec-check slash commands](advanced/skills/) — for Claude Code: write → verify → check coverage
+- [/spec, /spec-review, /spec-check, /spec-stats slash commands](advanced/skills/) — for Claude Code: write → verify → check coverage → measure health
 - [Ecosystem integrations](advanced/INTEGRATIONS.md) — Claude Code, Cursor, Windsurf, GSD-2
 - [Methodology philosophy](advanced/ETHOS.md)
