@@ -93,10 +93,11 @@ if ((Test-Path $claudeDir) -or ($CONTEXT_FILE -eq "CLAUDE.md")) {
     $hooksDir = Join-Path $claudeDir "spec-first"
     New-Item -ItemType Directory -Force -Path $hooksDir | Out-Null
 
-    (Invoke-WebRequest "$REPO/hooks/session-start" -UseBasicParsing).Content | Set-Content "$hooksDir\session-start" -Encoding UTF8
-    (Invoke-WebRequest "$REPO/hooks/pre-compact"   -UseBasicParsing).Content | Set-Content "$hooksDir\pre-compact"   -Encoding UTF8
-    (Invoke-WebRequest "$REPO/hooks/session-end"   -UseBasicParsing).Content | Set-Content "$hooksDir\session-end"   -Encoding UTF8
-    (Invoke-WebRequest "$REPO/hooks/run-hook.cmd"  -UseBasicParsing).Content | Set-Content "$hooksDir\run-hook.cmd"  -Encoding UTF8
+    (Invoke-WebRequest "$REPO/hooks/session-start"  -UseBasicParsing).Content | Set-Content "$hooksDir\session-start"  -Encoding UTF8
+    (Invoke-WebRequest "$REPO/hooks/pre-compact"    -UseBasicParsing).Content | Set-Content "$hooksDir\pre-compact"    -Encoding UTF8
+    (Invoke-WebRequest "$REPO/hooks/session-end"    -UseBasicParsing).Content | Set-Content "$hooksDir\session-end"    -Encoding UTF8
+    (Invoke-WebRequest "$REPO/hooks/pre-tool-use"   -UseBasicParsing).Content | Set-Content "$hooksDir\pre-tool-use"   -Encoding UTF8
+    (Invoke-WebRequest "$REPO/hooks/run-hook.cmd"   -UseBasicParsing).Content | Set-Content "$hooksDir\run-hook.cmd"   -Encoding UTF8
 
     # Register hooks in .claude/settings.json (merge safely)
     $settingsFile = Join-Path $claudeDir "settings.json"
@@ -107,6 +108,7 @@ if ((Test-Path $claudeDir) -or ($CONTEXT_FILE -eq "CLAUDE.md")) {
     }
     if (-not $settings.ContainsKey("hooks")) { $settings["hooks"] = @{} }
 
+    # Lifecycle hooks (no matcher)
     $hookEntries = @(
         @{ event = "SessionStart"; cmd = ".claude/spec-first/run-hook.cmd session-start" },
         @{ event = "PreCompact";   cmd = ".claude/spec-first/run-hook.cmd pre-compact" },
@@ -124,6 +126,20 @@ if ((Test-Path $claudeDir) -or ($CONTEXT_FILE -eq "CLAUDE.md")) {
         } else {
             Write-Host "[OK] $($entry.event) hook already registered (skipping)"
         }
+    }
+
+    # Enforcement hook (matcher: Write|Edit)
+    if (-not $settings["hooks"].ContainsKey("PreToolUse")) { $settings["hooks"]["PreToolUse"] = @() }
+    $enforceRegistered = $settings["hooks"]["PreToolUse"] | Where-Object { $_ -match "spec-first" }
+    if (-not $enforceRegistered) {
+        $settings["hooks"]["PreToolUse"] += @{
+            matcher = "Edit|Write"
+            hooks = @(@{ type = "command"; command = ".claude/spec-first/run-hook.cmd pre-tool-use" })
+        }
+        $changed = $true
+        Write-Host "[OK] PreToolUse enforcement hook registered (blocks code edits without a spec)"
+    } else {
+        Write-Host "[OK] PreToolUse enforcement hook already registered (skipping)"
     }
 
     if ($changed) {

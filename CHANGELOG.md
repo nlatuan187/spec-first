@@ -7,6 +7,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
+- **Enforcement hook** (`pre-tool-use`) — mechanically blocks Write/Edit on source code when no spec exists in `specs/`. The Code Rule is no longer advisory-only for Claude Code users.
 - Delta and Refactor example specs in `advanced/examples/` (real production specs, anonymized)
 - `hooks/README.md` — documents what each hook does, how to verify, how to disable
 - `CONTRIBUTING.md` — guide for community contributions
@@ -14,6 +15,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - GitHub issue templates (bug report + feature request)
 
 ### Changed
+- `snippet.md` — Code Rule section now documents mechanical enforcement
+- `install.sh` / `install.ps1` — register `PreToolUse` enforcement hook with `matcher: "Edit|Write"`
 - `tool-matrix.md` — added stack disclaimer (methodology is stack-agnostic, tool recommendations are JS/TS-specific)
 
 ## [2026-03-30]

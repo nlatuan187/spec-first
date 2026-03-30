@@ -127,29 +127,33 @@ if [ -d "$CLAUDE_DIR" ] || [ "$CONTEXT_FILE" = "CLAUDE.md" ]; then
   mkdir -p "$CLAUDE_HOOKS"
 
   if [ "$LOCAL" = true ]; then
-    cp "$SCRIPT_DIR/hooks/session-start" "$CLAUDE_HOOKS/session-start"
-    cp "$SCRIPT_DIR/hooks/pre-compact"   "$CLAUDE_HOOKS/pre-compact"
-    cp "$SCRIPT_DIR/hooks/session-end"   "$CLAUDE_HOOKS/session-end"
-    cp "$SCRIPT_DIR/hooks/run-hook.cmd"  "$CLAUDE_HOOKS/run-hook.cmd"
+    cp "$SCRIPT_DIR/hooks/session-start"  "$CLAUDE_HOOKS/session-start"
+    cp "$SCRIPT_DIR/hooks/pre-compact"    "$CLAUDE_HOOKS/pre-compact"
+    cp "$SCRIPT_DIR/hooks/session-end"    "$CLAUDE_HOOKS/session-end"
+    cp "$SCRIPT_DIR/hooks/pre-tool-use"   "$CLAUDE_HOOKS/pre-tool-use"
+    cp "$SCRIPT_DIR/hooks/run-hook.cmd"   "$CLAUDE_HOOKS/run-hook.cmd"
   else
-    curl -fsSL "$REPO/hooks/session-start" -o "$CLAUDE_HOOKS/session-start"
-    curl -fsSL "$REPO/hooks/pre-compact"   -o "$CLAUDE_HOOKS/pre-compact"
-    curl -fsSL "$REPO/hooks/session-end"   -o "$CLAUDE_HOOKS/session-end"
-    curl -fsSL "$REPO/hooks/run-hook.cmd"  -o "$CLAUDE_HOOKS/run-hook.cmd"
+    curl -fsSL "$REPO/hooks/session-start"  -o "$CLAUDE_HOOKS/session-start"
+    curl -fsSL "$REPO/hooks/pre-compact"    -o "$CLAUDE_HOOKS/pre-compact"
+    curl -fsSL "$REPO/hooks/session-end"    -o "$CLAUDE_HOOKS/session-end"
+    curl -fsSL "$REPO/hooks/pre-tool-use"   -o "$CLAUDE_HOOKS/pre-tool-use"
+    curl -fsSL "$REPO/hooks/run-hook.cmd"   -o "$CLAUDE_HOOKS/run-hook.cmd"
   fi
-  chmod +x "$CLAUDE_HOOKS/session-start" "$CLAUDE_HOOKS/pre-compact" "$CLAUDE_HOOKS/session-end" "$CLAUDE_HOOKS/run-hook.cmd" 2>/dev/null || true
+  chmod +x "$CLAUDE_HOOKS/session-start" "$CLAUDE_HOOKS/pre-compact" "$CLAUDE_HOOKS/session-end" "$CLAUDE_HOOKS/pre-tool-use" "$CLAUDE_HOOKS/run-hook.cmd" 2>/dev/null || true
 
   # Register hooks in .claude/settings.json (merge safely with python3, fallback to create)
   SETTINGS_FILE="$CLAUDE_DIR/settings.json"
   HOOK_CMD=".claude/spec-first/run-hook.cmd session-start"
   HOOK_CMD_COMPACT=".claude/spec-first/run-hook.cmd pre-compact"
   HOOK_CMD_STOP=".claude/spec-first/run-hook.cmd session-end"
+  HOOK_CMD_ENFORCE=".claude/spec-first/run-hook.cmd pre-tool-use"
 
   if command -v python3 &>/dev/null; then
-    python3 - "$SETTINGS_FILE" "$HOOK_CMD" "$HOOK_CMD_COMPACT" "$HOOK_CMD_STOP" << 'PYEOF'
+    python3 - "$SETTINGS_FILE" "$HOOK_CMD" "$HOOK_CMD_COMPACT" "$HOOK_CMD_STOP" "$HOOK_CMD_ENFORCE" << 'PYEOF'
 import json, sys, os
 
-settings_path, hook_start, hook_compact, hook_stop = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+settings_path = sys.argv[1]
+hook_start, hook_compact, hook_stop, hook_enforce = sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]
 settings = {}
 if os.path.exists(settings_path):
     try:
@@ -161,6 +165,7 @@ if os.path.exists(settings_path):
 hooks = settings.setdefault("hooks", {})
 changed = False
 
+# Lifecycle hooks (no matcher needed)
 for event, cmd in [("SessionStart", hook_start), ("PreCompact", hook_compact), ("Stop", hook_stop)]:
     entries = hooks.setdefault(event, [])
     if not any("spec-first" in str(h) for h in entries):
@@ -169,6 +174,18 @@ for event, cmd in [("SessionStart", hook_start), ("PreCompact", hook_compact), (
         print(f"✓ {event} hook registered in .claude/settings.json")
     else:
         print(f"✓ {event} hook already registered (skipping)")
+
+# Enforcement hook (matcher: Write|Edit only)
+pre_tool_entries = hooks.setdefault("PreToolUse", [])
+if not any("spec-first" in str(h) for h in pre_tool_entries):
+    pre_tool_entries.append({
+        "matcher": "Edit|Write",
+        "hooks": [{"type": "command", "command": hook_enforce}]
+    })
+    changed = True
+    print("✓ PreToolUse enforcement hook registered (blocks code edits without a spec)")
+else:
+    print("✓ PreToolUse enforcement hook already registered (skipping)")
 
 if changed:
     os.makedirs(os.path.dirname(settings_path), exist_ok=True)
@@ -190,11 +207,22 @@ PYEOF
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOOK_CMD_ENFORCE"
+          }
+        ]
+      }
     ]
   }
 }
 JSON
-      echo "✓ SessionStart hook registered in .claude/settings.json"
+      echo "✓ SessionStart + PreToolUse hooks registered in .claude/settings.json"
     else
       echo "  (python3 not found — add hooks manually to .claude/settings.json)"
       echo "  See: https://github.com/nlatuan187/spec-first/tree/master/hooks"

@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+# spec-first enforcement — PreToolUse hook
+# Blocks Write/Edit on source code files when no active spec exists in specs/.
+#
+# This is the mechanical enforcement of the Code Rule:
+#   "Never write code without reading a spec."
+#
+# How it works:
+#   1. Claude Code calls this before every Write/Edit tool call
+#   2. If the file is source code (.ts, .py, .go, etc.) — check specs/
+#   3. If no spec exists — block the edit (exit 2)
+#   4. Config, docs, markdown, test files — always allowed
+#
+# Disable: SPEC_FIRST_ENFORCEMENT=off or touch .spec-first-bypass
+# Installed to .claude/spec-first/ by install.sh
+
+set -euo pipefail
+
+# ── Quick exit if enforcement is disabled ─────────────────────────────────
+
+[ "${SPEC_FIRST_ENFORCEMENT:-}" = "off" ] && exit 0
+
+# ── Parse tool input from stdin ───────────────────────────────────────────
+# Claude Code pipes JSON: { tool_name, tool_input: { file_path }, cwd }
+
+INPUT=$(cat)
+
+FILE_PATH=""
+CWD=""
+
+if command -v jq &>/dev/null; then
+  FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null || true)
+  CWD=$(echo "$INPUT" | jq -r '.cwd // empty' 2>/dev/null || true)
+elif command -v python3 &>/dev/null; then
+  PARSED=$(echo "$INPUT" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    print(d.get('tool_input', {}).get('file_path', ''))
+    print(d.get('cwd', ''))
+except Exception:
+    print('')
+    print('')
+" 2>/dev/null) || true
+  FILE_PATH=$(echo "$PARSED" | sed -n '1p')
+  CWD=$(echo "$PARSED" | sed -n '2p')
+fi
+
+# Can't parse input — fail open (don't break the user's workflow)
+[ -z "$FILE_PATH" ] || [ -z "$CWD" ] && exit 0
+
+# ── Bypass file — temporary per-project override ─────────────────────────
+# Users can `touch .spec-first-bypass` to disable enforcement.
+# Remove the file to re-enable.
+
+[ -f "${CWD}/.spec-first-bypass" ] && exit 0
+
+# ── Get path relative to project root ─────────────────────────────────────
+
+REL_PATH="${FILE_PATH#${CWD}/}"
+
+# File outside project directory — allow
+[ "$REL_PATH" = "$FILE_PATH" ] && exit 0
+
+# ── Test files — always allowed (even source code extensions) ─────────────
+
+case "$REL_PATH" in
+  *test*|*__tests__*|*__mocks__*|*.test.*|*.spec.*) exit 0 ;;
+esac
+
+# ── Only enforce on source code files ─────────────────────────────────────
+# Everything NOT in this list is automatically allowed:
+# markdown, JSON, YAML, config, docs, lock files, images, etc.
+
+case "$REL_PATH" in
+  *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs)  ;; # JavaScript / TypeScript
+  *.py|*.pyx)                          ;; # Python
+  *.go)                                ;; # Go
+  *.rs)                                ;; # Rust
+  *.java|*.kt|*.scala)                ;; # JVM
+  *.rb|*.erb)                          ;; # Ruby
+  *.php)                               ;; # PHP
+  *.cs)                                ;; # C#
+  *.swift)                             ;; # Swift
+  *.c|*.cpp|*.cc|*.h|*.hpp)           ;; # C / C++
+  *.vue|*.svelte)                      ;; # Framework SFC
+  *.dart)                              ;; # Dart
+  *.ex|*.exs)                          ;; # Elixir
+  *.lua)                               ;; # Lua
+  *.zig)                               ;; # Zig
+  *)  exit 0 ;;                          # Not source code — allow
+esac
+
+# ── Check for active specs in specs/ ──────────────────────────────────────
+# Active = any .md file directly in specs/ (not in specs/done/)
+# We don't parse YAML frontmatter — just check file existence for speed.
+
+SPECS_DIR="${CWD}/specs"
+
+if [ -d "$SPECS_DIR" ]; then
+  # Fast check: is there at least one .md file at top level?
+  if [ -n "$(find "$SPECS_DIR" -maxdepth 1 -name '*.md' -print -quit 2>/dev/null)" ]; then
+    exit 0  # Active spec exists — allow
+  fi
+fi
+
+# ── No active spec — BLOCK ────────────────────────────────────────────────
+
+cat >&2 << BLOCK
+spec-first enforcement: no active spec found in specs/
+
+You are trying to edit: ${REL_PATH}
+Write a spec before implementing code:
+  1. Say "build [feature]" to write a full spec
+  2. Or run /spec [slug] to create one directly
+  3. Emergency fix? Create specs/[slug]-bug.md (S1 + S6), then implement
+
+Bypass: user runs "touch .spec-first-bypass" or set SPEC_FIRST_ENFORCEMENT=off
+BLOCK
+exit 2
