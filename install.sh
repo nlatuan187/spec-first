@@ -107,19 +107,21 @@ CLAUDE_HOOKS="$CLAUDE_DIR/spec-first"
 
 if [ -d "$CLAUDE_DIR" ] || [ "$CONTEXT_FILE" = "CLAUDE.md" ]; then
   echo ""
-  echo "Claude Code detected — installing /spec /spec-review /spec-check commands..."
+  echo "Claude Code detected — installing /spec /spec-review /spec-check /spec-stats commands..."
   mkdir -p "$CLAUDE_COMMANDS"
 
   if [ "$LOCAL" = true ]; then
-    cp "$SCRIPT_DIR/advanced/skills/spec/SKILL.md"        "$CLAUDE_COMMANDS/spec.md"
-    cp "$SCRIPT_DIR/advanced/skills/spec-review/SKILL.md" "$CLAUDE_COMMANDS/spec-review.md"
-    cp "$SCRIPT_DIR/advanced/skills/spec-check/SKILL.md"  "$CLAUDE_COMMANDS/spec-check.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec/SKILL.md"         "$CLAUDE_COMMANDS/spec.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec-review/SKILL.md"  "$CLAUDE_COMMANDS/spec-review.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec-check/SKILL.md"   "$CLAUDE_COMMANDS/spec-check.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec-stats/SKILL.md"   "$CLAUDE_COMMANDS/spec-stats.md"
   else
-    curl -fsSL "$REPO/advanced/skills/spec/SKILL.md"        -o "$CLAUDE_COMMANDS/spec.md"
-    curl -fsSL "$REPO/advanced/skills/spec-review/SKILL.md" -o "$CLAUDE_COMMANDS/spec-review.md"
-    curl -fsSL "$REPO/advanced/skills/spec-check/SKILL.md"  -o "$CLAUDE_COMMANDS/spec-check.md"
+    curl -fsSL "$REPO/advanced/skills/spec/SKILL.md"         -o "$CLAUDE_COMMANDS/spec.md"
+    curl -fsSL "$REPO/advanced/skills/spec-review/SKILL.md"  -o "$CLAUDE_COMMANDS/spec-review.md"
+    curl -fsSL "$REPO/advanced/skills/spec-check/SKILL.md"   -o "$CLAUDE_COMMANDS/spec-check.md"
+    curl -fsSL "$REPO/advanced/skills/spec-stats/SKILL.md"   -o "$CLAUDE_COMMANDS/spec-stats.md"
   fi
-  echo "✓ /spec → /spec-review → /spec-check installed"
+  echo "✓ /spec → /spec-review → /spec-check → /spec-stats installed"
 
   # ── Install SessionStart hook ─────────────────────────────────────────────
   mkdir -p "$CLAUDE_HOOKS"

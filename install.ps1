@@ -79,14 +79,15 @@ $claudeDir = Join-Path $PROJECT_DIR ".claude"
 
 if ((Test-Path $claudeDir) -or ($CONTEXT_FILE -eq "CLAUDE.md")) {
     Write-Host ""
-    Write-Host "Claude Code detected — installing /spec /spec-review /spec-check commands..."
+    Write-Host "Claude Code detected — installing /spec /spec-review /spec-check /spec-stats commands..."
     $commandsDir = Join-Path $claudeDir "commands"
     New-Item -ItemType Directory -Force -Path $commandsDir | Out-Null
 
     (Invoke-WebRequest "$REPO/advanced/skills/spec/SKILL.md"        -UseBasicParsing).Content | Set-Content "$commandsDir\spec.md"         -Encoding UTF8
     (Invoke-WebRequest "$REPO/advanced/skills/spec-review/SKILL.md" -UseBasicParsing).Content | Set-Content "$commandsDir\spec-review.md"  -Encoding UTF8
     (Invoke-WebRequest "$REPO/advanced/skills/spec-check/SKILL.md"  -UseBasicParsing).Content | Set-Content "$commandsDir\spec-check.md"   -Encoding UTF8
-    Write-Host "[OK] /spec -> /spec-review -> /spec-check installed"
+    (Invoke-WebRequest "$REPO/advanced/skills/spec-stats/SKILL.md"  -UseBasicParsing).Content | Set-Content "$commandsDir\spec-stats.md"   -Encoding UTF8
+    Write-Host "[OK] /spec -> /spec-review -> /spec-check -> /spec-stats installed"
 
     # ── Install SessionStart hook ─────────────────────────────────────────
     $hooksDir = Join-Path $claudeDir "spec-first"
