@@ -254,7 +254,7 @@ Fix [N] flags before opening Build session:
 - **Not a spec rewrite.** If S3 is missing integrations, flag it — the spec author fills it in. You don't fill it for them.
 - **Not a code review.** That's `review.md` after the Build session.
 - **Not an implementation check.** That's `/spec-check` after the Build session.
-- **Scope Routing determines when the gate applies.** Autonomous route (S1 ≤ 3, S3 ≤ 1): `/spec-review` is optional — run it to improve quality, but the gate doesn't block. Recommend review (S1 4–7 or S3 2–3) and Review required (S1 ≥ 8 or S3 ≥ 4 or high-risk): APPROVED/BLOCKED gate applies, solo or team. See Skill Dial in snippet.md.
+- **Scope Routing determines when the gate applies.** Autonomous route (S1 ≤ 3, S3 ≤ 1): `/spec-review` is optional — run it to improve quality, but the gate doesn't block. Recommend review (S1 4–7 or S3 2–3) and Review required (S1 ≥ 8 or S3 ≥ 4 or high-risk): APPROVED/BLOCKED gate applies, solo or team. See Skill dial in snippet.md.
 
 ---
 
