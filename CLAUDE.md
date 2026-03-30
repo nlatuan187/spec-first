@@ -18,7 +18,8 @@ spec-first/
     ├── skills/
     │   ├── spec/SKILL.md        ← /spec slash command for Claude Code
     │   ├── spec-review/SKILL.md ← /spec-review slash command
-    │   └── spec-check/SKILL.md  ← /spec-check slash command
+    │   ├── spec-check/SKILL.md  ← /spec-check slash command
+    │   └── spec-stats/SKILL.md  ← /spec-stats slash command
     ├── deep-dives/              ← ai-limitations.md, worktree-workflow.md, etc.
     ├── during-coding/           ← implementation-brief.md
     ├── templates/               ← full feature-spec.md, review-checklist.md, CLAUDE.md template
@@ -51,6 +52,7 @@ spec-first/
 | Change the review checklist | `review.md` (root) and `advanced/templates/review-checklist.md` |
 | Change /spec slash command | `advanced/skills/spec/SKILL.md` |
 | Change /spec-check | `advanced/skills/spec-check/SKILL.md` |
+| Change /spec-stats | `advanced/skills/spec-stats/SKILL.md` |
 | Change install behavior | `install.sh` |
 | Add tool integration | `advanced/INTEGRATIONS.md` |
 | Change core principles | `advanced/ETHOS.md` |

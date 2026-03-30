@@ -156,7 +156,9 @@ If intent is unclear, default to **New feature** (Full S1–S6).
 | New feature | `/spec` → `/spec-review` → [Build] → `/spec-check` |
 | Large / Auth | `/spec` → `/spec-review` → [human reads spec] → [Build] → `review.md` → `/spec-check` |
 
-Claude Code: `install.sh` auto-installs all three when `.claude/` is detected. Other tools: copy each `SKILL.md` from `advanced/skills/` to your commands directory.
+**Measuring health**: Run `/spec-stats` weekly — shows fix:feat ratio, spec coverage, S1/S3 quality, and a health score out of 10.
+
+Claude Code: `install.sh` auto-installs all four when `.claude/` is detected. Other tools: copy each `SKILL.md` from `advanced/skills/` to your commands directory.
 
 ---
 
