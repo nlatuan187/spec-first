@@ -2,6 +2,8 @@
 
 Not all AI tools are interchangeable. Each has a specific role in the spec-first pipeline. Using the wrong tool for a task wastes time and produces worse output.
 
+> **Stack note**: This matrix reflects experience with a JavaScript/TypeScript web application. The spec-first methodology is stack-agnostic — S1-S6, Scope Routing, and session separation work identically in Python, Go, Rust, mobile, or infrastructure projects. What changes per stack is tool selection and deployment constraints (see `snippet.md` S1 Deployment Constraints table). If you have calibration data from a non-JS stack, share it in a [GitHub Discussion](https://github.com/nlatuan187/spec-first/discussions).
+
 ---
 
 ## The Decision Matrix
