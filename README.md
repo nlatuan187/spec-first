@@ -104,6 +104,8 @@ The most probable token after a vague request is a confident-sounding wrong answ
 
 spec-first engineers around the probability — not against it. Every rule derives from this law. When you understand it, you can engineer AI behavior for any situation not covered here.
 
+Industry benchmarks confirm this independently: AI agents with structured planning consistently outperform agents using more powerful models without planning. The spec is your planning architecture — it matters more than which AI model you use.
+
 ---
 
 ## Install — 30 seconds
