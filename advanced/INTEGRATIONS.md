@@ -16,9 +16,9 @@ The four-phase cycle (Spec → Generate → Review → Ship), the S1-S6 spec tem
 | Cursor | AI code editor | `.cursorrules` or `.cursor/rules/*.mdc` |
 | Windsurf | AI code editor | `.windsurfrules` + `workflows/spec.md` |
 | Codex / Copilot Workspaces | AI coding agents | `AGENTS.md` replaces CLAUDE.md |
-| GitHub Spec-Kit | Spec template toolkit (72K stars) | Extend `.specify/templates/spec-template.md` |
-| BMAD Method | Role-based agent orchestration (41K stars) | S1-S6 maps to BMAD story format |
-| OpenSpec | GIVEN/WHEN/THEN spec framework (34K stars) | Add companion `spec-first.md` per feature |
+| GitHub Spec-Kit | Spec template toolkit | Extend `.specify/templates/spec-template.md` |
+| BMAD Method | Role-based agent orchestration | S1-S6 maps to BMAD story format |
+| OpenSpec | GIVEN/WHEN/THEN spec framework | Add companion `spec-first.md` per feature |
 | conductor.build | Parallel agent orchestration (Mac app) | Zero config — inherits Claude Code skills |
 | CodeRabbit | Automated PR scanning | Drop-in config (`templates/.coderabbit.yaml`) |
 | Any AI chat session | Second-pass reviewer | No setup — paste diff + checklist |
@@ -214,7 +214,7 @@ spec-first specs feed directly into BMAD stories:
 
 ## GitHub Spec-Kit
 
-[GitHub Spec-Kit](https://github.com/github/spec-kit) is GitHub's official spec-driven development toolkit (72K stars, agent-agnostic). It ships spec/plan/tasks templates for all major AI editors.
+[GitHub Spec-Kit](https://github.com/github/spec-kit) is GitHub's official spec-driven development toolkit (agent-agnostic). It ships spec/plan/tasks templates for all major AI editors.
 
 **Integration**: Edit `.specify/templates/spec-template.md` to add S1-S6 sections after the existing Requirements section. Spec-Kit's template format is plain markdown — no custom tooling needed.
 
@@ -222,7 +222,7 @@ spec-first specs feed directly into BMAD stories:
 
 ## OpenSpec
 
-[OpenSpec](https://github.com/Fission-AI/OpenSpec) uses GIVEN/WHEN/THEN behavioral notation (34K stars, 20+ AI tool support).
+[OpenSpec](https://github.com/Fission-AI/OpenSpec) uses GIVEN/WHEN/THEN behavioral notation (20+ AI tool support).
 
 S1 (Error States) maps naturally to OpenSpec's WHEN/THEN scenarios. For other sections, add a companion `spec-first.md` in the OpenSpec spec folder:
 ```
@@ -270,18 +270,18 @@ If you have gstack installed, `/review` runs the full checklist automatically �
 
 ## Compatibility Matrix
 
-| Tool | Stars | Has Native Spec Format? | S1-S6 Integration | Config File | Effort |
-|------|-------|:---:|-------------------|-------------|:------:|
-| **Claude Code** | — | Partial (CLAUDE.md) | Native — SKILL.md + /commands | `.claude/skills/spec/SKILL.md` | Low |
-| **gstack** | 47K | Skill-based | Install `advanced/skills/spec/SKILL.md` | `~/.claude/skills/spec/` | Low |
-| **Kiro IDE** | — | Yes (EARS notation) | `.kiro/steering/spec-conventions.md` | `.kiro/steering/` | Low |
-| **GitHub Spec-Kit** | 72K | Yes — spec/plan/tasks | Extend `.specify/templates/` | `.specify/templates/spec-template.md` | Low |
-| **Cursor** | 1M+ users | Rules (.mdc) | `.cursor/rules/spec-first.mdc` | `.cursor/rules/` | Very Low |
-| **Windsurf** | Large | Workflows (.md) | `.windsurf/workflows/spec.md` | `.windsurf/workflows/` | Low |
-| **BMAD Method** | 41K | Yes (stories) | Feed spec as User Story | `_bmad/templates/story-template.md` | Medium |
-| **OpenSpec** | 34K | Yes (GIVEN/WHEN/THEN) | Companion `spec-first.md` per feature | `openspec/specs/<name>/` | Low |
-| **Codex / Copilot** | — | Partial (AGENTS.md) | `AGENTS.md` + issue templates | `AGENTS.md` | Low |
-| **conductor.build** | — | None (parallelizer) | Inherits Claude Code skills | (none needed) | Zero |
+| Tool | Has Native Spec Format? | S1-S6 Integration | Config File | Effort |
+|------|:---:|-------------------|-------------|:------:|
+| **Claude Code** | Partial (CLAUDE.md) | Native — SKILL.md + /commands | `.claude/skills/spec/SKILL.md` | Low |
+| **gstack** | Skill-based | Install `advanced/skills/spec/SKILL.md` | `~/.claude/skills/spec/` | Low |
+| **Kiro IDE** | Yes (EARS notation) | `.kiro/steering/spec-conventions.md` | `.kiro/steering/` | Low |
+| **GitHub Spec-Kit** | Yes — spec/plan/tasks | Extend `.specify/templates/` | `.specify/templates/spec-template.md` | Low |
+| **Cursor** | Rules (.mdc) | `.cursor/rules/spec-first.mdc` | `.cursor/rules/` | Very Low |
+| **Windsurf** | Workflows (.md) | `.windsurf/workflows/spec.md` | `.windsurf/workflows/` | Low |
+| **BMAD Method** | Yes (stories) | Feed spec as User Story | `_bmad/templates/story-template.md` | Medium |
+| **OpenSpec** | Yes (GIVEN/WHEN/THEN) | Companion `spec-first.md` per feature | `openspec/specs/<name>/` | Low |
+| **Codex / Copilot** | Partial (AGENTS.md) | `AGENTS.md` + issue templates | `AGENTS.md` | Low |
+| **conductor.build** | None (parallelizer) | Inherits Claude Code skills | (none needed) | Zero |
 
 ---
 

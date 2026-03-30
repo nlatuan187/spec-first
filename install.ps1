@@ -7,7 +7,7 @@
 #   1. Detects your AI tool and appends snippet.md to the right context file
 #   2. Copies spec.md and review.md to your project root
 #   3. Creates specs/ directory
-#   4. Installs /spec /spec-review /spec-check for Claude Code (if detected)
+#   4. Installs /spec /spec-review /spec-check /spec-stats for Claude Code (if detected)
 
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -79,41 +79,88 @@ $claudeDir = Join-Path $PROJECT_DIR ".claude"
 
 if ((Test-Path $claudeDir) -or ($CONTEXT_FILE -eq "CLAUDE.md")) {
     Write-Host ""
-    Write-Host "Claude Code detected — installing /spec /spec-review /spec-check commands..."
+    Write-Host "Claude Code detected — installing /spec /spec-review /spec-check /spec-stats commands..."
     $commandsDir = Join-Path $claudeDir "commands"
     New-Item -ItemType Directory -Force -Path $commandsDir | Out-Null
 
     (Invoke-WebRequest "$REPO/advanced/skills/spec/SKILL.md"        -UseBasicParsing).Content | Set-Content "$commandsDir\spec.md"         -Encoding UTF8
     (Invoke-WebRequest "$REPO/advanced/skills/spec-review/SKILL.md" -UseBasicParsing).Content | Set-Content "$commandsDir\spec-review.md"  -Encoding UTF8
     (Invoke-WebRequest "$REPO/advanced/skills/spec-check/SKILL.md"  -UseBasicParsing).Content | Set-Content "$commandsDir\spec-check.md"   -Encoding UTF8
-    Write-Host "[OK] /spec -> /spec-review -> /spec-check installed"
+    (Invoke-WebRequest "$REPO/advanced/skills/spec-stats/SKILL.md"  -UseBasicParsing).Content | Set-Content "$commandsDir\spec-stats.md"   -Encoding UTF8
+    Write-Host "[OK] /spec -> /spec-review -> /spec-check -> /spec-stats installed"
 
     # ── Install SessionStart hook ─────────────────────────────────────────
     $hooksDir = Join-Path $claudeDir "spec-first"
     New-Item -ItemType Directory -Force -Path $hooksDir | Out-Null
 
     (Invoke-WebRequest "$REPO/hooks/session-start" -UseBasicParsing).Content | Set-Content "$hooksDir\session-start" -Encoding UTF8
+    (Invoke-WebRequest "$REPO/hooks/pre-compact"   -UseBasicParsing).Content | Set-Content "$hooksDir\pre-compact"   -Encoding UTF8
+    (Invoke-WebRequest "$REPO/hooks/session-end"   -UseBasicParsing).Content | Set-Content "$hooksDir\session-end"   -Encoding UTF8
     (Invoke-WebRequest "$REPO/hooks/run-hook.cmd"  -UseBasicParsing).Content | Set-Content "$hooksDir\run-hook.cmd"  -Encoding UTF8
 
-    # Register hook in .claude/settings.json (merge safely)
+    # Register hooks in .claude/settings.json (merge safely)
     $settingsFile = Join-Path $claudeDir "settings.json"
-    $hookCmd = ".claude/spec-first/run-hook.cmd session-start"
+    $hookStart   = ".claude/spec-first/run-hook.cmd session-start"
+    $hookCompact = ".claude/spec-first/run-hook.cmd pre-compact"
+    $hookStop    = ".claude/spec-first/run-hook.cmd session-end"
 
     $settings = @{}
     if (Test-Path $settingsFile) {
         try { $settings = Get-Content $settingsFile -Raw | ConvertFrom-Json -AsHashtable } catch { $settings = @{} }
     }
-    if (-not $settings.ContainsKey("hooks"))          { $settings["hooks"] = @{} }
-    if (-not $settings["hooks"].ContainsKey("SessionStart")) { $settings["hooks"]["SessionStart"] = @() }
+    if (-not $settings.ContainsKey("hooks")) { $settings["hooks"] = @{} }
 
-    $alreadyRegistered = $settings["hooks"]["SessionStart"] | Where-Object { $_ -match "spec-first" }
-    if (-not $alreadyRegistered) {
-        $settings["hooks"]["SessionStart"] += @{ hooks = @(@{ type = "command"; command = $hookCmd }) }
-        $settings | ConvertTo-Json -Depth 10 | Set-Content $settingsFile -Encoding UTF8
-        Write-Host "[OK] SessionStart hook registered in .claude/settings.json"
-    } else {
-        Write-Host "[OK] SessionStart hook already registered (skipping)"
+    $hookMap = @{
+        "SessionStart" = $hookStart
+        "PreCompact"   = $hookCompact
+        "Stop"         = $hookStop
     }
+
+    $changed = $false
+    foreach ($entry in $hookMap.GetEnumerator()) {
+        $event = $entry.Key
+        $cmd   = $entry.Value
+        if (-not $settings["hooks"].ContainsKey($event)) { $settings["hooks"][$event] = @() }
+        $alreadyRegistered = $settings["hooks"][$event] | Where-Object { "$_" -match "spec-first" }
+        if (-not $alreadyRegistered) {
+            $settings["hooks"][$event] += @{ hooks = @(@{ type = "command"; command = $cmd }) }
+            $changed = $true
+            Write-Host "[OK] $event hook registered in .claude/settings.json"
+        } else {
+            Write-Host "[OK] $event hook already registered (skipping)"
+        }
+    }
+
+    if ($changed) {
+        $settings | ConvertTo-Json -Depth 10 | Set-Content $settingsFile -Encoding UTF8
+    }
+}
+
+# ── Step 6: Scaffold KNOWLEDGE.md ────────────────────────────────────────
+
+$knowledgePath = Join-Path $PROJECT_DIR "KNOWLEDGE.md"
+if (-not (Test-Path $knowledgePath)) {
+    @"
+# Project Knowledge - Cross-Session Memory
+
+> This file is read by spec-first hooks at session start.
+> Add learnings that future sessions need. Only add patterns confirmed 2+ times.
+
+## Stack & Constraints
+<!-- e.g., "Next.js 14, Supabase, Vercel serverless (10s timeout)" -->
+
+## Key Decisions
+<!-- e.g., "2026-03-15: Chose Zustand over Redux - simpler API, team consensus" -->
+
+## Patterns & Conventions
+<!-- e.g., "All API routes use /api/v1/ prefix" -->
+
+## Known Issues
+<!-- e.g., "PostgREST silently truncates at 1000 rows - always paginate" -->
+"@ | Set-Content $knowledgePath -Encoding UTF8
+    Write-Host "[OK] KNOWLEDGE.md scaffolded"
+} else {
+    Write-Host "[OK] KNOWLEDGE.md already exists (skipping)"
 }
 
 # ── Done ───────────────────────────────────────────────────────────────────
@@ -135,6 +182,7 @@ Write-Host "    CLAUDE.md (or your AI context file) -- methodology loaded"
 Write-Host "    spec.md                             -- spec template"
 Write-Host "    review.md                           -- code review checklist"
 Write-Host "    specs/                              -- your specs go here"
+Write-Host "    KNOWLEDGE.md                        -- cross-session memory"
 Write-Host "    .claude/spec-first/session-start    -- auto-inject hook"
 Write-Host ""
 Write-Host "  Not sure where to start? Read README.md"

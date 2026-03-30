@@ -362,4 +362,5 @@ The same data determines when human review is required — and when autonomous i
 - [Implementation blueprint](advanced/prp.md) — for complex features
 - [/spec, /spec-review, /spec-check, /spec-stats slash commands](advanced/skills/) — for Claude Code: write → verify → check coverage → measure health
 - [Ecosystem integrations](advanced/INTEGRATIONS.md) — Claude Code, Cursor, Windsurf, GSD-2
+- [During-coding layer](advanced/during-coding/) — implementation brief for long sessions + /spec-check usage
 - [Methodology philosophy](advanced/ETHOS.md)

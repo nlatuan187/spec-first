@@ -72,7 +72,7 @@ These are heuristics. They let you start calibrated rather than starting blind. 
 
 ### Step 1: Tag your fix commits for 2 weeks
 
-Add a category tag to every fix commit. **Minimum 20 fix commits before adjusting thresholds** — fewer data points are noise, not signal. Slow projects: extend to 4 weeks.
+Add a category tag to every fix commit. **Minimum 20 fix commits OR 4 weeks of data (whichever comes first)** before adjusting thresholds. Below 20 commits, treat findings as directional (not statistically significant) and flag in your calibration notes.
 
 Use your adapted categories from above (not necessarily the defaults):
 

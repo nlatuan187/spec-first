@@ -107,19 +107,21 @@ CLAUDE_HOOKS="$CLAUDE_DIR/spec-first"
 
 if [ -d "$CLAUDE_DIR" ] || [ "$CONTEXT_FILE" = "CLAUDE.md" ]; then
   echo ""
-  echo "Claude Code detected — installing /spec /spec-review /spec-check commands..."
+  echo "Claude Code detected — installing /spec /spec-review /spec-check /spec-stats commands..."
   mkdir -p "$CLAUDE_COMMANDS"
 
   if [ "$LOCAL" = true ]; then
-    cp "$SCRIPT_DIR/advanced/skills/spec/SKILL.md"        "$CLAUDE_COMMANDS/spec.md"
-    cp "$SCRIPT_DIR/advanced/skills/spec-review/SKILL.md" "$CLAUDE_COMMANDS/spec-review.md"
-    cp "$SCRIPT_DIR/advanced/skills/spec-check/SKILL.md"  "$CLAUDE_COMMANDS/spec-check.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec/SKILL.md"         "$CLAUDE_COMMANDS/spec.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec-review/SKILL.md"  "$CLAUDE_COMMANDS/spec-review.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec-check/SKILL.md"   "$CLAUDE_COMMANDS/spec-check.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec-stats/SKILL.md"   "$CLAUDE_COMMANDS/spec-stats.md"
   else
-    curl -fsSL "$REPO/advanced/skills/spec/SKILL.md"        -o "$CLAUDE_COMMANDS/spec.md"
-    curl -fsSL "$REPO/advanced/skills/spec-review/SKILL.md" -o "$CLAUDE_COMMANDS/spec-review.md"
-    curl -fsSL "$REPO/advanced/skills/spec-check/SKILL.md"  -o "$CLAUDE_COMMANDS/spec-check.md"
+    curl -fsSL "$REPO/advanced/skills/spec/SKILL.md"         -o "$CLAUDE_COMMANDS/spec.md"
+    curl -fsSL "$REPO/advanced/skills/spec-review/SKILL.md"  -o "$CLAUDE_COMMANDS/spec-review.md"
+    curl -fsSL "$REPO/advanced/skills/spec-check/SKILL.md"   -o "$CLAUDE_COMMANDS/spec-check.md"
+    curl -fsSL "$REPO/advanced/skills/spec-stats/SKILL.md"   -o "$CLAUDE_COMMANDS/spec-stats.md"
   fi
-  echo "✓ /spec → /spec-review → /spec-check installed"
+  echo "✓ /spec → /spec-review → /spec-check → /spec-stats installed"
 
   # ── Install SessionStart hook ─────────────────────────────────────────────
   mkdir -p "$CLAUDE_HOOKS"
@@ -194,9 +196,36 @@ PYEOF
 JSON
       echo "✓ SessionStart hook registered in .claude/settings.json"
     else
-      echo "  (python3 not found — add hook manually: see hooks/README in spec-first)"
+      echo "  (python3 not found — add hooks manually to .claude/settings.json)"
+      echo "  See: https://github.com/nlatuan187/spec-first/tree/master/hooks"
     fi
   fi
+fi
+
+# ── Step 6: Scaffold KNOWLEDGE.md ─────────────────────────────────────────
+
+if [ ! -f "$PROJECT_DIR/KNOWLEDGE.md" ]; then
+  cat > "$PROJECT_DIR/KNOWLEDGE.md" << 'TMPL'
+# Project Knowledge — Cross-Session Memory
+
+> This file is read by spec-first hooks at session start.
+> Add learnings that future sessions need. Only add patterns confirmed 2+ times.
+
+## Stack & Constraints
+<!-- e.g., "Next.js 14, Supabase, Vercel serverless (10s timeout)" -->
+
+## Key Decisions
+<!-- e.g., "2026-03-15: Chose Zustand over Redux — simpler API, team consensus" -->
+
+## Patterns & Conventions
+<!-- e.g., "All API routes use /api/v1/ prefix" -->
+
+## Known Issues
+<!-- e.g., "PostgREST silently truncates at 1000 rows — always paginate" -->
+TMPL
+  echo "✓ KNOWLEDGE.md scaffolded"
+else
+  echo "✓ KNOWLEDGE.md already exists (skipping)"
 fi
 
 # ── Done ───────────────────────────────────────────────────────────────────
@@ -218,6 +247,7 @@ echo "    $CONTEXT_FILE (AI context file)     -- methodology loaded"
 echo "    spec.md                             -- spec template"
 echo "    review.md                           -- code review checklist"
 echo "    specs/                              -- your specs go here"
+echo "    KNOWLEDGE.md                        -- cross-session memory"
 if [ -d "$CLAUDE_DIR" ] || [ "$CONTEXT_FILE" = "CLAUDE.md" ]; then
 echo "    .claude/spec-first/session-start    -- auto-inject hook"
 fi
