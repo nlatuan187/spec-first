@@ -94,27 +94,55 @@ if ((Test-Path $claudeDir) -or ($CONTEXT_FILE -eq "CLAUDE.md")) {
     New-Item -ItemType Directory -Force -Path $hooksDir | Out-Null
 
     (Invoke-WebRequest "$REPO/hooks/session-start" -UseBasicParsing).Content | Set-Content "$hooksDir\session-start" -Encoding UTF8
+    (Invoke-WebRequest "$REPO/hooks/pre-compact"   -UseBasicParsing).Content | Set-Content "$hooksDir\pre-compact"   -Encoding UTF8
+    (Invoke-WebRequest "$REPO/hooks/session-end"   -UseBasicParsing).Content | Set-Content "$hooksDir\session-end"   -Encoding UTF8
     (Invoke-WebRequest "$REPO/hooks/run-hook.cmd"  -UseBasicParsing).Content | Set-Content "$hooksDir\run-hook.cmd"  -Encoding UTF8
 
-    # Register hook in .claude/settings.json (merge safely)
+    # Register hooks in .claude/settings.json (merge safely)
     $settingsFile = Join-Path $claudeDir "settings.json"
-    $hookCmd = ".claude/spec-first/run-hook.cmd session-start"
 
     $settings = @{}
     if (Test-Path $settingsFile) {
         try { $settings = Get-Content $settingsFile -Raw | ConvertFrom-Json -AsHashtable } catch { $settings = @{} }
     }
-    if (-not $settings.ContainsKey("hooks"))          { $settings["hooks"] = @{} }
-    if (-not $settings["hooks"].ContainsKey("SessionStart")) { $settings["hooks"]["SessionStart"] = @() }
+    if (-not $settings.ContainsKey("hooks")) { $settings["hooks"] = @{} }
 
-    $alreadyRegistered = $settings["hooks"]["SessionStart"] | Where-Object { $_ -match "spec-first" }
-    if (-not $alreadyRegistered) {
-        $settings["hooks"]["SessionStart"] += @{ hooks = @(@{ type = "command"; command = $hookCmd }) }
-        $settings | ConvertTo-Json -Depth 10 | Set-Content $settingsFile -Encoding UTF8
-        Write-Host "[OK] SessionStart hook registered in .claude/settings.json"
-    } else {
-        Write-Host "[OK] SessionStart hook already registered (skipping)"
+    $hookEntries = @(
+        @{ event = "SessionStart"; cmd = ".claude/spec-first/run-hook.cmd session-start" },
+        @{ event = "PreCompact";   cmd = ".claude/spec-first/run-hook.cmd pre-compact" },
+        @{ event = "Stop";         cmd = ".claude/spec-first/run-hook.cmd session-end" }
+    )
+
+    $changed = $false
+    foreach ($entry in $hookEntries) {
+        if (-not $settings["hooks"].ContainsKey($entry.event)) { $settings["hooks"][$entry.event] = @() }
+        $alreadyRegistered = $settings["hooks"][$entry.event] | Where-Object { $_ -match "spec-first" }
+        if (-not $alreadyRegistered) {
+            $settings["hooks"][$entry.event] += @{ hooks = @(@{ type = "command"; command = $entry.cmd }) }
+            $changed = $true
+            Write-Host "[OK] $($entry.event) hook registered in .claude/settings.json"
+        } else {
+            Write-Host "[OK] $($entry.event) hook already registered (skipping)"
+        }
     }
+
+    if ($changed) {
+        $settings | ConvertTo-Json -Depth 10 | Set-Content $settingsFile -Encoding UTF8
+    }
+}
+
+# ── Step 6: Scaffold KNOWLEDGE.md ─────────────────────────────────────────
+
+$knowledgeFile = Join-Path $PROJECT_DIR "KNOWLEDGE.md"
+if (-not (Test-Path $knowledgeFile)) {
+    @"
+# Project Knowledge — Cross-Session Memory
+
+> Add learnings that future sessions need. Only add patterns confirmed 2+ times.
+"@ | Set-Content $knowledgeFile -Encoding UTF8
+    Write-Host "[OK] KNOWLEDGE.md scaffolded"
+} else {
+    Write-Host "[OK] KNOWLEDGE.md already exists (skipping)"
 }
 
 # ── Done ───────────────────────────────────────────────────────────────────
