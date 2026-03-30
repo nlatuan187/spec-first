@@ -142,7 +142,7 @@ The Fundamental Law applies at every scale. spec-first is the spec quality layer
 |---|---|---|
 | **Solo** | 1–3 devs | Self-approve specs. One context file. |
 | **Team** | 3–10 devs | Approval gate + PR template + constitution owner. |
-| **Corp** | 10+ devs | Formal constitution governance + distributed approvers + automated S3 enumeration. Add [BMAD](https://github.com/bmad-method/BMAD-METHOD) for multi-agent orchestration on top. |
+| **Corp** | 10+ devs | Formal constitution governance + distributed approvers + automated S3 enumeration. |
 
 The 5 failure modes (happy-path bias, isolation blindness, etc.) exist at every scale. spec-first's rules apply regardless. What scales up is coordination — not whether to use spec-first.
 
@@ -159,8 +159,6 @@ spec-first is the thinking layer — what to build and what can break. Pair it w
 | Better specs, fewer bugs | **spec-first** (this repo) |
 | Subagent-driven autonomous execution | spec-first + [superpowers](https://github.com/obra/superpowers) |
 | Overnight autonomous builds with crash recovery | spec-first + [GSD-2](https://github.com/gsd-build/gsd-2) |
-| Multi-agent team orchestration | spec-first + [BMAD](https://github.com/bmad-code-org/BMAD-METHOD) |
-| Spec-as-executable-artifact pipeline | spec-first + [Spec-Kit](https://github.com/github/spec-kit) |
 
 spec-first writes the plan. These tools execute it. Without the plan, automation runs fast and breaks things. Without automation, the plan is slower to execute. Together: quality at speed.
 

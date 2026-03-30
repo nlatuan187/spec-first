@@ -194,9 +194,23 @@ PYEOF
 JSON
       echo "✓ SessionStart hook registered in .claude/settings.json"
     else
-      echo "  (python3 not found — add hook manually: see hooks/README in spec-first)"
+      echo "  (python3 not found — add hooks manually to .claude/settings.json)"
+      echo "  See: https://github.com/nlatuan187/spec-first/tree/master/hooks"
     fi
   fi
+fi
+
+# ── Step 6: Scaffold KNOWLEDGE.md ─────────────────────────────────────────
+
+if [ ! -f "$PROJECT_DIR/KNOWLEDGE.md" ]; then
+  cat > "$PROJECT_DIR/KNOWLEDGE.md" << 'TMPL'
+# Project Knowledge — Cross-Session Memory
+
+> Add learnings that future sessions need. Only add patterns confirmed 2+ times.
+TMPL
+  echo "✓ KNOWLEDGE.md scaffolded"
+else
+  echo "✓ KNOWLEDGE.md already exists (skipping)"
 fi
 
 # ── Done ───────────────────────────────────────────────────────────────────
