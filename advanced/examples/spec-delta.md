@@ -11,11 +11,11 @@ Fix:feat ratio for this spec: 1:1 (clean implementation from clear root cause).
 **MODIFIED**: Content generation pipeline — from independent parallel AI calls to 2-phase generation with locked facts.
 
 **Root cause**: The system generates content for multiple platforms in parallel. Each platform gets its own independent AI call with the same input data as free text. The AI reinterprets free text differently each time:
-- Platform A: "2 bedrooms" → AI says "2BR+1" (counted the study as a room)
-- Platform B: "2 bedrooms" → AI says "3BR"
-- Platform C: "65m²" → AI says "nearly 70m²"
+- Platform A: "8GB RAM" → AI says "8GB unified memory" (inferred Apple Silicon)
+- Platform B: "8GB RAM" → AI says "16GB" (hallucinated an upgrade)
+- Platform C: "$999" → AI says "under $1,000" (rephrased inaccurately for a sale context)
 
-User publishes all three. Customers see contradictory facts. Trust destroyed.
+User publishes all three. Customers see contradictory specs. Trust destroyed.
 
 **ADDED**: Structured fact block (JSON instead of free text) + core message generation step (Phase 0) that locks facts before platform-specific adaptation.
 
@@ -71,7 +71,7 @@ Data (structured JSON) ──► AI call 0 → Core Selling Points (facts locked
 | Core message generation fails | Fallback: generate per-platform without core (degrade gracefully) |
 | Tone value not in known list | Fallback: use default tone |
 | 1 platform fails in parallel | Other platforms still succeed (existing behavior preserved) |
-| Data has null fields (no price, no bedroom count) | Structured facts includes nulls → core message skips them → no fabricated data |
+| Data has null fields (no price, no specs) | Structured facts includes nulls → core message skips them → no fabricated data |
 | API rate limit hit | Core message = +1 API call. If rate limited → entire generation fails → return error |
 
 ---
@@ -120,10 +120,10 @@ Data (structured JSON) ──► AI call 0 → Core Selling Points (facts locked
 ## S6: Regression Scenarios (before → after → expected diff)
 
 ### Consistency
-- [ ] Generate Platform A + B + C for item with 2 bedrooms, 65m², 3.5M → all three say same facts
+- [ ] Generate Platform A + B + C for item with known specs (8GB, $999) → all three say same facts
 - [ ] Generate twice for same item → facts identical (phrasing may vary)
 - [ ] Item missing price → content does NOT fabricate a price
-- [ ] Item missing bedroom count → content does NOT fabricate a count
+- [ ] Item missing specs → content does NOT fabricate specs
 
 ### Tone
 - [ ] `tone=friendly` → output is conversational, not formal
