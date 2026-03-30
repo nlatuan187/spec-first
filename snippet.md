@@ -96,7 +96,7 @@ Scope: [Bug fix / Small change] — [N] error states, [N] integration points.
 Implementing now. Key risks from S1: [list items].
 ```
 Then immediately, without waiting:
-1. Re-read the spec you just wrote
+1. Re-read the spec you just wrote — S1 last (the section read most recently gets the most weight in your code)
 2. If the project has a test framework: write failing tests from S6 scenarios before implementing
 3. Implement — handle every S1 error state explicitly in code
 4. If S3 has integration points: verify those touchpoints are covered
@@ -421,6 +421,8 @@ If this constitution is shared across a team, three additional rules apply:
 | S4 | UX Copy Review | Is every user-facing string plain language? |
 | S5 | State & Persistence Matrix | Where does each piece of data live? |
 | S6 | Manual QA Scenarios | Can a human verify this without reading code? |
+
+*Each section forces thinking at a different abstraction level — from user-facing behavior (S1, S4) through system integration (S3, S5) to verification (S6). Together, they form a multi-resolution representation of your feature. Gaps at any level become bugs at that level.*
 
 Spec template → `spec.md`
 Review checklist → `review.md`

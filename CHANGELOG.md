@@ -15,7 +15,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - GitHub issue templates (bug report + feature request)
 
 ### Changed
+- `snippet.md` — Autonomous route: "re-read S1 last" (recency bias — the section read most recently gets the most weight in implementation)
+- `snippet.md` — S1-S6 table: added multi-resolution framing (each section = a different abstraction level)
 - `snippet.md` — Code Rule section now documents mechanical enforcement
+- `README.md` — Fundamental Law: added "planning architecture > model power" evidence note
 - `install.sh` / `install.ps1` — register `PreToolUse` enforcement hook with `matcher: "Edit|Write"`
 - `tool-matrix.md` — added stack disclaimer (methodology is stack-agnostic, tool recommendations are JS/TS-specific)
 
