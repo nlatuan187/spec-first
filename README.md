@@ -159,6 +159,7 @@ spec-first is the thinking layer — what to build and what can break. Pair it w
 | Better specs, fewer bugs | **spec-first** (this repo) |
 | Subagent-driven autonomous execution | spec-first + [superpowers](https://github.com/obra/superpowers) |
 | Overnight autonomous builds with crash recovery | spec-first + [GSD-2](https://github.com/gsd-build/gsd-2) |
+| Multi-agent team orchestration | spec-first + [BMAD](https://github.com/bmad-method/BMAD-METHOD) |
 
 spec-first writes the plan. These tools execute it. Without the plan, automation runs fast and breaks things. Without automation, the plan is slower to execute. Together: quality at speed.
 
