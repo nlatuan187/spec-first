@@ -358,6 +358,7 @@ The same data determines when human review is required — and when autonomous i
 - [**Calibration**](advanced/calibration.md) — start with the defaults, tune thresholds to your codebase in 2 weeks
 - [**Feedback triage**](advanced/feedback-triage.md) — convert raw user feedback batches into verified GitHub issues: 5-phase workflow, 3x token overhead eliminated
 - [Team workflow](advanced/team-workflow.md) — approval gate, PR template, constitution ownership
+- [During-coding layer](advanced/during-coding/) — implementation brief for long sessions + /spec-check usage
 - [Implementation blueprint](advanced/prp.md) — for complex features
 - [/spec, /spec-review, /spec-check, /spec-stats slash commands](advanced/skills/) — for Claude Code: write → verify → check coverage → measure health
 - [Ecosystem integrations](advanced/INTEGRATIONS.md) — Claude Code, Cursor, Windsurf, GSD-2
