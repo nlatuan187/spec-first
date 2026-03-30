@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question / Discussion
+    url: https://github.com/nlatuan187/spec-first/discussions
+    about: Ask questions or discuss the methodology
