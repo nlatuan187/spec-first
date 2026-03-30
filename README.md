@@ -347,6 +347,7 @@ The same data determines when human review is required — and when autonomous i
 | [`spec.md`](spec.md) | Spec template — full S1–S6, Delta, and Bug formats. |
 | [`review.md`](review.md) | Two-pass code review checklist. |
 | [`install.sh`](install.sh) | Auto-detect + append installer. |
+| [`hooks/`](hooks/) | Enforcement hook (blocks code without spec) + session lifecycle hooks. Claude Code only. |
 | [`advanced/examples/`](advanced/examples/) | Real production specs (anonymized) — feature, bug fix, delta, and refactor formats. |
 | [`advanced/`](advanced/) | Team workflow, calibration protocol, /spec /spec-review /spec-check /spec-stats skills. |
 

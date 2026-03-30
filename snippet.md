@@ -271,6 +271,8 @@ Before writing implementation code: check if `specs/[slug].md` exists for this c
 
 *Derives from: The most probable next token after "implement this feature" is confident-sounding code that skips error states, misses integrations, and works only on the happy path. A spec overrides probability with specificity. This rule is read at session start and decays with conversation length — re-read it if context exceeds 40%.*
 
+**Mechanical enforcement** (Claude Code): The `pre-tool-use` hook blocks Write/Edit on source code when no spec exists in `specs/`. Config, docs, markdown, and test files are never blocked. Bypass: `touch .spec-first-bypass` or `SPEC_FIRST_ENFORCEMENT=off`. Other tools: this text is the enforcement.
+
 ---
 
 ### Session Rule — Never review code you just wrote
