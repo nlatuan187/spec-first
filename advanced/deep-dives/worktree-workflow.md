@@ -112,7 +112,7 @@ Open a **new AI session**. No context from Session A.
 Read CLAUDE.md, then:
 Read specs/profile-photo-upload.md
 
-Apply the review checklist from spec-first/advanced/templates/review-checklist.md — but for SPECS, not code.
+Apply the review checklist from spec-first/review.md — but for SPECS, not code.
 Check:
 - S1: Does it cover auth failure, API failure, file too large, wrong format, concurrent upload?
 - S3: What other features does photo upload affect? User profile display, email notifications?
@@ -140,7 +140,7 @@ Implement all files. Commit with: "feat(#123): user profile photo upload"
 
 AI implements across all relevant files — API route, service, component, migration.
 
-During a long implementation session, fill in `spec-first/during-coding/implementation-brief.md` to track progress. If context gets long: save the brief, end the session, start fresh and paste the brief.
+During a long implementation session, fill in `spec-first/advanced/during-coding/implementation-brief.md` to track progress. If context gets long: save the brief, end the session, start fresh and paste the brief.
 
 Run spec-check before ending:
 ```
@@ -161,7 +161,7 @@ Open a **new AI session**. No context from Session C.
 Read CLAUDE.md, then:
 git diff origin/main
 
-Apply Pass 1 (Critical) then Pass 2 (Informational) from spec-first/advanced/templates/review-checklist.md.
+Apply Pass 1 (Critical) then Pass 2 (Informational) from spec-first/review.md.
 Format: [file:line] Problem → recommended fix
 AUTO-FIX what you can. Flag the rest.
 ```

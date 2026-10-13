@@ -76,27 +76,26 @@ else
   echo "✓ Appended to $CONTEXT_FILE"
 fi
 
-# ── Step 2: Copy spec.md ───────────────────────────────────────────────────
+# ── Step 2-3: Copy the four templates ──────────────────────────────────────
+# Existing files are left alone — a project that has already tailored its
+# spec template must not have that work overwritten by a re-run.
 
-if [ "$LOCAL" = true ]; then
-  cp "$SCRIPT_DIR/spec.md" "$PROJECT_DIR/spec.md"
-else
-  curl -fsSL "$REPO/spec.md" -o "$PROJECT_DIR/spec.md"
-fi
-echo "✓ spec.md → project root"
+for t in spec.md verify.md system.md review.md; do
+  if [ -f "$PROJECT_DIR/$t" ]; then
+    echo "✓ $t already exists (skipping)"
+    continue
+  fi
+  if [ "$LOCAL" = true ]; then
+    cp "$SCRIPT_DIR/$t" "$PROJECT_DIR/$t"
+  else
+    curl -fsSL "$REPO/$t" -o "$PROJECT_DIR/$t"
+  fi
+  echo "✓ $t → project root"
+done
 
-# ── Step 3: Copy review.md ─────────────────────────────────────────────────
+# ── Step 4: Create specs/ and docs/system/ ─────────────────────────────────
 
-if [ "$LOCAL" = true ]; then
-  cp "$SCRIPT_DIR/review.md" "$PROJECT_DIR/review.md"
-else
-  curl -fsSL "$REPO/review.md" -o "$PROJECT_DIR/review.md"
-fi
-echo "✓ review.md → project root"
-
-# ── Step 4: Create specs/ ──────────────────────────────────────────────────
-
-mkdir -p "$PROJECT_DIR/specs"
+mkdir -p "$PROJECT_DIR/specs" "$PROJECT_DIR/docs/system"
 echo "✓ specs/ ready"
 
 # ── Step 5: Install Claude Code slash commands + hooks (if detected) ───────
@@ -251,19 +250,24 @@ echo ""
 echo "  Next steps:"
 echo "  1. Open your AI tool (Claude Code, Cursor, Windsurf, etc.) in this folder"
 echo "  2. Type: build [describe what you want to create]"
-echo "  3. Your AI will ask up to 3 clarifying questions"
-echo "  4. Then write a spec file in specs/ -- no code yet"
-echo "  5. Review the spec, then open a new session to build"
+echo "  3. It asks what is unclear, then runs the seven checks in verify.md"
+echo "  4. It writes specs/<slug>.md -- no code yet"
+echo "  5. YOU set 'status: approved' in the spec front matter. Nothing builds until you do."
+echo "  6. New session to build, another to review, then reconcile into docs/system/"
 echo ""
 echo "  Cross-session memory: append project learnings to KNOWLEDGE.md"
 echo ""
 echo "  Files installed:"
 echo "    $CONTEXT_FILE (AI context file)     -- methodology loaded"
 echo "    spec.md                             -- spec template"
+echo "    verify.md                           -- the seven pre-spec checks"
+echo "    system.md                           -- living system-document template"
 echo "    review.md                           -- code review checklist"
-echo "    specs/                              -- your specs go here"
+echo "    specs/                              -- specs in flight"
+echo "    docs/system/                        -- where shipped specs land"
 if [ -d "$CLAUDE_DIR" ] || [ "$CONTEXT_FILE" = "CLAUDE.md" ]; then
 echo "    .claude/spec-first/session-start    -- auto-inject hook"
+echo "    .claude/spec-first/pre-tool-use     -- blocks source edits without an APPROVED spec"
 fi
 echo ""
 echo "  Not sure where to start? Read README.md"

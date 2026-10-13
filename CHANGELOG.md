@@ -4,6 +4,57 @@ All notable changes to spec-first are documented here. When `snippet.md` changes
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.0.0] — 2026-10-13
+
+Merged in the parts of a production methodology that matured after this repo was
+extracted, and the mechanisms competing toolchains added since. Removed the parts that
+existed to compensate for weaker models.
+
+### Added
+- `verify.md` — seven mandatory pre-spec checks, recorded into the spec. A spec whose
+  `## Verification` section is empty is a draft. Origin: 11 review gaps in two specs
+  written from memory in a single day.
+- `system.md` — living system-document template. Shipped specs are folded into it rather
+  than filed in `specs/done/` to go stale.
+- Reconciliation step — within a working day of merge, the spec is re-read against the
+  merged diff and its durable parts move into the system document. Measured basis:
+  documents written after their code kept 70/70 path references accurate over five
+  months; the one written ahead of its code held 2 of the 3 dead references in the set.
+- Spec sections `Why` (Pain · Need · Proposed · Non-goals), `Invariants`, `Thresholds`,
+  `Known issues`, `Mental model`, `Pre-reading`.
+- `Discovery` scope — when the solution is unknown, write the questions, not a guess.
+- Front matter `owner`, `approver`, `approved_at`, `shipped_at`, `reconciled_at`.
+
+### Changed — enforcement is now real
+The `pre-tool-use` hook previously allowed any edit as soon as a single `.md` file
+existed in `specs/`. One file unlocked the repository permanently. It now requires all
+three of: a spec exists, its status is `approved` or `implementing`, and its
+`## File changes` names the file being edited. Approval is a human act; an agent setting
+`approved_at` is the thing this gate exists to prevent.
+
+Also fixed: test-path matching was substring-based, so `src/contest/page.tsx` and
+`lib/latest.ts` were silently treated as test files and never gated.
+
+### Changed — written for a capable model
+Removed context-window and attention-weighting workarounds, the cap on clarifying
+questions, the instruction to re-read sections in a particular order, and most of the
+per-rule derivations. `snippet.md` went from 428 lines to under 200 — it is pasted into
+the user's context file, and the file itself says to keep that under ~200 lines.
+
+### Removed
+- `advanced/deep-dives/{team-scaling,the-system,tool-matrix,prompting-guide}.md` — four
+  orphans nothing linked to; two duplicated files that are still present, one carried
+  vendor and model guidance from March 2026.
+- `advanced/templates/{feature-spec,review-checklist}.md` — divergent second copies of
+  `spec.md` and `review.md`. The old guidance was to edit both, which is why they diverged.
+
+### Fixed
+- `evidence.md` claimed a 2.93:1 fix:feat ratio meant "75% of commits were fixing AI
+  output". `fix:` was 47% of all commits (293 of 626); 75% is the share among commits
+  that were either a feature or a fix.
+- Dead prose paths to `spec-first/during-coding/` and to the removed templates.
+- The installer no longer overwrites a `spec.md` or `review.md` the project has edited.
+
 ## [Unreleased]
 
 ### Added

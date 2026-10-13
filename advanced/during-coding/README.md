@@ -61,7 +61,7 @@ A 40-line compressed template. Fill it at the start of an implementation session
 ## Workflow
 
 ```
-1. Write spec (feature-spec.md)
+1. Write spec (spec.md)
 2. Start new session: "Read CLAUDE.md, then implement specs/[feature].md"
 3. Fill implementation-brief.md as you work
 4. When context gets long: new session → paste brief → continue

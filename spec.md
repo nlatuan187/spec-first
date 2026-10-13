@@ -1,243 +1,325 @@
 ---
 title: "[NAME]"
-status: draft                    # draft | in-review | approved | implementing | done
-scope: new-feature               # bug-fix | small-change | refactor | new-feature | large-feature | spike | delta
-s1_count: 0                     # filled after writing S1 — used by Scope Routing
-s3_count: 0                     # filled after writing S3 — used by Scope Routing
+status: draft          # draft | in-review | approved | implementing | shipped | reconciled
+scope: feature         # bug | small | refactor | feature | large | discovery
+owner: "[who writes this]"
+approver: "[who may set status: approved — must not be the same person as owner on large/high-risk]"
 created: YYYY-MM-DD
+approved_at:           # set by the approver, never by the author
+shipped_at:
+reconciled_at:         # set after the post-merge reconciliation pass
 ---
 
-# Feature: [NAME]
+# [NAME]
 
-> **Solo**: self-approve, move to Implementing when ready.
-> **Team**: Draft → In Review → **Approved** → Implementing → Done. Build session only starts on Approved specs.
-> **Before writing**: Read your project constitution — it defines stack, conventions, constraints that affect every section here.
+> **Source**: [where the facts in this spec came from — issue link, user interview, measurement, platform docs URL]
 
----
+<!--
+  LENGTH RULE: if this spec is longer than the diff it describes, it is too long for
+  this change. Drop to a lighter scope. Scope picks the sections:
 
-<!-- CHOOSE ONE FORMAT:
-  - New feature → use the full S1–S6 template below
-  - Existing code change → use Delta Format (faster, brownfield-safe)
-  - Bug fix → use the Bug Format (S1 + S6 only)
+    discovery → Why + Open questions + Options. NO solution sections. Stop there.
+    bug       → Why + Failure modes + QA + File changes
+    small     → Why + Acceptance + Failure modes + QA + File changes
+    refactor  → Why + Invariants + Integration + QA + File changes
+    feature   → all mandatory sections
+    large     → all, plus Mental model and Pre-reading
+
+  MANDATORY for every scope except discovery:
+    Why · Verification · Failure modes · Invariants · File changes · QA · Known issues
+  OPTIONAL, include only when they carry information:
+    Mental model · Pre-reading · Thresholds · Code flow · Data contract · Copy · State
 -->
 
 ---
 
-## Delta Format (for changes to existing code)
+## Why
 
-<!-- Use this when modifying existing behavior. Delete this section if writing a new feature. -->
+**Pain** — the state the user is already in, independent of this product.
 
-**What's changing**
-```
-ADDED:    [new behavior, field, or endpoint]
-MODIFIED: [existing behavior → new behavior]
-REMOVED:  [what's being deleted and why]
-```
+<!--
+  A pain is valid only if it contains EITHER a frequency/quantity OR a blocking fact.
+  It must not contain this product's own feature nouns.
 
-**What it touches** (run this — don't rely on memory):
-```bash
-ls [your-source-dirs] 2>/dev/null | head -40
-```
-Integration effects: [for each relevant result above: read or write?]
+  ✅ "Without a connected account, publishing is blocked."     (blocking fact)
+  ✅ "Brokers receive inventory as spreadsheets and PDFs and copy it in by hand."
+  ❌ "Brokers need a content plan view, not just a list of drafts."   ← that is a backlog item
+-->
 
-**S1 — What breaks if this delta regresses**
+**Need** — in the user's own words. One sentence, first person, quoted verbatim.
 
-| Condition | User sees / System does |
-|-----------|------------------------|
-| [Condition specific to the change] | [behavior] |
+<!--
+  If you cannot quote anyone, write: "No user said this. Assumed by [name] on [date]."
+  That is a legitimate answer and it is far better than inventing a quote.
+-->
 
-**S6 — Regression scenario**
-- [ ] Before delta: [state] → After delta: [expected diff] → Verify: [how]
+**Proposed** — `We will [X], not [Y], because [Z].`
 
----
+<!--
+  The "not [Y]" half is mandatory. It records the design you rejected, which is the part
+  that otherwise lives in one person's head and gets re-proposed every six months.
 
-## Bug Format (for bug fixes)
+  ✅ "We will treat the campaign row as a plan plus provenance, not a workflow engine,
+      because the plan is the artifact and execution only writes downstream."
+-->
 
-<!-- Use this for bug fixes. Delete this section if writing a feature or delta. -->
+**Non-goals** — what this change deliberately does NOT do.
 
-**Bug**: [what currently happens]
-**Expected**: [what should happen]
-**Trigger**: [exact steps to reproduce]
-
-**S1 — Error states**
-
-| Condition | User sees / System does |
-|-----------|------------------------|
-| [Root cause condition] | [behavior before fix] → [behavior after fix] |
-
-**S6 — Regression**
-- [ ] Fix verified: [specific reproduction → expected resolution]
-- [ ] No regression: [related behavior still works]
+<!-- Each line is a refusal someone might otherwise reasonably attempt. -->
 
 ---
 
-## Refactor Format (for structural changes that preserve behavior)
+## Verification
 
-<!-- Use this when renaming, moving, splitting, or merging code without changing what it does. Delete this section if writing a feature, delta, or bug fix. -->
+<!--
+  Paste the recorded output of the seven checks in verify.md. One line per check.
+  "No hits" is a result — write it down.
+  A spec with this section empty is a draft, whatever else it contains.
+-->
 
-**What's being restructured**: [what moves where / what gets renamed / what gets split or merged]
+Run [YYYY-MM-DD] against `[branch]` @ `[sha]`.
 
-**Behavior that MUST NOT change**:
-- [specific behavior 1 — must work identically after refactoring]
-- [specific behavior 2]
-
-**What references it** (run this — don't rely on memory):
-```bash
-grep -r "FunctionName\|ClassName\|import_path" [your-source-dirs] --include="*.[ext]" | head -30
-```
-
-**S3 — Every file that needs migration**
-
-| File | How it references the thing being changed | Migration needed |
-|------|------------------------------------------|-----------------|
-| [file path] | [import / function call / type reference] | [rename import / update path / change API] |
-
-**S6 — Regression (verify behavior is preserved)**
-- [ ] [Specific behavior] still works after refactoring
-- [ ] [Specific behavior] still works after refactoring
-- [ ] All existing tests pass
+1. Naming —
+2. Paths —
+3. Dependencies —
+4. Env —
+5. Secrets in URLs —
+6. Atomicity —
+7. Prior art —
 
 ---
 
-## Overview
+## Acceptance
 
-**Goal**: [What the user accomplishes — one sentence]
-**Trigger**: [What causes this feature to activate]
-**Users affected**: [Who uses this]
+<!--
+  EARS notation. WHEN = event · IF = condition · WHILE = continuous state · SHALL = mandatory.
+  Every criterion must be checkable by someone who has not read the code.
+-->
 
----
-
-## Acceptance Criteria
-
-<!-- Use EARS notation: WHEN / IF / WHILE + SHALL
-     WHEN = event trigger   IF = condition   WHILE = continuous state
-     SHALL = mandatory       SHOULD = recommended
-     Every criterion must be verifiable by a human who hasn't read the code. -->
-
-### Core behaviors
-- WHEN [user action / trigger event] THEN the system SHALL [observable behavior]
-- WHEN [secondary trigger] THEN the system SHALL [behavior]
-
-### Edge cases (must work correctly)
-- WHEN [boundary value / empty state] THEN the system SHALL [behavior]
-- IF [concurrent / interrupted state] THEN the system SHALL [behavior]
-- WHILE [ongoing condition] THE system SHALL [continuous behavior]
-
-### Failure behaviors (must fail gracefully)
-- IF [unauthorized / no permission] THEN the system SHALL [specific redirect or message — not "show error"]
-- IF [invalid input: describe specific input] THEN the system SHALL [specific error message]
-- IF [external service down] THEN the system SHALL [fallback behavior]
+- WHEN [trigger] THEN the system SHALL [observable behaviour]
+- IF [condition] THEN the system SHALL [observable behaviour]
+- WHILE [state] THE system SHALL [continuous behaviour]
 
 ---
 
-## S1: Error States & Validation
+## Failure modes
 
-**Deployment Constraints** (fill BEFORE error rows — adapt to your stack):
-- Timeout: [Web: Vercel 10s, Lambda 15s | Mobile: iOS background 30s, Android ANR 5s | Backend: gRPC deadline, queue visibility timeout]
-- Data limits: [DB truncation? Batch size? Connection pool? Redis maxmemory?]
-- Auth / secrets: [Never in URL params or logs | Mobile: Keychain/Keystore only | Backend: env vars, rotate via vault]
-- Concurrency: [Cron dedup? Offline sync? Circuit breaker? Idempotency keys?]
+<!--
+  Write these BEFORE the happy path. Training data is roughly 10:1 success-to-failure,
+  so the failure rows are the ones that do not appear unless you demand them.
 
-| Condition | User sees / System does |
-|-----------|------------------------|
-| Not authenticated | [Web: redirect to /login | Mobile: present login screen | API: 401 response] |
-| Session / token expired | [Auto-refresh? Re-prompt? Redirect?] |
-| Service unavailable (500 / timeout) | [User-facing message + retry option | Queue retry with backoff] |
-| Resource not found (404) | [Empty state? "Not found" message? Fallback?] |
-| Invalid input | [Inline validation with specific text | API: 422 with field-level errors] |
-| Data missing / null | [Placeholder UI? Default value? Error boundary? Log + skip?] |
-| Network unavailable | [Web: banner | Mobile: offline queue + sync | Backend: circuit breaker] |
-| Concurrent / duplicate operation | [Idempotency key? Atomic lock? Optimistic locking?] |
+  The last column is the one people skip. "Silently does nothing" is a legitimate entry
+  and must be written down as a decision, not left as an accident.
 
-## S2: Post-Completion Flow
+  Fill the deployment constraints first — they are facts about your platform, not opinions:
+    Timeout:      [serverless limit? mobile background limit? queue visibility timeout?]
+    Data limits:  [silent row truncation? batch size? payload cap? connection pool?]
+    Auth:         [where do credentials live, and where must they never appear?]
+    Concurrency:  [idempotency key? atomic lock? dead-letter queue? circuit breaker?]
+-->
 
-- **On success**: [Navigate where? Show what confirmation? Auto-save where?]
-- **User leaves mid-flow**: [Auto-save? Warning? Discard? Mobile: app backgrounded?]
-- **App/page restart mid-flow**: [Restore from local storage / DB? Start over?]
-- **Output constraints**: [Max length? File size? Rate limits? Payload size?]
-
-## S3: Cross-Feature Integration
-
-<!-- Before writing this section, enumerate existing features from the codebase:
-     ls [your-source-dirs] 2>/dev/null | head -40
-     Do not enumerate from memory. Scan what actually exists. -->
-
-- **Triggers**: [Creating X here → refreshes list in Feature Y? Updates count in Feature Z?]
-- **Shared state**: [Which store / context / global state is read or written?]
-- **Empty state**: [No data yet → show what? Onboarding prompt?]
-- **Cleanup**: [Leaving this feature → reset which store? Clear which cache?]
-
-## S4: UX Copy Review
-
-- [ ] All text is plain language — no technical jargon
-- [ ] Error messages are specific ("Connection failed. Try again." not "Error 500")
-- [ ] Labels and buttons make sense to a non-developer
-- [ ] Loading states describe what's happening ("Uploading photo…" not "Loading…")
-- [ ] Empty states have a clear next action
-
-## S5: State & Persistence Matrix
-
-| Data | Stored where | Persists on restart? | Cleared when |
-|------|-------------|:-------------------:|-------------|
-| [User input] | [Memory / local storage / DB / cache] | [Yes/No] | [Leave flow / Submit / Timeout] |
-| [Selection state] | [Memory / URL param / ViewModel] | [Yes/No] | [Navigate away / Deselect] |
-| [Fetched data] | [Cache / store / in-memory] | [Yes/No] | [Stale time / Leave scope / TTL] |
-
-## S6: Manual QA Scenarios
-
-- [ ] **Happy path**: WHEN [full flow] THEN user sees [specific outcome]
-- [ ] **Error — API fails**: trigger API failure → user sees [specific message], can [retry/cancel]
-- [ ] **Error — invalid input**: submit [specific bad input] → user sees [specific inline message]
-- [ ] **Empty state**: no existing data → user sees [specific UI], can [next action]
-- [ ] **Loading**: click [action] → result appears within [X] seconds; indicator visible
-- [ ] **Small screen / mobile**: all elements accessible, no overflow, touch targets adequate
-- [ ] **Restart mid-flow**: app/page restart at [step N] → [data preserved / user returned to start]
-- [ ] **Double-submit**: click twice rapidly → [prevented / deduplicated]
+| Condition | System does | User sees | Recovery |
+|---|---|---|---|
+| Not authenticated | | | |
+| Permission denied | | | |
+| Upstream unavailable / timeout | | | |
+| Input invalid — [name the specific input] | | | |
+| Required data missing / null | | | |
+| Duplicate or concurrent submit | | | |
+| [a case where the correct behaviour is to do nothing] | silently does nothing | nothing — by design | |
 
 ---
 
-## Spec Self-Review
+## Invariants
 
-*Run this before handing to AI. Missing items = rework.*
+<!--
+  Things that must stay true after this change, addressed to a PERSON, not to a file.
+  This is the register that does not rot: a sentence a refactor cannot falsify.
 
-1. **Placeholder scan**: Any "TBD", "TODO", vague "show error"? Fix inline.
-2. **Consistency check**: Does S5 storage match S2 post-completion? Do S1 errors match S6 test cases?
-3. **Scope check**: Is this one feature or multiple? If multiple, split before implementing.
-4. **Ambiguity check**: Can any requirement be interpreted two ways? Pick one, make explicit.
-5. **Completeness**: S1 has ≥5 rows with specific user-visible outcomes? S3 has ≥1 upstream + ≥1 downstream? S6 has happy path + error + mobile?
+  Shape: **[bold claim].** [one-line mechanism]. Do not [the specific tempting wrong move].
 
-*S1 and S3 prevent 65% of review failures.*
+  ✅ "**Execution mutates the plan in place.** Per-item status is part of the plan
+      document. Do not add a parallel execution-log table — the audit trail is the plan
+      plus the records it produced."
+
+  Security belongs here. State the deny-list by name:
+  ✅ "**`f1_source` is never exposed.** It is excluded from every select path. Any new
+      query that reaches this table must carry the same exclusion, with a code comment
+      saying so."
+-->
+
+- **[claim].** [mechanism]. Do not [tempting wrong move].
 
 ---
 
-## Next step
+## Integration
 
-After spec is approved → open a **new session** to implement.
+<!--
+  Enumerate from the codebase, not from memory. `ls` finds files; `grep` finds relationships.
+  Run both. A spec that touches existing code and lists no integration points is almost
+  always wrong.
+-->
 
-**Optional: Implementation Notes** (fill this before implementing if the feature is complex)
+| Touches | Reads or writes | What breaks if this is wrong |
+|---|---|---|
+| | | |
 
-If confidence is low or the feature touches unfamiliar code, add these before the implementation session:
+---
+
+## Thresholds
+
+<!--
+  Every number that a reader could not derive from the repository. Optional section —
+  but if a number appears anywhere above and is not listed here, the spec is incomplete.
+
+  "Reason" may be "arbitrary, chosen [date]". That is honest, and it tells the next
+  reader the number is free to change. A constant in code loses this entirely.
+-->
+
+| Rule | Value | Reason | Source |
+|---|---|---|---|
+| | | | |
+
+---
+
+## QA
+
+<!--
+  Checkable by a human who has not read the code. Each line names a specific input and a
+  specific expected output — "works correctly" is not a scenario.
+-->
+
+- [ ] Happy path: [exact steps] → [exact expected result]
+- [ ] Failure: [exact trigger] → [exact message], user can [recover how]
+- [ ] Empty state: no data → [what is on screen], next action is [what]
+- [ ] Boundary: [the specific bad input] → [the specific response]
+- [ ] Repeat submit: twice rapidly → [prevented how]
+- [ ] Small screen: [narrowest supported width] → no overflow, all actions reachable
+- [ ] Interrupted: restart mid-flow → [preserved / returned to start — state which]
+
+---
+
+## File changes
 
 ```
-### Patterns to follow
-| File | What to mirror |
-|------|---------------|
-| [path/to/similar.ts] | [Specific pattern — function signature, error handling] |
-
-### Known gotchas
-- [Specific trap — e.g., "`.eq()` on nullable column returns 0 rows — use `.is(null)`"]
-- [Deployment gotcha — e.g., "This endpoint is called from mobile — response must be < 200KB"]
-
-### File plan
-Current state:     Target state:
-src/               src/
-└── [file] *       ├── [file] *  ← modified: [what changes]
-                   └── [new]     ← created: [one-line responsibility]
-
-### Validation gates
-# Gate 1: npx tsc --noEmit
-# Gate 2: [specific test command]
-# Gate 3: [curl command] → Expected: [exact output]
+ADDED:
+MODIFIED:    [path] — [which function or section changes]
+REMOVED:     [path] — [why]
 ```
 
-*For a full implementation blueprint template, see `advanced/prp.md`.*
+---
+
+## Known issues
+
+<!--
+  MANDATORY. At least one entry. "None" is not an entry.
+
+  List what is wrong with what you just described — observation plus mechanism. Do NOT
+  propose the fix here; that is what keeps this section cheap enough to actually write.
+
+  This is the only part of the document that cannot be reconstructed from the code, and
+  in practice it is the part that is still accurate a year later.
+
+  ✅ "Price sorting is not truly correct yet, because sorting a parent row by an embedded
+      child's price is not expressible in our query layer. Flagged as an RPC candidate."
+  ✅ "Export works on the loaded page slice, not the full filtered set."
+  ✅ "`lib/modules/campaign/*` is canonical; the older `lib/services/ai/campaign*` paths
+      still exist and should be deleted as call sites move over."
+-->
+
+-
+
+---
+
+## Open questions
+
+<!-- Only for scope: discovery, or when an answer is genuinely blocking. Name who must answer. -->
+
+| Question | Who answers | Blocking? |
+|---|---|---|
+| | | |
+
+---
+
+## Optional sections
+
+### Mental model
+<!--
+  Include ONLY when the feature's state is split across more than two stores. One bold
+  sentence, then a partition of the state with an owner for each part.
+
+  Forcing this onto simple features produces restatement. Used once, where it was needed,
+  it is the section every later reader actually wanted.
+-->
+
+### Pre-reading
+<!-- For large scope. What the implementer must read before writing code, and why. -->
+
+| File | Lines | Why |
+|---|---:|---|
+| | | |
+
+### Code flow
+<!--
+  4–8 numbered steps. Each step names exactly ONE symbol or path, and describes its
+  EFFECT rather than its implementation. The effect is what stays true across refactors.
+
+  ✅ "3. The route calls `withApiProtection(req, "TEXT_ONLY")` for auth and credit control."
+
+  At 8 steps, split into sub-flows rather than growing the list.
+-->
+
+### Data contract
+<!--
+  `METHOD /route` → Query/Body → Response shape → Client store → Database.
+  Write the response as literal code, including optional markers:
+      success({ items, total, page, has_more, counts? })
+
+  Never exposed: [list the field names that must not leave the server]
+-->
+
+### Copy
+<!-- Every user-facing string, in the user's own vocabulary, not the system's. -->
+
+| System term | What the user calls it |
+|---|---|
+| | |
+
+### State
+| Data | Lives where | Survives restart? | Cleared when |
+|---|---|:---:|---|
+| | | | |
+
+---
+
+## Before handing this over
+
+1. **Placeholders** — any `TBD`, `[...]`, or "show an error"? Fix inline.
+2. **Consistency** — do the failure modes and the QA scenarios cover the same cases?
+   Does State match what the acceptance criteria promise?
+3. **One change** — is this one thing, or several? If several, split before implementing.
+4. **Ambiguity** — can any line be read two ways? Pick one and say it.
+5. **Length** — is this spec longer than the diff it describes? Drop a scope level.
+6. **Verification** — is the `## Verification` section filled with real recorded output?
+
+---
+
+## After it ships — reconciliation
+
+**This is a gate, not a suggestion.** A spec is written before the code exists, which
+means its concrete references are predictions. Predictions are the first thing to go
+stale: in a measured corpus, documents written *after* the code kept 100% of their path
+references accurate across five months, while the one document written *ahead* of the
+code held almost all of the dead references in the set.
+
+Within one working day of merge:
+
+1. Re-read the spec against the merged diff.
+2. Correct every path, route, symbol and field name that changed during the build.
+3. Append what you learned to `## Known issues`.
+4. Fold the durable parts — invariants, thresholds, the data contract, known issues —
+   into the living system document for that area (see `system.md`).
+5. Set `reconciled_at` and move the file to `specs/done/`.
+
+A spec that reaches `shipped` and never reaches `reconciled` is the failure mode this
+step exists to prevent. The spec is not the deliverable. The living document is.

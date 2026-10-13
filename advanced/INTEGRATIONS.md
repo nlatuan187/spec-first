@@ -29,7 +29,7 @@ All examples in this repo use Claude Code. It is the primary target because it n
 
 **Setup:**
 1. `cp spec-first/advanced/templates/CLAUDE.md ./CLAUDE.md` — customize with your stack
-2. `cp spec-first/advanced/templates/feature-spec.md ./specs/` — write specs here
+2. `cp spec-first/spec.md ./specs/` — write specs here
 3. Feed specs: `Read CLAUDE.md, then implement specs/feature.md`
 
 **Slash command**: Copy `advanced/skills/spec/SKILL.md` to `.claude/commands/spec.md` to get a `/spec` command that generates S1-S6 specs automatically.
@@ -227,7 +227,7 @@ Open a new Claude Code session (separate terminal or tab). Do not carry over any
 Read CLAUDE.md, then:
 git diff origin/main
 
-Apply the review checklist at advanced/templates/review-checklist.md.
+Apply the review checklist at review.md.
 Output Pass 1 (Critical) first. Then Pass 2 (Informational).
 Format: [file:line] Problem → recommended fix
 ```

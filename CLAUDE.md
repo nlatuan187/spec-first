@@ -7,7 +7,9 @@
 ```
 spec-first/
 ├── snippet.md           ← THE product — paste into CLAUDE.md, .cursorrules, AGENTS.md, etc.
-├── spec.md              ← Feature spec template (S1-S6, EARS acceptance criteria)
+├── spec.md              ← Spec template (EARS acceptance, failure modes, invariants)
+├── verify.md            ← The seven pre-spec checks
+├── system.md            ← Living system-document template (where shipped specs land)
 ├── review.md            ← Two-pass code review checklist
 ├── install.sh           ← curl-friendly installer
 ├── README.md            ← Entry point
@@ -22,7 +24,7 @@ spec-first/
     │   └── spec-stats/SKILL.md  ← /spec-stats slash command
     ├── deep-dives/              ← ai-limitations.md, worktree-workflow.md, etc.
     ├── during-coding/           ← implementation-brief.md
-    ├── templates/               ← full feature-spec.md, review-checklist.md, CLAUDE.md template
+    ├── templates/               ← CLAUDE.md constitution template, .coderabbit.yaml
     └── examples/
 ```
 
@@ -47,9 +49,11 @@ spec-first/
 | Goal | File |
 |------|------|
 | Change the Fundamental Law or derived rules | `snippet.md` |
-| Change the spec template | `spec.md` (root) and `advanced/templates/feature-spec.md` |
+| Change the spec template | `spec.md` |
+| Change the pre-spec checks | `verify.md` |
+| Change the living-doc template | `system.md` |
 | Change the full implementation blueprint | `advanced/prp.md` |
-| Change the review checklist | `review.md` (root) and `advanced/templates/review-checklist.md` |
+| Change the review checklist | `review.md` |
 | Change /spec slash command | `advanced/skills/spec/SKILL.md` |
 | Change /spec-check | `advanced/skills/spec-check/SKILL.md` |
 | Change /spec-stats | `advanced/skills/spec-stats/SKILL.md` |
