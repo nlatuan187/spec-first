@@ -1,7 +1,7 @@
 ---
 title: "[NAME]"
 status: draft          # draft | in-review | approved | implementing | shipped | reconciled
-scope: feature         # bug | small | refactor | feature | large | discovery
+scope: feature         # trivial | bug | small | refactor | feature | large | discovery
 owner: "[who writes this]"
 approver: "[who may set status: approved — must not be the same person as owner on large/high-risk]"
 created: YYYY-MM-DD
@@ -18,6 +18,7 @@ reconciled_at:         # set after the post-merge reconciliation pass
   LENGTH RULE: if this spec is longer than the diff it describes, it is too long for
   this change. Drop to a lighter scope. Scope picks the sections:
 
+    trivial   → the Trivial block below. Nothing else. No verification checks.
     discovery → Why + Open questions + Options. NO solution sections. Stop there.
     bug       → Why + Failure modes + QA + File changes
     small     → Why + Acceptance + Failure modes + QA + File changes
@@ -30,6 +31,33 @@ reconciled_at:         # set after the post-merge reconciliation pass
   OPTIONAL, include only when they carry information:
     Mental model · Pre-reading · Thresholds · Code flow · Data contract · Copy · State
 -->
+
+---
+
+## Trivial scope — the whole spec
+
+<!-- For wording, a label, a copy string, a constant. Reversible, no new behaviour, no new
+     data, one file. Delete this block for any other scope; delete the rest for this one. -->
+
+```markdown
+---
+status: draft
+scope: trivial
+owner: "[you]"
+approver: "[who says yes]"
+created: YYYY-MM-DD
+---
+# [what changes, in six words]
+
+Now: "[the current text or value]"
+To:  "[the new text or value]"
+Why: [the reason, and where it came from]
+Touches: [the one file]
+```
+
+Nothing else is required at this scope, and nothing above is optional. A person still sets
+`status: approved`. If it turns out to touch behaviour, data or a second file, it was never
+trivial — move up a level and fill in the rest of this template.
 
 ---
 

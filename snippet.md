@@ -29,9 +29,9 @@ A spec is a prediction. A system document is an observation. Predictions go stal
 observations do not, so every spec must end by feeding the system document. A `specs/done/`
 folder that nobody folds back into a living document is an archive of stale predictions.
 
-**Starting on code that already exists?** Do not begin with a spec. Begin with
-`docs/system/<area>.md` for the area you are about to touch, written from the code in
-front of you. It is what the next ten specs will read. Then spec the change against it.
+**Starting on code that already exists?** Begin with `docs/system/<area>.md` for the area
+you are touching, written from the code in front of you — not with a spec. It is what the
+next ten specs read.
 
 ---
 
@@ -39,6 +39,7 @@ front of you. It is what the next ten specs will read. Then spec the change agai
 
 | Scope | Trigger | Write |
 |---|---|---|
+| **Trivial** | wording, a label, a copy string, a constant — reversible, no new behaviour, no new data | four lines (below). Nothing else. |
 | **Discovery** | the solution is not known yet | Why + Open questions + Options. **Stop.** Do not write a solution spec for a guess. |
 | **Emergency** | production is down | fix first, then a retroactive bug spec the same day |
 | **Bug** | something is broken | Why + Failure modes + QA + File changes |
@@ -47,9 +48,16 @@ front of you. It is what the next ten specs will read. Then spec the change agai
 | **Feature** | new capability | all mandatory sections |
 | **Large / high-risk** | auth, payments, money, PII, schema, infra | all, plus Mental model and Pre-reading, plus a human reader |
 
-**The length rule overrides the table**: if the spec is longer than the diff it describes,
-drop a scope level. Spec artifacts that outrun the change are how spec-driven development
-earns its reputation for ceremony.
+**The length rule**: if the spec is longer than the diff it describes, drop a scope level.
+Spec artifacts that outrun the change are how spec-driven development earns its reputation
+for ceremony. **Trivial is the floor** — a one-line diff has somewhere to land, and the rule
+stops there rather than demanding a level that does not exist.
+
+**A trivial spec is four lines of front matter plus four lines of body** — see the Trivial
+block at the top of `spec.md`. It is still a spec: still named, still approved by a person,
+still claiming its file. The seven pre-spec checks do not apply at this scope; they
+establish facts about code structure, and a copy string changes none of them. If the change
+turns out to touch behaviour, data, or a second file, it was never trivial — move up a level.
 
 ---
 
@@ -131,15 +139,13 @@ no integration rows is almost always an incomplete spec.
 
 **8. After two failed fixes, stop.**
 Before the first attempt, state the root cause: *"the error is caused by [X] because [Y]."*
-If you cannot, investigate instead of trying something. After two failures, write
-`specs/<slug>-debug.md` with each attempt and its result, and open a new session. A third
-variation compounds the error that produced the first two.
+If you cannot, investigate rather than try something. After two failures write
+`specs/<slug>-debug.md` — each attempt and its result — and open a new session.
 
 **9. Record what you discover.**
-Append to `KNOWLEDGE.md` when you learn something non-obvious that will outlive this task —
-an ordering constraint, a silent failure, a platform limit, a convention. Only patterns that
-recur: once is noise, twice belongs in `KNOWLEDGE.md`, three times belongs in the context file
-as a rule. Read it at the start of every build session.
+Append to `KNOWLEDGE.md` when you learn something non-obvious that outlives this task — an
+ordering constraint, a silent failure, a platform limit. Once is noise, twice belongs in
+`KNOWLEDGE.md`, three times is a rule for the context file. Read it before every build.
 
 ---
 
@@ -158,13 +164,12 @@ S4 → `Copy` · S5 → `State` · S6 → `QA`.
 
 Two notes on the mandatory half, both learned the hard way:
 
-- **Pain must be a state the user is already in**, independent of your product. It needs a
-  frequency, a quantity, or a blocking fact, and it must not contain your product's own
-  feature nouns. *"Brokers need a plan view, not a list of drafts"* is a backlog item wearing
-  a pain's clothing. *"Without a connected account, publishing is blocked"* is a pain.
-- **Need is the user's own sentence, quoted.** If nobody said it, write
-  *"No user said this. Assumed by [name] on [date]."* That is a legitimate answer. An
-  invented quote is not.
+- **Pain is a state the user is already in**, independent of your product: a frequency, a
+  quantity, or a blocking fact, and never your product's own feature nouns.
+  *"Users need a plan view"* is a backlog item. *"Without a connected account, publishing is
+  blocked"* is a pain.
+- **Need is the user's own sentence, quoted.** If nobody said it, write *"No user said this.
+  Assumed by [name] on [date]."* That is legitimate. An invented quote is not.
 
 ---
 
@@ -186,9 +191,8 @@ Two notes on the mandatory half, both learned the hard way:
    set `approved_at`.
 3. **Every PR names its spec** and has its QA boxes ticked.
 
-*Solo: you are both roles. Still set `approved_at` as a separate act — it is the moment
-you stop designing and start building, and conflating the two is how the design quietly
-gets edited to match the code.*
+*Solo: you are both roles. Still set `approved_at` as a separate act — it is where you stop
+designing and start building, and merging the two is how the design gets edited to fit the code.*
 
 ---
 

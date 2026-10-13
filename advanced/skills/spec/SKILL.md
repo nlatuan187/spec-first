@@ -42,6 +42,7 @@ Then pick the scope that fits. Use the lightest one that covers the change:
 
 | Scope | Trigger | Sections required |
 |---|---|---|
+| **trivial** | wording, label, copy string, constant — reversible, one file, no new behaviour or data | the Trivial block in `spec.md` and nothing else. **Skip the seven checks**: they establish facts about code structure and a copy string changes none. |
 | **discovery** | solution not known | Why + Open questions + Options — **stop, no solution sections** |
 | **emergency** | production down | fix first; retroactive bug spec same day |
 | **bug** | something is broken | Why + Failure modes + QA + File changes |

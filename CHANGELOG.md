@@ -4,6 +4,44 @@ All notable changes to spec-first are documented here. When `snippet.md` changes
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.1.0] — 2026-10-13
+
+Found by walking one realistic scenario end to end: a marketer asks an agent to change a
+headline on the pricing page. Seven steps, and a non-engineer could meaningfully take part
+in two of them. Four defects, three of them in v2's own new work.
+
+### Fixed — enforcement was silently off for most real projects
+The hook resolved symlinks on the file being edited but not on the project directory. On
+macOS `/var` is a symlink to `/private/var`, so for any existing file in a project reached
+through a symlinked path the two sides disagreed, the relative path came out as `../…`, and
+the hook exited 0 without printing anything. Both sides are now resolved the same way.
+This had been passing the test suite because every test case used a file that did not exist yet.
+
+### Added — an agent can no longer approve a spec
+Approval was described as human-only in five places and enforced in none. The agent that
+writes the spec also holds a file-editing tool, so the rule was advice. Writing
+`status: approved` or `approved_at` into anything under `specs/` is now refused by the hook.
+The human edits the file themselves, which is the point.
+
+### Fixed — the same task was gated differently depending on where a string lived
+Changing a line of copy in `Hero.tsx` was blocked; the identical change in
+`messages/en.json` went straight through. Localisation and copy bundles
+(`messages/`, `locales/`, `i18n/`, `content/`, `copy/` — json, yaml, toml, po, ftl, mdx)
+are now gated like source. These are the files non-engineers actually work in, so they are
+exactly the ones where the gate must behave predictably.
+
+### Added — `trivial` scope
+The ladder had no rung below `bug`, while the length rule said a spec longer than its diff
+must drop a level. For a one-line copy change the rule was unsatisfiable: there was nowhere
+to drop to. Worse, the mandatory sections could not honestly be filled for such a change —
+so the agent filled them, and the gate became theatre.
+
+`trivial` is four lines of front matter and four of body: what it says now, what it will say,
+why, and the one file it touches. It is still named, still claims its file, still approved by
+a person. The seven pre-spec checks are explicitly skipped at this scope — they establish
+facts about code structure, and a copy string changes none of them. If the change turns out
+to touch behaviour, data or a second file, it was never trivial.
+
 ## [2.0.0] — 2026-10-13
 
 Merged in the parts of a production methodology that matured after this repo was

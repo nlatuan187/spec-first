@@ -64,9 +64,16 @@ import os, sys
 fp, cwd = sys.argv[1], sys.argv[2]
 if not os.path.isabs(fp):
     fp = os.path.join(cwd, fp)
-fp = os.path.realpath(fp) if os.path.exists(fp) else os.path.normpath(fp)
+# Resolve BOTH sides the same way. Resolving only the file silently disabled
+# enforcement for every existing file in a project reached through a symlinked
+# path — on macOS /var is a symlink to /private/var, so the two sides
+# disagreed, relpath returned '../..', and the hook exited 0 without a word.
+cwd = os.path.realpath(cwd)
+fp = os.path.realpath(fp) if os.path.exists(fp) else os.path.normpath(
+    os.path.join(os.path.realpath(os.path.dirname(fp)), os.path.basename(fp))
+) if os.path.isdir(os.path.dirname(fp)) else os.path.normpath(fp)
 rel = os.path.relpath(fp, cwd)
-print('' if rel.startswith('..') else rel)
+print('' if rel == '..' or rel.startswith('../') else rel)
 " "$FILE_PATH" "$CWD" 2>/dev/null)
 else
   # No python3: literal prefix strip; does not collapse traversal sequences.
@@ -74,6 +81,35 @@ else
 fi
 
 [ -z "$REL_PATH" ] || [ "$REL_PATH" = "$FILE_PATH" ] && exit 0  # outside the project
+
+# ── An agent may not approve a spec ───────────────────────────────────────
+# Approval is the one act in this methodology that must come from a person.
+# Stating that in prose is not enough: the agent that writes the spec also
+# holds a file-editing tool, so without this block the rule is advice.
+# Writing `status: approved` into anything under specs/ is refused here.
+# The human edits the file themselves, which is the point.
+
+case "$REL_PATH" in
+  specs/*)
+    # BSD sed has no \| alternation, so match each key separately.
+    FLAT=$(printf '%s' "$INPUT" | tr -d '\n')
+    NEW_TEXT=$(printf '%s' "$FLAT" | sed -n 's/.*"new_string"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
+    [ -n "$NEW_TEXT" ] || NEW_TEXT=$(printf '%s' "$FLAT" | sed -n 's/.*"content"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
+    case "$NEW_TEXT" in
+      *'status:'*'approved'*|*'approved_at:'*[0-9]*)
+        cat >&2 <<'APPROVE'
+spec-first: refused — an agent may not approve a spec.
+
+  `status: approved` and `approved_at` are set by a person, in their own editor.
+  That act is the only thing standing between a plan and a change to the codebase,
+  so it is deliberately not something this session can do on your behalf.
+
+  Tell the human the spec is ready and what it will touch. Then stop.
+APPROVE
+        exit 2 ;;
+    esac
+    exit 0 ;;
+esac
 
 # ── Test files are always allowed ─────────────────────────────────────────
 # Anchored on path segments and real suffixes, so `src/contest/page.tsx` and
@@ -86,7 +122,15 @@ case "$REL_PATH" in
   *.test.*|*.spec.*|*_test.*|test_*.py) exit 0 ;;
 esac
 
-# ── Only source files are gated ───────────────────────────────────────────
+# ── What is gated ─────────────────────────────────────────────────────────
+# Source files, and the content files that hold user-visible strings.
+#
+# The second half matters more than it looks. Gating `Hero.tsx` but not
+# `messages/en.json` means the same task — change a line of copy — is blocked
+# or waved through depending on where that string happens to live, which is an
+# implementation detail the person making the change did not choose and should
+# not have to know. Content files are where non-engineers work, so they are
+# exactly the files that need the gate to behave predictably.
 
 case "$REL_PATH" in
   *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs) ;;
@@ -95,6 +139,12 @@ case "$REL_PATH" in
   *.java|*.kt|*.scala|*.ex|*.exs)    ;;
   *.c|*.cpp|*.cc|*.h|*.hpp)          ;;
   *.vue|*.svelte)                    ;;
+  *.mdx)                             ;; # content pages that compile to code
+  # Localisation and copy bundles, wherever a project keeps them.
+  messages/*|*/messages/*|locales/*|*/locales/*|locale/*|*/locale/*)
+      case "$REL_PATH" in *.json|*.yaml|*.yml|*.toml|*.po|*.ftl) ;; *) exit 0 ;; esac ;;
+  i18n/*|*/i18n/*|content/*|*/content/*|copy/*|*/copy/*)
+      case "$REL_PATH" in *.json|*.yaml|*.yml|*.toml|*.md|*.mdx) ;; *) exit 0 ;; esac ;;
   *) exit 0 ;;
 esac
 

@@ -112,6 +112,7 @@ too heavy — drop a level.
 
 | Scope | Write |
 |---|---|
+| Trivial | Wording, a label, a copy string, a constant. Four lines of front matter, four of body. |
 | Discovery | Why + Open questions + Options. Stop. Do not spec a guess. |
 | Emergency | fix first, retroactive bug spec the same day |
 | Bug | Why + Failure modes + QA + File changes |
