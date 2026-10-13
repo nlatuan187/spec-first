@@ -55,8 +55,25 @@ fi
 
 [ -f "${CWD}/.spec-first-bypass" ] && exit 0
 
-REL_PATH="${FILE_PATH#"${CWD}"/}"
-[ "$REL_PATH" = "$FILE_PATH" ] && exit 0   # outside the project
+# Canonicalize FILE_PATH to a project-relative path.
+# Collapsing '../' prevents traversal attacks like src/auth/../payments/stripe.ts
+# from bypassing prefix matching or test-exclusion patterns (findings 2 and 3).
+if command -v python3 >/dev/null 2>&1; then
+  REL_PATH=$(python3 -I -c "
+import os, sys
+fp, cwd = sys.argv[1], sys.argv[2]
+if not os.path.isabs(fp):
+    fp = os.path.join(cwd, fp)
+fp = os.path.realpath(fp) if os.path.exists(fp) else os.path.normpath(fp)
+rel = os.path.relpath(fp, cwd)
+print('' if rel.startswith('..') else rel)
+" "$FILE_PATH" "$CWD" 2>/dev/null)
+else
+  # No python3: literal prefix strip; does not collapse traversal sequences.
+  REL_PATH="${FILE_PATH#"${CWD}"/}"
+fi
+
+[ -z "$REL_PATH" ] || [ "$REL_PATH" = "$FILE_PATH" ] && exit 0  # outside the project
 
 # ── Test files are always allowed ─────────────────────────────────────────
 # Anchored on path segments and real suffixes, so `src/contest/page.tsx` and
@@ -132,8 +149,14 @@ fi
 # token can never widen itself into its own parent directory.
 
 MATCH=""
+# Extract path-shaped tokens only from the '## File changes' section.
+# Scanning the whole spec (the old behaviour) let paths in Known issues, prose
+# warnings, and fenced code blocks unlock files those sections merely mentioned
+# (finding 1).
 TOKENS=$(printf '%s' "$ACTIVE" | while IFS= read -r f; do
-  [ -n "$f" ] && grep -oE '[A-Za-z0-9_.@-]+(/[A-Za-z0-9_.@*-]+)+/?' "$f" 2>/dev/null
+  [ -n "$f" ] || continue
+  awk '/^## File changes/{found=1;next} /^## /{found=0} found{print}' "$f" 2>/dev/null \
+    | grep -oE '[A-Za-z0-9_.@-]+(/[A-Za-z0-9_.@*-]+)+/?'
 done | sort -u)
 
 while IFS= read -r t; do

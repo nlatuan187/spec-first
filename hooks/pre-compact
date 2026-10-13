@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # spec-first PreCompact hook
-# Before context compaction, remind AI to capture learnings to KNOWLEDGE.md.
+# Before context compaction, remind AI to capture learnings to KNOWLEDGE.md
+# and record spec state before session memory is lost.
 # Installed to .claude/spec-first/ by install.sh
 
 set -euo pipefail
@@ -19,8 +20,13 @@ context="<spec-first-pre-compact>
 Context is about to be compacted. Before losing session memory:
 
 1. Did you discover any non-obvious pattern, gotcha, or constraint in this session?
-2. If yes — append it to KNOWLEDGE.md now (only if it recurred 2+ times or is critical).
-3. If working on a feature — update specs/[slug]-brief.md with current state.
+   If yes — append it to KNOWLEDGE.md (only if it recurred 2+ times or is critical).
+
+2. If working on a spec — update specs/<slug>.md with its current status and any
+   open questions or discoveries made so far.
+
+3. If a spec shipped in this session and reconciliation is not done — record what
+   changed in ## Known issues before compaction erases the diff from memory.
 
 Do this BEFORE the context compacts. After compaction, these learnings are gone.
 </spec-first-pre-compact>"

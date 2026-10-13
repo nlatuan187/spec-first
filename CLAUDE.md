@@ -42,7 +42,7 @@ spec-first/
 - Week 4 fix:feat: **1.5:1**
 - Productivity multiplier: **10–15x** (never "100x")
 - Team: **2 people, 24 days**
-- S1 + S3 prevent: **65% of review failures**
+- Failure modes + Integration prevent: **65% of failure patterns** (failure-patterns.md line 230)
 
 ## When to edit what
 

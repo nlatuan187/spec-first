@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # spec-first Stop hook
-# At session end, prompt AI to capture learnings + update session state.
+# At session end, prompt AI to capture learnings, update session state,
+# update spec status, and reconcile any spec that shipped.
 # Installed to .claude/spec-first/ by install.sh
 
 set -euo pipefail
@@ -20,15 +21,45 @@ Session ending. Before closing:
 
 1. **Learnings**: Did you discover something non-obvious about this codebase?
    If it recurred 2+ times or is critical → append to KNOWLEDGE.md.
-   If it's a one-off → skip.
+   If it is a one-off → skip.
 
 2. **Session state**: Update .claude/session-state.md with:
    - What was accomplished
-   - What's blocked or unfinished
+   - What is blocked or unfinished
    - Next action for whoever continues
 
-3. **Spec status**: If working on a spec, update its YAML frontmatter status field.
+3. **Spec status**: If working on a spec, update its YAML front matter status field.
+
+4. **Reconciliation**: If any spec shipped in this session — reconcile it now:
+   re-read the spec against the merged diff, correct every path and symbol that
+   changed during the build, append what you learned to ## Known issues, fold the
+   durable parts into docs/system/<area>.md, set reconciled_at.
+   An unreconciled spec is the next person's wrong map.
 </spec-first-session-end>"
+
+# ── Check for unreconciled specs and name them explicitly ─────────────────────
+
+SPECS_DIR="$(pwd)/specs"
+if [ -d "$SPECS_DIR" ]; then
+  unreconciled=""
+  for f in "$SPECS_DIR"/*.md; do
+    [ -e "$f" ] || continue
+    slug=$(basename "$f" .md)
+    header=$(sed -n '1,25p' "$f")
+    shipped=$(printf '%s' "$header" | sed -n 's/^shipped_at:[[:space:]]*\([0-9][^[:space:]]*\).*/\1/p' | head -1)
+    reconciled=$(printf '%s' "$header" | sed -n 's/^reconciled_at:[[:space:]]*\([0-9][^[:space:]]*\).*/\1/p' | head -1)
+    if [ -n "$shipped" ] && [ -z "$reconciled" ]; then
+      unreconciled="${unreconciled}  ${slug} (shipped ${shipped})"$'\n'
+    fi
+  done
+  if [ -n "$unreconciled" ]; then
+    context+="
+
+<reconciliation-overdue>
+These specs are shipped but not reconciled — act before closing:
+${unreconciled}</reconciliation-overdue>"
+  fi
+fi
 
 escaped=$(escape_for_json "$context")
 

@@ -106,21 +106,23 @@ CLAUDE_HOOKS="$CLAUDE_DIR/spec-first"
 
 if [ -d "$CLAUDE_DIR" ] || [ "$CONTEXT_FILE" = "CLAUDE.md" ]; then
   echo ""
-  echo "Claude Code detected — installing /spec /spec-review /spec-check /spec-stats commands..."
+  echo "Claude Code detected — installing /spec /spec-review /spec-check /spec-stats /spec-reconcile commands..."
   mkdir -p "$CLAUDE_COMMANDS"
 
   if [ "$LOCAL" = true ]; then
-    cp "$SCRIPT_DIR/advanced/skills/spec/SKILL.md"         "$CLAUDE_COMMANDS/spec.md"
-    cp "$SCRIPT_DIR/advanced/skills/spec-review/SKILL.md"  "$CLAUDE_COMMANDS/spec-review.md"
-    cp "$SCRIPT_DIR/advanced/skills/spec-check/SKILL.md"   "$CLAUDE_COMMANDS/spec-check.md"
-    cp "$SCRIPT_DIR/advanced/skills/spec-stats/SKILL.md"   "$CLAUDE_COMMANDS/spec-stats.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec/SKILL.md"             "$CLAUDE_COMMANDS/spec.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec-review/SKILL.md"      "$CLAUDE_COMMANDS/spec-review.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec-check/SKILL.md"       "$CLAUDE_COMMANDS/spec-check.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec-stats/SKILL.md"       "$CLAUDE_COMMANDS/spec-stats.md"
+    cp "$SCRIPT_DIR/advanced/skills/spec-reconcile/SKILL.md"   "$CLAUDE_COMMANDS/spec-reconcile.md"
   else
-    curl -fsSL "$REPO/advanced/skills/spec/SKILL.md"         -o "$CLAUDE_COMMANDS/spec.md"
-    curl -fsSL "$REPO/advanced/skills/spec-review/SKILL.md"  -o "$CLAUDE_COMMANDS/spec-review.md"
-    curl -fsSL "$REPO/advanced/skills/spec-check/SKILL.md"   -o "$CLAUDE_COMMANDS/spec-check.md"
-    curl -fsSL "$REPO/advanced/skills/spec-stats/SKILL.md"   -o "$CLAUDE_COMMANDS/spec-stats.md"
+    curl -fsSL "$REPO/advanced/skills/spec/SKILL.md"             -o "$CLAUDE_COMMANDS/spec.md"
+    curl -fsSL "$REPO/advanced/skills/spec-review/SKILL.md"      -o "$CLAUDE_COMMANDS/spec-review.md"
+    curl -fsSL "$REPO/advanced/skills/spec-check/SKILL.md"       -o "$CLAUDE_COMMANDS/spec-check.md"
+    curl -fsSL "$REPO/advanced/skills/spec-stats/SKILL.md"       -o "$CLAUDE_COMMANDS/spec-stats.md"
+    curl -fsSL "$REPO/advanced/skills/spec-reconcile/SKILL.md"   -o "$CLAUDE_COMMANDS/spec-reconcile.md"
   fi
-  echo "✓ /spec → /spec-review → /spec-check → /spec-stats installed"
+  echo "✓ /spec → /spec-review → /spec-check → /spec-stats → /spec-reconcile installed"
 
   # ── Install SessionStart hook ─────────────────────────────────────────────
   mkdir -p "$CLAUDE_HOOKS"
@@ -207,6 +209,26 @@ PYEOF
         ]
       }
     ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOOK_CMD_COMPACT"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOOK_CMD_STOP"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Edit|Write",
@@ -221,7 +243,7 @@ PYEOF
   }
 }
 JSON
-      echo "✓ SessionStart + PreToolUse hooks registered in .claude/settings.json"
+      echo "✓ SessionStart + PreCompact + Stop + PreToolUse hooks registered in .claude/settings.json"
     else
       echo "  (python3 not found — add hooks manually to .claude/settings.json)"
       echo "  See: https://github.com/nlatuan187/spec-first/tree/master/hooks"
@@ -253,7 +275,9 @@ echo "  2. Type: build [describe what you want to create]"
 echo "  3. It asks what is unclear, then runs the seven checks in verify.md"
 echo "  4. It writes specs/<slug>.md -- no code yet"
 echo "  5. YOU set 'status: approved' in the spec front matter. Nothing builds until you do."
-echo "  6. New session to build, another to review, then reconcile into docs/system/"
+echo "  6. New session to build, another to review"
+echo "  7. After merge, run /spec-reconcile -- re-reads the spec against the merged diff,"
+echo "     corrects what changed, and folds durable parts into docs/system/"
 echo ""
 echo "  Cross-session memory: append project learnings to KNOWLEDGE.md"
 echo ""
@@ -268,6 +292,7 @@ echo "    docs/system/                        -- where shipped specs land"
 if [ -d "$CLAUDE_DIR" ] || [ "$CONTEXT_FILE" = "CLAUDE.md" ]; then
 echo "    .claude/spec-first/session-start    -- auto-inject hook"
 echo "    .claude/spec-first/pre-tool-use     -- blocks source edits without an APPROVED spec"
+echo "    .claude/commands/spec-reconcile.md  -- /spec-reconcile command (Step 7)"
 fi
 echo ""
 echo "  Not sure where to start? Read README.md"

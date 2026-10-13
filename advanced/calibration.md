@@ -2,69 +2,62 @@
 
 ## The key insight
 
-spec-first's thresholds (S1 ≤ 3, S3 ≤ 1 for autonomous) come from one production codebase. They are not universal constants — they are calibrated starting points.
+spec-first's fix categories and baseline percentages come from one production codebase.
+They are not universal constants — they are calibrated starting points.
 
 What IS universal: the categories of failure, and the protocol for measuring them.
 
 | What spec-first gives you | What you discover yourself |
 |---|---|
 | What to measure (5 fix categories) | Your ratio for each category |
-| Starting thresholds | Your adjusted thresholds |
+| Baseline percentages | Your stack's actual distribution |
 | Calibration protocol | Your constitution update |
 
 Start with the defaults. Run the protocol. After 2–4 weeks you have your own data.
+
+> **Note (v2):** The numeric routing gate (S1 ≤ 3, S3 ≤ 1 → autonomous) was removed in v2.
+> It was removed because the counts were self-reported by the agent being gated, and a
+> refactor spec legitimately has no `## Integration` section — scoring zero routed it to
+> autonomous, which was the highest-risk case in the dataset. Scope-based section selection
+> replaced it: the scope table in `snippet.md` picks mandatory sections by scope, not by
+> counted thresholds. See `deep-dives/failure-patterns.md` for the full reasoning.
 
 ---
 
 ## Baseline (from 626 production commits, Next.js SaaS)
 
-| Fix category | % of fixes | Autonomous safe? |
-|---|:---:|---|
-| Cross-module integration | 40% | Only if S3 ≤ 1 |
-| Missing error handling | 25% | Only if S1 ≤ 3 |
-| Security vulnerabilities | 15% | Never autonomous if auth/PII |
-| i18n hardcoding | 10% | Usually autonomous |
-| Stale state / cleanup | 10% | Usually autonomous |
+fix commits were 47% of 626 total commits (293). The fix:feat ratio was 2.93:1.
 
-Threshold logic: `S1 ≤ 3, S3 ≤ 1` → autonomous is safe because integration failures are minimal (S3 low) and error surface is small (S1 low). Beyond that, human attention adds more value than the overhead of a review session.
+| Fix category | % of fixes |
+|---|:---:|
+| Cross-module integration | 40% |
+| Missing error handling | 25% |
+| Security vulnerabilities | 15% |
+| i18n hardcoding | 10% |
+| Stale state / cleanup | 10% |
 
 ---
 
 ## Adapting to your stack
 
-The baseline (40%/25%/15%/10%/10%) comes from a React/Next.js SaaS with real-time state and multiple API integrations. Your stack will have different ratios — and some categories may not apply.
+The baseline (40%/25%/15%/10%/10%) comes from a React/Next.js SaaS with real-time state
+and multiple API integrations. Your stack will have different ratios — and some categories
+may not apply.
 
-**Read this before starting Step 1.** Your tag categories should match your project, not the baseline.
+**Read this before starting Step 1.** Your tag categories should match your project, not
+the baseline.
 
 | If your project is... | Adapt like this |
 |---|---|
 | **Backend API only** (Django, Rails, Go) | Rename `i18n` → `hardcoded-values` (magic strings, config embedded in code, env var misuse) |
 | **Mobile** (iOS / Android / React Native / Flutter) | Expect `state` > 10% baseline — local state, navigation state, offline sync all amplify this category |
-| **Microservices / event-driven** | Expect `integration` > 40% baseline — lower S3 threshold by 1 before starting |
+| **Microservices / event-driven** | Expect `integration` > 40% baseline |
 | **Data pipeline / ML** | Replace `i18n` + `state` with `data-corruption` + `schema-drift`; integration failures map to pipeline stage boundaries |
 | **Internal tool, no auth** | Remove `security` category entirely; add `performance` if relevant |
 | **Monorepo with shared packages** | `integration` failures often come from package boundary mismatches — add `fix(integration/package)` as a sub-tag |
 
-The categories are a starting point. What matters: **5 categories that together cover ≥ 90% of your fix commits.** If one category is always 0%, replace it with something that isn't.
-
----
-
-## Risk profile adjustments
-
-Apply these to your constitution **before** starting the calibration protocol:
-
-| Risk factor | Adjustment from default |
-|---|---|
-| Heavy external API integrations (>3 third-party APIs) | S3 threshold −1 |
-| No user auth, no PII (pure internal tools) | Remove high-risk override |
-| Regulated industry (fintech, health, legal) | Review required for ALL specs |
-| Solo developer, rapid iteration | S1 threshold +1 |
-| Legacy codebase, many hidden dependencies | S3 threshold −1 |
-| Greenfield, simple domain | Defaults are fine |
-| Mobile app | Start with S5 (state matrix) as required — missing cleanup is the dominant failure mode |
-| Microservices | S3 review required for any spec touching >1 service boundary |
-
-These are heuristics. They let you start calibrated rather than starting blind. Still run the protocol below to verify.
+The categories are a starting point. What matters: **5 categories that together cover ≥ 90%
+of your fix commits.** If one category is always 0%, replace it with something that isn't.
 
 ---
 
@@ -72,7 +65,10 @@ These are heuristics. They let you start calibrated rather than starting blind. 
 
 ### Step 1: Tag your fix commits for 2 weeks
 
-Add a category tag to every fix commit. **Minimum 20 fix commits OR 4 weeks of data (whichever comes first)** before adjusting thresholds — fewer data points are noise, not signal. Below 20 commits, treat adjustments as provisional and re-verify at the next calibration cycle.
+Add a category tag to every fix commit. **Minimum 20 fix commits OR 4 weeks of data
+(whichever comes first)** before adjusting — fewer data points are noise, not signal.
+Below 20 commits, treat adjustments as provisional and re-verify at the next calibration
+cycle.
 
 Use your adapted categories from above (not necessarily the defaults):
 
@@ -100,50 +96,60 @@ git log --oneline --grep="fix(i18n)" | wc -l
 git log --oneline --grep="fix(state)" | wc -l
 ```
 
-### Step 3: Compare to baseline and adjust
+### Step 3: Compare to baseline
 
-| Your ratio vs baseline | Adjustment |
+| Your ratio vs baseline | What this tells you |
 |---|---|
-| integration > 50% | S3 threshold: lower by 1 (stricter) |
-| integration < 25% | S3 threshold: raise by 1 (more autonomous) |
-| security > 20% | Review required for ALL auth-touching specs |
-| security < 5% | Remove high-risk override (pure internal tools) |
-| error > 35% | S1 threshold: lower by 1 |
-| error < 15% | S1 threshold: raise by 1 |
+| integration > 50% | Specs touching multiple modules are high-risk; `## Integration` is worth requiring even on `bug` scope |
+| integration < 25% | Risk concentrates elsewhere; defaults for your dominant category matter more |
+| security > 20% | Auth-touching specs warrant an explicit QA step |
+| security < 5% | Security section is low-value overhead for purely internal tooling |
+| error > 35% | `## Failure modes` is your highest-value section; enforce it strictly |
+| error < 15% | Failure mode surface is narrow; existing defaults are sufficient |
 
-### Step 4: Update your constitution
+This comparison does not produce numeric thresholds to embed. It identifies where your
+project deviates from baseline and which spec sections deliver the most return for your
+stack.
 
-Add calibrated thresholds to your CLAUDE.md / .cursorrules:
+### Step 4: Record your ratios
+
+Add measured ratios to your CLAUDE.md. Do not derive autonomous/review thresholds from
+them — use them as reference for reviewers deciding whether a spec's section coverage is
+adequate for your codebase.
 
 ```markdown
 ## Spec-first calibration (updated [date], based on [N] commits)
-Autonomous: S1 ≤ [N], S3 ≤ [N]
-Review recommended: S1 [range], S3 [range]
-Review required: S1 ≥ [N], S3 ≥ [N]
-High-risk override: [auth only / all external APIs / disabled]
+Integration: [N]%  Error: [N]%  Security: [N]%  State: [N]%  Other: [N]%
+Reconciliation rate: [N]% — target: all specs reconciled within one working day of shipped_at
+Scope overrides: [any scope where you require an extra section beyond the defaults]
 ```
 
 ### Step 5: Repeat after 4 weeks
 
-Second calibration point. By now your thresholds are yours, not spec-first's defaults.
+Second calibration point. By now your ratios are yours, not spec-first's defaults.
 
 ---
 
 ## What this means for teams
 
-Every team's data validates or invalidates spec-first's thresholds for their context. When you run the protocol:
+Every team's data validates or invalidates spec-first's baseline for their context. When
+you run the protocol:
 
 - You're not trusting spec-first's numbers — you're verifying them against your codebase.
 - Your constitution becomes evidence-based, not opinion-based.
-- "Why is the threshold S1 ≤ 3?" has an answer: "Because our data shows autonomous is safe below that."
-
-Competitors give you rules. spec-first gives you the protocol to derive your own rules from your own data.
+- "Why do we require `## Integration` on refactor specs?" has an answer: "Because 55% of
+  our fixes are cross-module and refactors are our highest-risk case."
+- Track reconciliation rate separately: what fraction of shipped specs have `reconciled_at`
+  set within one working day of `shipped_at`? A low rate means system documents are not
+  getting the corrections that keep them accurate. Aim for 100%.
 
 ---
 
 ## Publishing your calibration
 
-If you run the protocol and get data from your codebase, open a [GitHub Discussion](https://github.com/nlatuan187/spec-first/discussions) with this format:
+If you run the protocol and get data from your codebase, open a
+[GitHub Discussion](https://github.com/nlatuan187/spec-first/discussions) with this
+format:
 
 ```markdown
 ## My calibration
@@ -152,9 +158,12 @@ Team: [N] devs, [N] months
 Commits analyzed: [N]
 Integration %: [N]% (baseline: 40%)
 Error %: [N]% (baseline: 25%)
-Adjusted S3 threshold: [N] (default: 1)
-Adjusted S1 threshold: [N] (default: 3)
+Security %: [N]% (baseline: 15%)
+State %: [N]% (baseline: 10%)
+Scope overrides vs defaults: [what you changed and why]
 Notes: [what drove the adjustment]
 ```
 
-Community calibration data across stacks is the path from "one production SaaS" to "validated across 50 codebases." The protocol is in place. The data collection is distributed.
+Community calibration data across stacks is the path from "one production SaaS" to
+"validated across 50 codebases." The protocol is in place. The data collection is
+distributed.

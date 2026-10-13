@@ -2,230 +2,188 @@
 
 Two parts: (1) one-time pipeline setup, (2) per-PR review checklist.
 
-> **Stack note**: Pass 1 (auth, security, data safety, race conditions) is universal. Pass 2 examples target TypeScript/React/Next.js/Supabase — adapt items to your stack. The structure and two-pass methodology apply to any codebase.
-
 ---
 
-## Part 1: Pipeline Setup (30 minutes, one time)
+## Part 1: Pipeline Setup (one time, ~30 minutes)
 
-### Layer 1 — Local (Before Every Push)
+### Layer 1 — Local (before every push)
 
 ```bash
-# Run these before pushing any branch
-# (adapt commands to your stack)
-
-npm run build       # or: cargo build / go build / python -m pytest
-npm run lint        # or: ruff / golint / rubocop
-npm test -- --run   # unit tests — catches regressions
-
-git diff --staged   # READ every changed line. No exceptions.
+build-command       # e.g. cargo build / go build / npm run build
+lint-command        # e.g. ruff / golint / npm run lint
+test-command        # unit tests — catches regressions
+git diff --staged   # read every changed line — no exceptions
 ```
 
-**Layer 1 gate**: Build passes + you've read every changed line.
+**Gate**: Build passes + every changed line read.
 
-### Layer 2 — Automated (On PR Creation)
+### Layer 2 — Automated (on PR creation)
 
-Drop `.coderabbit.yaml` in your repo root (template included). CodeRabbit runs automatically on every PR, posts severity-rated findings.
+Drop an AI-review config in your repo root. Run it on every PR; collect severity-rated findings.
 
-**Layer 2 gate**: 0 Critical + 0 High findings.
+**Gate**: 0 Critical + 0 High findings.
 
-### Layer 2 Alternative: Cold AI Session (No CodeRabbit)
+**Alternative — Cold session**: A session that wrote the code applies motivated reasoning when reviewing its own work. Open a new session with no history of the implementation. Paste the diff and this checklist.
 
-**Why cold?** An AI session that implemented the code knows *why* every decision was made. It applies motivated reasoning when reviewing its own work. A cold session — zero context from implementation — sees what the code does, not what it was intended to do. It catches different bugs.
-
-A cold session catches ~70% of CodeRabbit's value — auth/security issues, data safety, integration gaps.
-
-**How to open a cold review session by tool:**
-
-| Tool | How |
-|------|-----|
-| Claude Code (CLI) | Open a **new terminal window** → run `claude` → do NOT continue the previous session |
-| Claude Code (Superset/conductor) | Open a **new tab** → new session starts fresh |
-| Cursor | `Cmd+I` or Cursor tab → click **"New Conversation"** at top |
-| Windsurf | New conversation window (not a continuation of the current one) |
-| Codex / API | New API call with empty `messages` array — no session history |
-| Worktree approach | `git worktree add ../review-branch origin/main` → open Claude Code there → sees only the diff, not the implementation context |
-
-**The review prompt (paste into the cold session):**
+Review prompt:
 ```
-Read CLAUDE.md, then:
-git diff origin/main
+Read the project context file, then run: <diff command for your VCS>
 
-Apply the review checklist below (Pass 1 first, then Pass 2).
-Format each finding: [file:line] Problem → recommended fix
-AUTO-FIX what you can without asking. Flag the rest as NEEDS INPUT.
+Apply the review checklist (Pass 1 first, then Pass 2).
+Format each finding per the template. AUTO-FIX what you can. Flag the rest as NEEDS INPUT.
 ```
 
-If you have gstack: `/review` runs the checklist automatically.
+**Gate**: Same as Layer 2.
 
-### Layer 3 — Human Behavior (Before Merge)
+### Layer 3 — Human (before merge)
 
-Test behavior in browser. Does it match the spec? Not "does the code look right" — "does the thing work right."
+Test behavior. Does the product match the spec? Not "does the code look right" — "does the thing work right."
 
-**Layer 3 gate**: Spec compliance verified. Mobile tested. Error states verified.
-
-### Branch Protection (GitHub Settings → Branches)
-
-```
-Branch: main
-☑ Require pull request before merging
-☑ Require status checks: build, lint
-☑ Do not allow bypassing the above settings
-```
+**Gate**: Spec compliance verified. Error states exercised.
 
 ---
 
 ## Part 2: Per-PR Review Checklist
 
-**Two-pass review.** Run Pass 1 first — these are highest severity. Then Pass 2.
+**Two-pass review.** Run Pass 1 first (highest severity). Then Pass 2.
 
-**Batch rule**: Collect ALL `NEEDS INPUT` items across both passes. Ask about them in **ONE message** at the end — never interrupt the review flow per finding.
+**Batch rule**: Collect ALL items needing input. Ask in ONE message at the end — never interrupt the review per finding.
 
-**Review output format:**
+**Finding format**: A finding with no attached evidence is not reported at all.
+
 ```
-Pass 1 (Critical): N issues
-  AUTO-FIXED: [file:line] Problem → fix applied
-  NEEDS INPUT: [file:line] Problem — Recommended fix: ...
+AUTO-FIXED:  [file:line] problem → fix applied
+             Evidence: `<quoted line or command output>`
+NEEDS INPUT: [file:line] problem — recommended fix: ...
+             Evidence: `<quoted line or command output>`
+SKIPPED:     [check name] — reason
+```
 
-Pass 2 (Informational): N issues
-  AUTO-FIXED: [file:line] Problem → fix applied
-  NEEDS INPUT: [file:line] Problem — Recommended fix: ...
+Never fold a skipped check into "passed". A green report is meaningless when skips are hidden.
 
-[If any NEEDS INPUT]: "I found N items that need your input: [list all at once]"
+**Review output**:
+```
+Pass 1 (Critical): N issues, N skipped
+  [findings and skips]
+Pass 2 (Informational): N issues, N skipped
+  [findings and skips]
+[If any NEEDS INPUT]: "I found N items: ..."
 If no issues: "Review: No issues found."
 ```
 
-**Why batch**: Interrupting per finding breaks reviewer focus and leads to partial reviews. One message = full picture before any decisions.
-
 ---
 
-### Pass 1 — CRITICAL (Block merge if found)
+### Pass 1 — CRITICAL (block merge if found)
 
 #### Authentication & Authorization
 
-- API route has no auth check → every endpoint must call `requireAuth(req)` or equivalent at the top
-- Missing ownership validation → user A can access user B's resource by guessing an ID (IDOR)
-- Auth check happens after DB query (too late) → auth must come before any data access
-- Row-Level Security (RLS) missing on new database table → check `db/migrations/*.sql` for RLS policies
-- Sensitive field (token, password, private ID) returned in API response
-- `f1_source` / primary source field exposed to frontend
+- Endpoint has no identity check → every handler must verify the caller before touching data
+- Missing ownership validation → caller A can read or modify caller B's resource by guessing an ID (IDOR)
+- Identity check happens after data access (too late) → move it to the first line of the handler
+- New data store or table without row-level access control
+- Sensitive field (credential, token, private ID) returned in a response
+- Internal-only field exposed to the client
 
 #### Security: Input & Output
 
-- User input passed to SQL without parameterization → use prepared statements / Prisma ORM
-- `dangerouslySetInnerHTML` with user-controlled data → XSS vector, sanitize first
-- Unvalidated URL in `href` or `src` → `javascript:` protocol injection
-- Error message exposes stack trace, internal path, or DB schema to client → sanitize errors
-- Signed token or secret logged to `console.log` or `console.error`
+- User input reaches a query or command without parameterization → injection risk; use prepared statements or a safe ORM
+- Unescaped user content rendered as markup or executable code → sanitize before rendering
+- Unvalidated URL used in a redirect or resource reference → protocol injection (example: `javascript:`)
+- Error message exposes stack trace, internal path, or schema to the client
+- Secret or signed token written to a log
 
 #### Data Safety
 
-- Check-then-act without atomicity (TOCTOU): `if (balance >= amount) → deduct(amount)` → two concurrent requests both pass the check
-- Missing unique constraint on DB column that must be unique
-- Status transition without atomic `WHERE old_status = X UPDATE SET new_status = Y` guard
-- `DELETE` or `DROP` operation without existence check
+- Check-then-act without atomicity: `if (balance >= amount) → deduct()` → two concurrent callers both pass; fix: single atomic operation with a lock or constraint
+- Missing unique constraint on a column that must be unique
+- Status transition without an atomic guard (`UPDATE … WHERE status = expected`)
+- Destructive operation (delete, truncate, drop) without an existence check
 
 #### Race Conditions
 
-- `find-or-create` pattern without unique DB index (concurrent calls create duplicates)
-- Credit/balance deduction not in single DB transaction with check
-- Shared mutable state accessed from concurrent API routes without locking
-- Cron job with no idempotency protection → two instances run simultaneously → duplicate external API calls, double cost (fix: `UPDATE ... WHERE status IS NULL RETURNING id` atomic lock)
+- Find-or-create without a unique index → concurrent calls create duplicates
+- Deduction or credit change outside a transaction that includes the balance check
+- Shared mutable state accessed from concurrent handlers without a lock
+- Recurring job without idempotency → two instances run simultaneously → duplicate side effects (fix: atomic claim query, e.g. `UPDATE … WHERE claimed_at IS NULL RETURNING id`)
 
-#### Serverless / Platform Constraints
+#### Platform Constraints
 
-- Polling loop inside serverless function → function runtime exceeds platform timeout (Vercel: 10s default, 60s max) → use webhook or queue instead
-- Bulk DB query without `.limit()` or pagination → Supabase PostgREST silently truncates at 1000 rows without error
-- External API credentials passed as URL query param (`?token=...`) → logged in server logs, Vercel logs, CDN access logs → use `Authorization: Bearer` header
+- Long-running work inside a short-lived handler → exceeds platform timeout → move to a queue or webhook
+- Unbounded query against a large table → silent truncation with no error (example: Supabase PostgREST silently caps at 1 000 rows)
+- Secret passed as a URL query parameter → written to access logs, proxy logs, CDN logs → use an `Authorization` header instead
 
-#### PostgreSQL
+#### Database
 
-- `UNIQUE` constraint on nullable column → PostgreSQL treats two NULLs as distinct → allows duplicate `NULL` rows. Use `UNIQUE NULLS NOT DISTINCT` (PG 15+) or a partial index `WHERE column IS NOT NULL`
+- Unique constraint on a nullable column → two NULL rows may both satisfy it, depending on the DB engine (example: PostgreSQL 14 allows this; use `NULLS NOT DISTINCT` or a partial index in PG 15+)
 
 ---
 
-### Pass 2 — INFORMATIONAL (Fix before merge, can AUTO-FIX most)
+### Pass 2 — INFORMATIONAL (fix before merge; most can AUTO-FIX)
 
-#### TypeScript
+#### Static typing
 
-- `any` type → use `Record<string, unknown>` or a proper interface
-- Type assertion (`as Foo`) instead of type guard (`if (isFoo(x))`) — assertions skip runtime checks
-- Non-null assertion (`!`) on value that could realistically be null — use optional chaining or guard
-- `Promise` not awaited in async function → silent fire-and-forget (usually a bug)
-- Missing `try/catch` around external API call or DB query
+- Overly wide type where a narrow type is known (example: `any` in TypeScript; `interface{}` in Go without a guard) → use a concrete type or a type guard
+- Unchecked cast or type assertion instead of a runtime guard — assertions skip runtime checks
+- Non-null / non-nil assertion on a value that can realistically be absent → use optional chaining or a guard
 
-#### Next.js / API Routes
+#### Async / concurrency
 
-- API route missing `try/catch` → unhandled exception returns 500 with no useful info
-- Response returned without `success(data)` / `fail(msg, status)` wrapper (breaks frontend parsing)
-- `GET` route with side effects (mutations) — GET must be idempotent
-- Missing `Content-Type: application/json` header on API responses
-- Environment variable accessed without `process.env.X` check for undefined
+- Async operation not awaited or its error not checked → silent fire-and-forget
+- Missing error handling around external I/O (network, DB, file system)
+- Background task or listener started without a cancellation or cleanup path → leaked resource on fast navigation or unmount (example: fetch in a React `useEffect` without an `AbortController`)
 
-#### Supabase / PostgreSQL
+#### API / service layer
 
-- `supabase.from('table')` called directly in a component → must go through `lib/services/db/`
-- Error check: `if (error)` not `if (error?.code !== 'PGRST116')` for "not found" cases (returns false positive)
-- Selecting `*` from table → select only needed columns (performance + security)
-- RPC called without checking `data` is not null before accessing fields
-- Bulk query without `.range()` pagination → silent 1000-row truncation (no error thrown)
+- Handler missing error recovery → unhandled exception returns an opaque response to the client
+- Read endpoint with a side effect → reads must be idempotent
+- Data access bypasses the designated repository or service layer (example: direct DB call inside a UI component)
+- Response shape breaks the client's parser contract
 
-#### State Management (Zustand)
+#### State / UI
 
-- Zustand store not cleaned up on component unmount → memory leak + stale state on remount
-- Store subscribing to external event (websocket, interval) without cleanup in `destroy()`
-- Persisted store (`persist` middleware) storing sensitive data (tokens, PII) in localStorage
-
-#### React / Frontend
-
-- `useEffect` with missing dependency → stale closure bug (ESLint usually catches this)
-- `useEffect` fetch without `AbortController` → race condition on fast navigation
-- Loading state not shown during async operation → UI freezes
-- Error state not shown when API fails → blank screen
-- Empty state not handled → `undefined.map()` crash
+- Loading, error, and empty states not all handled → blank screen or crash on real traffic
+- Persisted state (browser storage, disk, cookie) stores sensitive data (tokens, PII)
 
 #### i18n
 
-- Hardcoded user-facing string in component → must be in `messages/*.json` via `useTranslations()`
-- String added to component but not to ALL translation files → missing key in other locales
-- Translation key referenced in code but not defined in messages file (runtime error)
-- Technical jargon in user-facing copy ("Error 500", "null", "undefined") → use human language
+- Hardcoded user-facing string → use the translation system
+- Key added to code but not to all locale files → missing-key error at runtime in other locales
+- Technical error text surfaced to users ("500", "null", "undefined") → use human language
 
 #### Performance
 
-- `useEffect` → DB/API call → setState on every render without debounce or dependency fix
-- `Array.find` in render loop → convert to object lookup (`Record<id, item>`) for O(1)
-- Large image without `loading="lazy"` or `width/height` attributes → CLS
-- New npm package added → check bundle size impact (`bundlephobia.com`)
+- Unbounded query without a result limit → silent truncation or OOM
+- Linear lookup inside a hot loop → replace with an O(1) map or dict lookup
+- Dependency added without checking its size impact on build output
 
 ---
 
 ## Fix-First Heuristic
 
-| AUTO-FIX (no user input needed) | NEEDS INPUT (ask before changing) |
-|---------------------------------|----------------------------------|
-| Missing `try/catch` around fetch | Auth/authorization logic |
-| `any` type → `Record<string,unknown>` | Race condition fixes |
-| Missing `loading` attr on image | Security-sensitive changes |
-| Hardcoded string → translation key | Architectural changes |
-| Missing `await` on obvious Promise | Anything changing user-visible behavior |
-| Console.log left in production | Changes > 20 lines |
-| Unused imports / dead code | Removing existing functionality |
+| AUTO-FIX (no input needed) | NEEDS INPUT (ask first) |
+|-|-|
+| Missing error recovery around I/O | Auth / authorization logic |
+| Unhandled async call | Race condition fixes |
+| Hardcoded string → translation key | Security-sensitive changes |
+| Log statement left in production | Architectural changes |
+| Unused imports or dead code | Changes altering user-visible behavior |
+| | Changes > 20 lines |
+| | Removing existing functionality |
 
-**Rule**: If a senior engineer would apply it in 30 seconds without discussion → AUTO-FIX. If reasonable engineers could disagree → NEEDS INPUT.
+**Rule**: If a senior engineer applies it in 30 seconds without discussion → AUTO-FIX. If reasonable engineers could disagree → NEEDS INPUT.
 
 ---
 
-## Suppressions — Do NOT flag these
+## Suppressions — do NOT flag these
 
-- Redundant checks that aid readability (`value !== null && value !== undefined` instead of just `value`)
-- Thresholds, config values, magic numbers that are intentionally tuned
-- `any` types in test files (acceptable in tests, not in production code)
-- Dev-only `console.log` marked with `// dev:` or inside `if (process.env.NODE_ENV !== 'production')`
-- Already-fixed issues — read the FULL diff before commenting
-- Style preferences not covered by ESLint (subjective formatting)
-- Optimizations that address non-existent bottlenecks (premature optimization)
-- Test code that "exercises multiple behaviors" — tests don't need to be hyper-isolated
+- Redundant null checks that aid readability
+- Threshold values and tuned constants — intentionally set
+- Wide types in test files (acceptable in tests, not in production code)
+- Dev-only log statements clearly gated by an environment check
+- Already-fixed issues — read the full diff before commenting
+- Style preferences not enforced by the linter
+- Optimizations targeting non-existent bottlenecks
+- Tests that cover multiple behaviors — test isolation is not a requirement
 
 ---
 
@@ -234,11 +192,9 @@ If no issues: "Review: No issues found."
 Track weekly. Trends matter more than absolute values.
 
 | Metric | Target | Warning |
-|--------|:------:|:-------:|
-| First-try pass rate (0 Critical/High on first push) | > 80% | < 60% → specs too vague |
-| Median time from PR to merge | < 90 min | > 4 hrs → review bottleneck |
+|---|:-:|:-:|
+| First-try pass rate (0 Critical/High on first push) | > 80% | < 60% → specs missing Failure modes or Integration |
+| Median time PR → merge | < 90 min | > 4 hrs → review bottleneck |
 | Critical/High findings per PR | < 0.5 | > 1.5 → systematic spec gap |
 | Reverts per week | 0–1 | > 2 → architecture misalignment |
-| Fix:feat ratio | 1.5–2.5:1 | > 3:1 → improve spec S1 + S3 |
-
-If first-try pass rate drops below 60%, your specs are missing S1 (Error States) or S3 (Cross-Feature Integration). These two sections prevent 65% of review failures.
+| Fix:feat ratio | 1.5–2.5:1 | > 3:1 → improve Failure modes and Integration sections |

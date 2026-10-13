@@ -308,9 +308,7 @@ REMOVED:     [path] — [why]
 
 **This is a gate, not a suggestion.** A spec is written before the code exists, which
 means its concrete references are predictions. Predictions are the first thing to go
-stale: in a measured corpus, documents written *after* the code kept 100% of their path
-references accurate across five months, while the one document written *ahead* of the
-code held almost all of the dead references in the set.
+stale: in a measured corpus of sixteen feature documents, the twelve written *after* their code kept 70 of 70 path references and 46 of 49 route references accurate across five months, while the one written *ahead* of the code held two of the three dead references in the entire set.
 
 Within one working day of merge:
 

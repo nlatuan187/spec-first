@@ -135,6 +135,8 @@ Write one group. Verify it. Then proceed to the next.
 
 **Do not write all issues in one pass.** Writing 10 specs consecutively means an error in issue 2 isn't caught until issue 8. Write one, check it against the original feedback items it covers, then continue.
 
+Before writing the spec, run verify.md's seven checks against the codebase and record the output in the spec's `## Verification` section. A spec with that section empty is a draft. For bug scope, the most relevant checks are naming, paths, and prior art.
+
 Each issue must contain:
 
 ```markdown
@@ -146,10 +148,10 @@ Related feedback: FB-003, FB-007, FB-012 (screenshots attached)
 [What should happen]
 
 ## Spec
-[Scope-appropriate spec format — see snippet.md Formality Dial]
+[Scope-appropriate spec format — see snippet.md, Scope section]
 ```
 
-Scope routing applies here. A cluster of 3 related UI bugs = bug fix format (S1 + S6). A missing feature reported by multiple users = new feature format (full S1–S6).
+Scope routing applies here. A cluster of 3 related UI bugs = bug scope (Failure modes + QA). A missing feature reported by multiple users = feature scope (all mandatory sections).
 
 ---
 

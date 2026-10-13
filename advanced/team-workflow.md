@@ -10,7 +10,7 @@ The Fundamental Law applies at every scale. What changes is process, not methodo
 |---|---|---|
 | **Solo** | 1–3 devs | Self-approve specs. One context file, one owner. |
 | **Team** | 3–10 devs | Approval gate + PR template + constitution owner. |
-| **Corp** | 10+ devs | Formal constitution governance + distributed approvers + automated S3 + BMAD for orchestration on top. |
+| **Corp** | 10+ devs | Formal constitution governance + distributed approvers + automated Integration (S3) + BMAD for orchestration on top. |
 
 ---
 
@@ -22,7 +22,7 @@ No changes needed beyond installing snippet.md.
 - Brief the next session yourself when switching from spec to build.
 - Cold review still applies — open a new session, don't review your own build output.
 
-**When to upgrade to Team config**: When two developers start regularly stepping on each other's integrations (S3 conflicts), or when "who approved this spec?" becomes a question.
+**When to upgrade to Team config**: When two developers start regularly stepping on each other's integrations (Integration/S3 conflicts), or when "who approved this spec?" becomes a question.
 
 ---
 
@@ -47,7 +47,6 @@ What belongs in the team constitution (beyond the solo defaults):
 ## Team
 - Constitution owner: [name]
 - Spec approver(s): [names or role]
-- PR template: specs/PR_TEMPLATE.md
 
 ## Conventions
 [shared patterns, naming, file structure]
@@ -63,57 +62,52 @@ What belongs in the team constitution (beyond the solo defaults):
 Specs move through states. The Build session only starts when status is **Approved**.
 
 ```
-Draft → In Review → Approved → Implementing → Done
+Draft → In Review → Approved → Implementing → shipped → reconciled
 ```
 
 **Status field in spec header:**
 ```markdown
-> **Status**: Draft | In Review | Approved | Implementing | Done
+> **Status**: Draft | In Review | Approved | Implementing | shipped | reconciled
 > **Spec author**: [name]
 > **Approved by**: [name] — [date]
 ```
 
 **Who approves**: The spec approver (tech lead or senior dev with codebase context) verifies:
-- S1 has ≥5 rows with specific user-visible outcomes (not vague "show error")
-- S3 enumerates real integrations (not placeholder "none")
-- S6 has happy path + at least one error scenario + mobile
+- Failure modes (S1) has ≥5 rows with specific user-visible outcomes (not vague "show error")
+- Integration (S3) enumerates real integrations (not placeholder "none")
+- QA (S6) has happy path + at least one error scenario + mobile
 
-**Approval is not a sign-off ceremony** — it's a 10-minute S1/S3/S6 completeness check. If anything is vague or missing, return to Draft with a comment.
+**Approval is not a sign-off ceremony** — it's a 10-minute Failure modes/Integration/QA completeness check. If anything is vague or missing, return to Draft with a comment.
 
-**The AI respects this gate**: With the constitution in place, the AI will not start a Build session on a spec that shows Status: Draft or In Review.
+**The `pre-tool-use` hook enforces this mechanically**: source-file edits are blocked unless a spec with `status: approved` or `implementing` names the file being edited. What is still convention: not starting a Build session on a Draft or In Review spec — the hook gates file writes, not prompts.
 
 ---
 
 ### 3. PR template
 
-Every PR that implements a spec links to it. Reviewers use S6 as acceptance criteria.
+Every PR that implements a spec links to it. Reviewers use QA (S6) as acceptance criteria.
 
-Create `specs/PR_TEMPLATE.md`:
+Create `.github/pull_request_template.md`:
 
 ```markdown
 ## Spec
 - Implements: specs/[slug].md
 - Approved by: [name]
 
-## S6 QA — did these pass?
-- [ ] Happy path: [from S6]
-- [ ] Error scenario: [from S6]
+## QA — did these pass?
+- [ ] Happy path: [from QA section]
+- [ ] Error scenario: [from QA section]
 - [ ] Mobile (375px): tested
 - [ ] Double-submit: [handled / N/A]
 
-## S1 edge cases
-- [ ] [Key error state from S1 — copy from spec]
-- [ ] [Second key error state]
+## Failure-mode edge cases
+- [ ] [Key failure mode from spec — copy from Failure modes section]
+- [ ] [Second key failure mode]
 
 ## Notes
 [Any deviation from spec + reason]
 ```
 
-Link this from your GitHub PR template:
-```bash
-mkdir -p .github
-cp specs/PR_TEMPLATE.md .github/pull_request_template.md
-```
 
 ---
 
@@ -142,7 +136,7 @@ Dev A (spec author)
   Spec Session     →  specs/[slug].md, Status: Draft
                                 ↓
 Spec Approver (tech lead)
-  Reviews S1, S3, S6   →  Status: Approved (or back to Draft with notes)
+  Reviews Failure modes (S1), Integration (S3), QA (S6)   →  Status: Approved (or back to Draft with notes)
                                 ↓
 Dev B (implementer)
   Build Session    →  reads spec cold, implements
@@ -150,7 +144,7 @@ Dev B (implementer)
                                 ↓
 Dev C (reviewer) or Dev A
   Review Session   →  cold session, reads diff + review.md
-  → S6 acceptance criteria verified
+  → QA (S6) acceptance criteria verified
 ```
 
 ---
@@ -167,10 +161,10 @@ Anyone except the person who wrote the code in that Build session. Most teams us
 If the change is additive (new convention added), existing specs don't need retroactive updates. If the change deprecates something existing specs rely on, update those specs before their Build sessions.
 
 **A spec was approved but requirements changed mid-build. What now?**
-Return spec to Draft. Dev stops Build session. Spec author updates S1/S3/S6. Re-approve. New Build session starts cold. Cost of change is one spec update + one approval — not a full rework.
+Return spec to Draft. Dev stops Build session. Spec author updates Failure modes (S1)/Integration (S3)/QA (S6). Re-approve. New Build session starts cold. Cost of change is one spec update + one approval — not a full rework.
 
-**Two devs are building features that touch the same store. How does S3 help?**
-S3 on Feature A lists the store. S3 on Feature B lists the same store. The spec approver sees the conflict during review of Feature B's spec (before any code is written). Resolution happens in spec, not in code review.
+**Two devs are building features that touch the same store. How does Integration (S3) help?**
+Integration (S3) on Feature A lists the store. Integration (S3) on Feature B lists the same store. The spec approver sees the conflict during review of Feature B's spec (before any code is written). Resolution happens in spec, not in code review.
 
 ---
 
@@ -188,16 +182,14 @@ The methodology is identical to Team config. Coordination becomes more formal.
 - Cross-cutting specs (touching multiple domains) require ≥2 approvers
 - Approver assignment goes in spec header: `Approver: [domain owner]`
 
-**Automated S3 enumeration:**
-- At 10+ people, manual `ls lib/services/` misses things. Add a script:
+**Automated Integration (S3) enumeration:**
+- At 10+ people, manual enumeration misses things. Add a script that lists your project's top-level source directories — adapt the paths for your stack:
   ```bash
-  # specs/list-features.sh — run before writing S3 on any spec
-  echo "=== API routes ===" && ls app/api/
-  echo "=== DB services ===" && ls lib/services/db/
-  echo "=== Stores ===" && ls store/
-  echo "=== Feature components ===" && ls components/features/
+  # specs/list-features.sh — run before writing the Integration section on any spec
+  # Adapt paths for your project structure
+  find . -maxdepth 3 -type d -not -path '*/\.*' -not -path '*/node_modules/*'
   ```
-- Run this script before writing S3 on any spec. Never enumerate from memory.
+- Run this script before writing the Integration section on any spec. Never enumerate from memory.
 
 **BMAD on top (optional):**
 If your team needs multi-agent orchestration (PM writes stories, Architect reviews design, Dev implements, QA verifies), add [BMAD](https://github.com/bmad-method/BMAD-METHOD) for the orchestration layer. spec-first's specs become the input to BMAD's dev agent. The 5 failure modes still apply to every spec that BMAD's agents write — spec-first rules are embedded in the constitution that every agent reads.
@@ -206,14 +198,14 @@ If your team needs multi-agent orchestration (PM writes stories, Architect revie
 
 ## What changes in snippet.md for team/corp config
 
-Nothing in snippet.md changes — the AI respects spec Status because you add team rules to the constitution. Add this block to your CLAUDE.md / .cursorrules:
+Nothing in snippet.md changes for team or corp config. Add this block to your CLAUDE.md / .cursorrules:
 
 ```markdown
 ## Team spec rules
 - Spec approver: [name or role — or "domain owner" for corp]
-- Build sessions only start on specs with Status: Approved
-- Every PR must fill specs/PR_TEMPLATE.md
+- Build sessions only start on specs with status: approved
+- Every PR must reference its spec and have QA checkboxes ticked
 - Constitution changes require PR review before merging
 ```
 
-The AI enforces the approval gate automatically once it's in the constitution.
+The `pre-tool-use` hook already enforces source-file gating. These rules cover what the hook cannot reach: session-level conventions and PR policy.
