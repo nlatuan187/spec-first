@@ -39,7 +39,7 @@ fix: search results not clearing when switching between views
 
 **Why it's 40%**: This is the hardest category because it requires understanding the WHOLE system, not just the file being edited. AI's context window captures the file; the system lives beyond it.
 
-**Prevention**: S3 (Cross-Feature Integration) in every spec. Explicitly state:
+**Prevention**: `## Integration` in every spec. Explicitly state:
 - What triggers this feature sends to other features
 - What shared state it reads and writes
 - What cleanup happens when the user leaves
@@ -63,7 +63,7 @@ fix: form submission proceeds when required fields are empty
 
 **Root cause**: AI optimizes for the successful case. Error handling is "defensive" code — the AI doesn't generate it unless explicitly asked because it doesn't imagine failure scenarios.
 
-**Prevention**: S1 (Error States & Validation). For every API call, specify:
+**Prevention**: `## Failure modes`. For every API call, specify:
 - What the user sees on 401, 403, 404, 429, 500
 - What happens when the network is offline
 - What happens when required data is null
@@ -114,7 +114,7 @@ fix(copy): loading state shows "Loading..." instead of descriptive text
 
 **Root cause**: AI generates the string that "makes sense" to it in context. It doesn't cross-reference existing terminology, translation files, or check for consistency across features.
 
-**Prevention**: S4 (UX Copy Review) + explicit constitution rule: "No hardcoded user-facing strings. All text via translation system."
+**Prevention**: `## Copy` section + explicit context file rule: "No hardcoded user-facing strings. All text via translation system."
 
 ---
 
@@ -133,7 +133,7 @@ fix: form pre-fills from previous session — localStorage not cleared on submit
 
 **Root cause**: AI doesn't have a consistent mental model of where data should live. It picks useState, Zustand, localStorage, or URL params based on what "seems right" in the moment, not based on a coherent persistence strategy.
 
-**Prevention**: S5 (State & Persistence Matrix). The table forces a decision for every piece of data:
+**Prevention**: `## State` section. The table forces a decision for every piece of data:
 - Where is it stored?
 - Does it survive refresh?
 - When is it cleaned up?
@@ -179,21 +179,37 @@ Over 24 days, we hit context window limits 113 times (~5 per day). Each time req
 
 ---
 
-## Scope Routing Threshold Derivation
+## What the Data Justifies
 
-snippet.md's Scope Routing uses these thresholds to determine when human review is required:
+The commit data above is evidence. Earlier versions of this methodology derived counting
+thresholds from it — S1 ≤ 3 meant autonomous, S1 ≥ 8 meant review required — and routed
+specs through an automatic gate based on those counts. That gate was removed in v2 for two
+reasons:
 
-| Threshold | Value | Derived from |
-|---|---|---|
-| Autonomous safe: S1 ≤ 3 | Bug fixes average 1–3 error states | Bug commits in this dataset: fix ratio 1.5:1 even without review |
-| Autonomous safe: S3 ≤ 1 | Bug fixes touch 0–1 integration points | Low S3 = isolated change, integration blindness risk minimal |
-| Review recommended: S1 4–7 or S3 2–3 | New feature zone — Pattern 1 (40%) becomes likely | Integration failures spike with S3 ≥ 2 |
-| Review required: S1 ≥ 8 or S3 ≥ 4 | Large feature zone — all 5 patterns in play | Full S1–S6 review needed |
-| Review required: auth/payment/PII | Pattern 3 data: 15% of fixes were security bugs | Security bugs concentrate in auth surfaces |
+1. The counts were self-reported by the agent being gated. An agent that wants to proceed
+   autonomously can write fewer failure-mode rows.
+2. A delta spec or a refactor spec legitimately has no `## Integration` section — it scored
+   zero and routed to autonomous, which was the highest-risk case in this dataset.
 
-**These thresholds are calibrated for this dataset.** If your codebase has a different risk profile (e.g., heavy external API integrations → adjust S3 threshold down; pure internal tools with no auth → adjust security override), update the thresholds in your CLAUDE.md constitution.
+What the data actually supports is narrower and more durable:
 
-Competitors cannot copy these thresholds — the numbers require production data to justify. Opinion-based thresholds are arbitrary. Data-based thresholds are defensible.
+**Scope-based section selection.** Bug fixes in this dataset averaged 1–3 failure modes and
+0–1 integration points. Features averaged more of both. Pattern 1 (cross-module integration,
+40% of fixes) was nearly absent from bug commits and dominant in feature commits. The scope
+table in `snippet.md` — which picks mandatory sections by scope rather than by a counted
+threshold — is calibrated to this. A bug spec must fill `## Failure modes` and `## QA`; a
+feature spec must fill `## Integration` too. That distinction came from this dataset.
+
+**The approval gate on large and high-risk scope.** Pattern 3 (security, 15% of fixes)
+concentrated in auth, payment, and permission surfaces. The rule "on large or high-risk
+scope, the approver is not the author" reflects that. An agent setting `approved_at` is the
+specific wrong move this prevents.
+
+**The fix:feat ratio as a health signal.** The ratio improved from 5:1 (week 1) to 1.5:1
+(week 4) as spec quality improved. Tracking it weekly tells you whether your specs are
+actually preventing bugs or just describing the happy path. A ratio above 3:1 sustained
+over two weeks is a signal to audit `## Failure modes` and `## Integration` quality, not
+to add more sections.
 
 ---
 
@@ -201,14 +217,14 @@ Competitors cannot copy these thresholds — the numbers require production data
 
 Before feeding a spec to AI, verify:
 
-- [ ] S1 has a specific user-visible outcome for every error scenario (not vague "show error")
-- [ ] S2 defines where data saves and what happens on refresh/navigation
-- [ ] S3 lists every shared store, trigger, and cleanup action — scanned from codebase, not from memory
-- [ ] S4 confirms all strings are in translation files (or are brand names)
-- [ ] S5 maps every piece of data to storage + lifecycle
-- [ ] S6 includes: happy path, error path, mobile, refresh, double-submit
+- [ ] `## Failure modes` has a specific user-visible outcome for every error scenario (not vague "show error")
+- [ ] `## State` defines where data lives and what happens on refresh/navigation
+- [ ] `## Integration` lists every shared store, trigger, and cleanup action — scanned from codebase, not from memory
+- [ ] `## Copy` confirms all strings are in translation files (or are brand names)
+- [ ] `## State` maps every piece of data to storage + lifecycle
+- [ ] `## QA` includes: happy path, error path, narrow screen, refresh, double-submit
 
 Time spent on this checklist: ~10 minutes.
 Time saved by preventing bugs: ~2–4 hours per feature.
 
-S1 + S3 alone prevent 65% of the patterns listed here.
+`## Failure modes` + `## Integration` alone prevent 65% of the patterns listed here.

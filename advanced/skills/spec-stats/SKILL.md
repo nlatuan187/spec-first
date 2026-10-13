@@ -1,12 +1,12 @@
 ---
 name: spec-stats
 preamble-tier: 3
-version: 1.0.0
+version: 2.0.0
 description: |
   Measure spec-first adoption and quality metrics. Shows spec inventory,
-  fix:feat ratio, coverage gaps, and methodology health. Use when asked
-  "how are we doing", "spec stats", "show metrics", "are specs working",
-  or "measure spec quality". Returns a dashboard with actionable insights.
+  fix:feat ratio, reconciliation rate, verification and known-issues coverage,
+  and approval integrity. Use when asked "how are we doing", "spec stats",
+  "show metrics", "are specs working", or "measure spec quality".
 effort: low
 allowed-tools:
   - Read
@@ -19,160 +19,103 @@ allowed-tools:
 
 # /spec-stats: Measure Spec-First Health
 
-**When to run**: Weekly, or when someone asks "is spec-first actually helping?" This gives you numbers instead of feelings.
-
-You are a methodology health auditor. Your job is to count, calculate, and surface insights — not to judge the team or suggest process changes.
+**When to run**: Weekly, or when someone asks "is spec-first actually helping?"
 
 ---
 
 ## Step 1: Spec Inventory
 
-Count all specs and categorize by status and scope.
-
 ```bash
-# Count total specs
 ls specs/*.md 2>/dev/null | wc -l
-
-# Count done specs
 ls specs/done/*.md 2>/dev/null | wc -l
 ```
 
-For each spec file in `specs/`, read YAML frontmatter and extract:
-- `status`: draft | in-review | approved | implementing | done
-- `scope`: bug-fix | small-change | refactor | new-feature | large-feature | spike | delta
-- `s1_count` and `s3_count`
-- `created` date
+For each spec read YAML frontmatter: `status` · `scope` · `shipped_at` · `reconciled_at` ·
+`approved_at` · `owner` · `approver` · `created`. No frontmatter → `status: unknown`.
 
-If a spec has no YAML frontmatter, count it as `status: unknown`.
-
-Produce:
+Statuses: `draft | in-review | approved | implementing | shipped | reconciled`. Scopes: `discovery | bug | small | refactor | feature | large`.
 
 ```
 ## Spec Inventory
 Total: [N] active + [N] done
-
-By status:
-  draft:        [N]
-  in-review:    [N]
-  approved:     [N]
-  implementing: [N]
-  done:         [N]
-  unknown:      [N]  ← specs without YAML frontmatter
-
-By scope:
-  bug-fix:      [N]
-  small-change: [N]
-  refactor:     [N]
-  new-feature:  [N]
-  large-feature:[N]
-  spike:        [N]
-  delta:        [N]
+By status: draft [N] · in-review [N] · approved [N] · implementing [N] · shipped [N] · reconciled [N] · unknown [N]
+By scope:  discovery [N] · bug [N] · small [N] · refactor [N] · feature [N] · large [N]
 ```
 
 ---
 
 ## Step 2: Fix:Feat Ratio
 
-This is the single most important metric. It measures how many fixes you need per feature — lower is better.
-
 ```bash
-# Last 7 days of commits
 git log --oneline --since="7 days ago" 2>/dev/null | head -100
-
-# Last 30 days for trend
 git log --oneline --since="30 days ago" 2>/dev/null | head -200
 ```
 
-Classify each commit as:
-- **feat**: contains "feat", "add", "implement", "create", "build", "new" (case-insensitive)
-- **fix**: contains "fix", "bug", "patch", "hotfix", "repair", "correct" (case-insensitive)
-- **other**: refactor, docs, chore, test, ci, style, etc.
+Classify each commit with this explicit precedence — no commit may match twice:
 
-Calculate:
-- `fix:feat ratio = fix_count / feat_count` (if feat_count > 0)
-- Show both 7-day and 30-day ratios for trend
+1. **Conventional-commit prefix first.** Extract the token before the first colon.
+   `fix: add retry on 429` → **fix**. Stop. Do not apply keyword matching.
+2. **Keyword fallback** (only when no prefix): feat = "add", "implement", "create",
+   "build", "new"; fix = "bug", "patch", "hotfix", "repair", "correct". On a tie, **fix wins**.
+3. Anything else → **other**.
+
+If `feat_count = 0` or total commits < 10, say "Not enough data."
 
 ```
 ## Fix:Feat Ratio
 Last 7 days:  [N] fixes / [N] features = [X]:1
 Last 30 days: [N] fixes / [N] features = [X]:1
-
-Benchmark:
-  > 3:1  — spec quality needs attention (AI is generating bugs)
-  2-3:1  — average (specs may be missing S1/S3)
-  1-2:1  — good (specs are catching edge cases)
-  < 1:1  — excellent (mature spec-first adoption)
 ```
-
-If feat_count is 0 or total commits < 10, say "Not enough data to calculate ratio."
 
 ---
 
-## Step 3: Coverage Gaps
-
-Find code that was written without a spec (orphan code).
+## Step 3: Coverage
 
 ```bash
-# Recently modified implementation files (last 7 days)
-git diff --name-only HEAD~20 2>/dev/null | grep -E '\.(ts|tsx|js|jsx|py|go|rs|swift|kt)$' | head -30
-
-# Available specs
+git diff --name-only HEAD~20 2>/dev/null | head -40
 ls specs/*.md 2>/dev/null
 ```
 
-For each recently changed implementation file, check if a matching spec exists in `specs/`. Match by:
-- Feature name in filename (e.g., `chat-service.ts` → `specs/*chat*.md`)
-- Directory name (e.g., changes in `app/api/auth/` → `specs/*auth*.md`)
-
-Only flag implementation files (routes, services, components) — not configs, tests, or utilities.
+For each recently changed implementation file (routes, services, components — not configs,
+tests, utilities), check whether a matching spec exists in `specs/` by feature name or
+directory. Do not filter by extension; the methodology is language-agnostic.
 
 ```
 ## Coverage
-Specs with matching implementation: [N]
-Implementation without spec:       [N]  ← "orphan code"
+Matched: [N]   Orphan: [N]   ([N]% coverage)
 ```
 
 ---
 
-## Step 4: S1/S3 Quality
+## Step 4: V2 Quality Metrics
 
-For specs with YAML frontmatter, analyze error state and integration coverage.
+`s1_count` and `s3_count` frontmatter fields were removed in v2. They were written by the
+agent being gated, making the gate's input come from the thing it was gating. Compute
+quality by reading the spec body instead.
 
-```
-## S1/S3 Distribution
-Average S1 count: [X] error states per spec
-Average S3 count: [X] integration points per spec
+**Reconciliation rate** (headline metric) — of specs with `shipped_at` set, what fraction
+also have `reconciled_at`. An unreconciled shipped spec is the next person's wrong map.
 
-Specs with S1 = 0: [N]  ← likely missing error handling
-Specs with S3 = 0: [N]  ← likely missing integration scan
-```
+**Verification coverage** — does `## Verification` contain real recorded output (not empty,
+not the template placeholder)? Empty = draft, regardless of other sections.
 
----
+**Known-issues coverage** — does `## Known issues` contain at least one real entry?
+"None" is not an entry.
 
-## Step 5: Methodology Health
-
-Check supporting artifacts:
-
-```bash
-# KNOWLEDGE.md entries
-grep -c "^## " KNOWLEDGE.md 2>/dev/null || echo "0"
-
-# Constitution size
-wc -l CLAUDE.md 2>/dev/null || wc -l .cursorrules 2>/dev/null || echo "no constitution"
-```
+**Approval integrity** — for each spec with `approved_at` set and `scope: large`, flag any
+where `approver == owner`. List by filename. An agent must never set `approved_at`.
 
 ```
-## Methodology Health
-KNOWLEDGE.md entries: [N]  (cross-session learnings captured)
-Constitution size:    [N] lines  (> 200 = attention degradation risk)
-Stale specs:          [N]  (status: draft, created > 14 days ago)
+## V2 Quality
+Reconciliation:        [N] of [N] shipped specs reconciled ([N]%)
+Verification coverage: [N] of [N] specs have recorded output ([N]%)
+Known-issues coverage: [N] of [N] specs have at least one real entry ([N]%)
+Approval integrity:    [N] violations  [list filenames]
 ```
 
 ---
 
-## Step 6: Output Dashboard
-
-Combine everything into a single summary:
+## Step 5: Dashboard
 
 ```
 ═══════════════════════════════════════════════
@@ -181,38 +124,37 @@ Combine everything into a single summary:
 
   Specs:        [N] active / [N] done
   Fix:Feat:     [X]:1 (7d) / [X]:1 (30d)
-  Coverage:     [N]% of recent changes have specs
-  Avg S1:       [X] error states per spec
-  Avg S3:       [X] integration points per spec
-  Knowledge:    [N] entries in KNOWLEDGE.md
+  Coverage:     [N]%
+  Reconciled:   [N]% of shipped specs       ← headline
+  Verified:     [N]% of specs have recorded output
+  Known issues: [N]% of specs have real entries
+  Approvals:    [N] integrity violations
 
 ───────────────────────────────────────────────
-  HEALTH SCORE
+  HEALTH SCORE                          /10
 ───────────────────────────────────────────────
 
-  [Calculate score out of 10 based on:]
-  - Fix:feat ≤ 2:1        → +3 points
-  - Fix:feat ≤ 3:1        → +2 points
-  - Fix:feat > 3:1        → +0 points
-  - Coverage ≥ 80%        → +2 points
-  - Coverage ≥ 50%        → +1 point
-  - No specs with S1 = 0  → +1 point
-  - No specs with S3 = 0  → +1 point
-  - KNOWLEDGE.md ≥ 3      → +1 point
-  - Constitution ≤ 200 ln → +1 point
-  - No stale specs        → +1 point
+  Fix:feat ≤ 2:1               → +3
+  Fix:feat ≤ 3:1               → +2  (else +0)
+  Coverage ≥ 80%               → +2
+  Coverage ≥ 50%               → +1  (else +0)
+  Reconciliation ≥ 80%         → +2
+  Reconciliation ≥ 50%         → +1  (else +0)
+  Verification ≥ 80%           → +1
+  Known-issues ≥ 80%           → +1
+  No approval integrity issues → +1
 
   Score: [N]/10
-  [One sentence interpretation]
+  [One sentence: what the score means for the team right now]
 
 ───────────────────────────────────────────────
   TOP 3 ACTIONS
 ───────────────────────────────────────────────
 
-  [List top 3 actionable improvements, e.g.:]
-  1. [N] specs have S3 = 0 — run /spec-review on each
-  2. Fix:feat ratio is [X]:1 — check if S1 is covering edge cases
-  3. [N] orphan files — write retroactive specs (5 min each)
+  [List the top 3 by impact, e.g.:]
+  1. [N] shipped specs unreconciled — each is the next reader's wrong map
+  2. Fix:feat is [X]:1 — check Failure modes coverage in recent specs
+  3. [N] orphan files — bug scope is four sections, takes under an hour
 
 ═══════════════════════════════════════════════
 ```
@@ -221,17 +163,7 @@ Combine everything into a single summary:
 
 ## Notes
 
-- **This is a snapshot, not a judgment.** First week with spec-first? Score of 3/10 is normal.
-- **Fix:feat ratio needs ≥ 10 commits** to be meaningful. Below that, skip the ratio.
-- **Orphan detection is fuzzy.** Not every file needs a dedicated spec — utility files, configs, and test helpers are expected orphans. Only flag implementation files.
-- **Run weekly** for trend tracking. The value is in the direction, not the absolute number.
-
----
-
-## Standalone Installation
-
-```bash
-# Copy as a Claude Code slash command
-mkdir -p .claude/commands
-cp spec-first/advanced/skills/spec-stats/SKILL.md .claude/commands/spec-stats.md
-```
+- Fix:feat needs ≥ 10 commits to be meaningful. Below that, skip the ratio.
+- Reconciliation is the headline. Forward-written specs go stale; this is the fix.
+- Orphan detection is fuzzy. Configs, tests, and utilities are expected orphans.
+- Run weekly; direction matters more than the absolute number.

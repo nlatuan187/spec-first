@@ -1,235 +1,133 @@
 ---
 name: spec
 preamble-tier: 2
-version: 1.0.0
+version: 2.0.0
 description: |
-  Generate a complete feature spec with all 6 mandatory sections (S1-S6):
-  Error States, Post-Completion Flow, Cross-Feature Integration, Copy Review,
-  State Matrix, and Manual QA Scenarios. Use when asked to "write a spec for",
-  "spec out a feature", "create requirements for", "document this feature", or
-  "I want to build [feature]". Produces a ready-to-implement behavioral contract
-  saved to the specs/ directory.
+  Generate a v2 feature spec. Routes by scope, runs seven verification checks,
+  writes specs/<slug>.md from spec.md, sets status: draft. Use when asked to
+  "write a spec for", "spec out a feature", or "I want to build [feature]".
 effort: medium
 allowed-tools:
   - Read
   - Write
   - Bash
-  - AskUserQuestion
 ---
 
-{{PREAMBLE}}
+# /spec — Generate Feature Spec (v2)
 
-# /spec: Generate Feature Spec
-
-You are generating a behavioral contract — the primary engineering artifact that drives AI implementation. This is not documentation written after the fact. It is the specification that comes before the implementation.
-
-A good spec prevents 65% of review failures. A bad spec produces bad code at machine speed.
+You are writing a behavioral contract that comes BEFORE the code.
+Read `snippet.md` and `spec.md` at the start of every run. Never embed a copy of the
+template here — the only way the two cannot diverge is to read the source.
 
 ---
 
-## Step 1: Get the Feature Name
+## Step 1: Read context
 
-If arguments were provided (e.g., `/spec User Authentication`), use them as the feature name and description.
+Read in order; stop at the first file found:
+`CLAUDE.md` · `AGENTS.md` · `.cursorrules` · `.windsurfrules` · `.github/copilot-instructions.md`
 
-If no arguments: ask once — "What feature do you want to spec? (one sentence)"
+Extract: stack, API patterns, directory structure, naming conventions.
+If none found, note it and proceed.
 
----
-
-## Step 2: Read Project Context
-
-Look for a system context file in this order:
-1. `CLAUDE.md` (Claude Code)
-2. `AGENTS.md` (Codex / GitHub Copilot Workspaces)
-3. `.cursorrules` (Cursor)
-4. `.windsurfrules` (Windsurf)
-5. `.github/copilot-instructions.md` (GitHub Copilot Chat)
-
-If found, read it. Extract: tech stack, API patterns, state management approach, directory structure, conventions.
-
-If not found, proceed without project-specific context and note it in the spec header.
+Also read `spec.md` now. That is the template you will fill.
 
 ---
 
-## Step 3: Clarify (Only If Needed)
+## Step 2: Clarify and pick scope
 
-If the feature description is ambiguous about *what the user does or sees*, ask ONE focused question:
+If arguments were provided (e.g. `/spec User Authentication`), use them.
+If not: ask once — "What do you want to spec? (one sentence)"
 
-"What's the user's goal? (e.g., 'upload a profile photo and see it reflected immediately')"
+Then pick the scope that fits. Use the lightest one that covers the change:
 
-Do NOT ask about implementation. Do NOT ask multiple questions. One answer is enough.
+| Scope | Trigger | Sections required |
+|---|---|---|
+| **trivial** | wording, label, copy string, constant — reversible, one file, no new behaviour or data | the Trivial block in `spec.md` and nothing else. **Skip the seven checks**: they establish facts about code structure and a copy string changes none. |
+| **discovery** | solution not known | Why + Open questions + Options — **stop, no solution sections** |
+| **emergency** | production down | fix first; retroactive bug spec same day |
+| **bug** | something is broken | Why + Failure modes + QA + File changes |
+| **small** | under a day, behaviour change | add Acceptance |
+| **refactor** | structure moves, behaviour must not | Why + Invariants + Integration + QA + File changes |
+| **feature** | new capability | all mandatory sections |
+| **large** | auth, payments, PII, schema, infra | all + Mental model + Pre-reading + human reader |
 
-If the feature name is self-explanatory, skip this step entirely and proceed to Step 4.
-
----
-
-## Step 4: Generate the Spec
-
-Generate a complete spec using the structure below. Fill every section — do not leave placeholder text.
-
-The most commonly skipped and most expensive sections are S1 (Error States) and S3 (Integration). Be thorough here.
-
----
-
-```markdown
-# [Feature Name]
-
-> **Status**: Draft
-> **Stack**: [from CLAUDE.md, or "Not specified"]
-
-## Overview
-
-**Goal**: [What the user accomplishes — one sentence]
-**Trigger**: [What causes this feature to activate — user action, system event, etc.]
-**Users affected**: [Who uses this feature]
+**For scope: discovery** — write questions and options, then stop. Do not write a solution
+spec for a guess. The output file still goes to `specs/<slug>.md` with `status: draft`.
 
 ---
 
-## Acceptance Criteria
+## Step 3: Verify (gate — do not skip)
 
-- [ ] [Primary success: what the user can do when this feature is complete]
-- [ ] [Secondary condition]
-- [ ] [Edge case that must work]
+Read `verify.md`. Run all seven checks against the actual codebase.
 
----
+The checks are:
+1. Naming convention — what column/field names does this area actually use?
+2. Paths that exist — do the directories and files you plan to reference actually exist?
+3. Dependencies present — are the packages you plan to use installed?
+4. Env var names — what are the exact names in use?
+5. Secrets in URLs — any token/session/key in query strings near this code?
+6. Atomicity — any read-then-write that needs an atomic operation?
+7. Prior art — does something like this already exist? Search at least three spellings.
 
-## S1: Error States & Validation
+Record one line per check. "No hits" is a valid result — write it down.
+If a check cannot be run (e.g. no codebase present), write why and what assumption
+you are substituting.
 
-| Scenario | Expected Behavior |
-|----------|------------------|
-| Unauthenticated / session expired | [redirect to login / show message / silent refresh] |
-| Required field missing | [highlight field + show message: "X is required"] |
-| Invalid input format | [inline validation message] |
-| API / service failure | [toast error + retry option / fallback UI] |
-| Resource not found | [empty state / 404 message] |
-| Rate limit / quota exceeded | [block with explanation + upgrade path if applicable] |
-| Concurrent modification conflict | [optimistic lock failure message / refresh prompt] |
-
----
-
-## S2: Post-Completion Flow
-
-| Event | Result |
-|-------|--------|
-| Feature completes successfully | [where user goes / what they see / what auto-saves] |
-| User navigates away mid-flow | [auto-save? / "unsaved changes" dialog? / discard silently?] |
-| User refreshes the page mid-flow | [what persists / what resets] |
-| Session expires mid-flow | [save draft? / redirect to login? / lose work?] |
-| Output constraints | [max length / file size limit / platform-specific limits] |
+**Do not continue to Step 4 until every check has a recorded result.**
 
 ---
 
-## S3: Cross-Feature Integration
+## Step 4: Write the spec
 
-| When This Happens | This Feature | Triggers / Updates |
-|-------------------|-------------|-------------------|
-| [upstream event] | → | [downstream effect in this feature] |
-| [this feature action] | → | [downstream effect in another feature] |
-
-**Shared state**: [What state is shared with other features? What store/event/prop?]
-**Empty state**: [What does the user see if prerequisite data doesn't exist yet?]
-**Cleanup**: [What resets when the user leaves this feature? What state/cache clears?]
-
----
-
-## S4: Copy Review
-
-- [ ] All user-facing text reviewed — no developer jargon
-- [ ] Error messages use plain language ("Connection failed. Try again." not "500 Internal Server Error")
-- [ ] Labels and buttons are self-explanatory to non-technical users
-- [ ] Confirmation messages are specific ("Document saved" not "Success")
-- [ ] Loading states have descriptive text ("Uploading photo..." not "Loading...")
-- [ ] Empty states have a clear next action ("No items yet. Create your first →")
-
----
-
-## S5: State & Persistence Matrix
-
-| Data | Stored Where | Persists After Refresh? | Cleared When |
-|------|-------------|------------------------|--------------|
-| [field name] | [memory / localStorage / sessionStorage / DB / cache] | Yes / No | [navigation / logout / timeout / manual] |
-
----
-
-## S6: Manual QA Scenarios
-
-- [ ] **Happy path**: [step-by-step → expected result]
-- [ ] **Error — API fails**: trigger API failure → user sees [specific message], can retry
-- [ ] **Error — invalid input**: submit with [specific bad input] → user sees [specific message]
-- [ ] **Empty state**: no existing data → user sees [specific UI], can [create first item]
-- [ ] **Loading**: click [action] → result appears within [X seconds]; loading indicator visible
-- [ ] **Mobile**: test at 375px width — all elements accessible, no horizontal scroll
-- [ ] **Refresh mid-flow**: refresh at [specific step] → [data preserved / user returned to start]
-- [ ] **Concurrent use**: [if relevant] open in two tabs → [expected behavior]
-```
-
----
-
-## Step 5: Save the Spec
-
-1. Convert the feature name to a kebab-case filename:
-   - "User Authentication" → `user-authentication.md`
-   - "Bulk Photo Upload" → `bulk-photo-upload.md`
-
-2. Check if `specs/` directory exists:
-   ```bash
-   ls specs/ 2>/dev/null || mkdir -p specs
-   ```
-
-3. Write the spec to `specs/[slug].md`
-
-4. Apply **Scope Routing** — count S1 error state rows and S3 integration point rows in the spec you just wrote, then output the matching route:
-
-   **If S1 ≤ 3 AND S3 ≤ 1** (bug fix / small change → Autonomous):
-   ```
-   ✓ Spec written: specs/[slug].md
-   Scope: [Bug fix / Small change] — [N] error states, [N] integration points.
-   Implementing now. Key risks from S1: [list top items].
-   ```
-   Then implement in this session — handle every S1 error state in code. When done, run `/spec-check specs/[slug].md`.
-
-   **If S1 4–7 OR S3 2–3** (new feature → Recommend review):
-   ```
-   ✓ Spec written: specs/[slug].md
-   Scope: New feature — [N] error states, [N] integration points.
-   Review recommended before implementing.
-   → Run /spec-review specs/[slug].md in a new session.
-   → Say "skip review" to implement now.
-   ```
-
-   **If S1 ≥ 8 OR S3 ≥ 4 OR high-risk (auth/payments/PII)** (Review required):
-   ```
-   ✓ Spec written: specs/[slug].md
-   Scope: [Large / High-risk] — [N] error states, [N] integration points.
-   Human review required.
-   → Run /spec-review specs/[slug].md — must return APPROVED.
-   → A human must read the spec before implementing.
-   ```
-   Do not implement regardless of user request.
-
----
-
-## Notes
-
-- **Do not specify implementation.** Specs define behavior, not code. "Store the user ID" is behavior. "Use a UUID primary key" is implementation. Put behavior in specs, let AI decide implementation.
-- **S1 and S3 are the highest-value sections.** They prevent 65% of review failures. If you're short on time, be thorough here and brief everywhere else.
-- **S6 scenarios must be testable by a human** who hasn't read the code. "Works correctly" is not a scenario. "Click Save with empty title field → red border on field, 'Title is required' shown below" is a scenario.
-- **The Copy Review (S4)** is frequently skipped and frequently causes rework. Hardcoded strings and developer jargon in user-facing text account for ~10% of fixes on AI-generated code.
-
----
-
-## Install as a Claude Code command
-
-To use `/spec` directly in Claude Code:
-
+Create `specs/` if it does not exist:
 ```bash
-mkdir -p .claude/commands
-
-# If you cloned spec-first locally:
-cp path/to/spec-first/advanced/skills/spec/SKILL.md .claude/commands/spec.md
-
-# Or fetch directly:
-curl -fsSL https://raw.githubusercontent.com/nlatuan187/spec-first/master/advanced/skills/spec/SKILL.md \
-  -o .claude/commands/spec.md
+ls specs/ 2>/dev/null || mkdir -p specs
 ```
 
-Claude Code will expose it as `/spec` in any session within this project.
+Convert the feature name to a kebab-case slug.
+
+Write `specs/<slug>.md` by filling the template from `spec.md`. Rules:
+
+- Copy the YAML front matter. Set `status: draft`. Leave `approved_at` blank — you must
+  never set it. Leave `shipped_at` and `reconciled_at` blank.
+- Fill `## Verification` with the seven recorded results from Step 3.
+- Fill every mandatory section for the chosen scope. Replace every placeholder with
+  real content — placeholders are not content.
+- Failure modes: fill the table rows before writing the happy path. The last column
+  ("Recovery") is the one people skip; it must have an answer.
+- Invariants: address each one to a person, not to a file. Shape:
+  `**[bold claim].** [mechanism]. Do not [tempting wrong move].`
+- Known issues: mandatory; at least one entry; "None" is not an entry.
+- Optional sections (Mental model, Pre-reading, Thresholds, Code flow, Data contract,
+  Copy, State): include only when they carry information not already in the mandatory
+  sections.
+- Length rule: if the spec is longer than the diff it describes, drop a scope level.
+
+Checkable rules replacing the old "be thorough here" notes:
+- **Failure modes**: every row must have entries in all four columns. An empty "Recovery"
+  cell is a gap, not a decision.
+- **Integration**: a change to existing code with zero integration rows is a gap.
+  Run `ls` and `grep` before claiming there are none.
+
+---
+
+## Step 5: Confirm and stop
+
+After writing `specs/<slug>.md`, output exactly this block (fill the brackets):
+
+```
+Spec written: specs/[slug].md
+Scope: [scope]
+Status: draft
+
+Verification recorded: [list the seven check results as one-liners]
+
+Nothing will build until a human sets status: approved and approved_at in the YAML
+front matter. The pre-tool-use hook enforces this — any source edit without an approved
+spec that names the file is rejected.
+
+Do not ask an agent to set approved_at. That is the moment you stop designing and
+start building; conflating the two is how the design quietly gets edited to match the code.
+```
+
+Do not implement. Do not suggest implementing. Wait for explicit human approval.

@@ -1,9 +1,10 @@
 # Implementation Brief: [FEATURE NAME]
 
 <!--
-PURPOSE: This is a compressed spec for long coding sessions.
-AI context windows are finite. When a session runs long, paste this brief
-into the new session instead of re-reading the full spec.
+PURPOSE: Decision record and out-of-scope guardrail for long implementation sessions.
+Automatic compaction handles session continuity for most models. What compaction does
+not preserve: the explicit record of WHY non-obvious choices were made, and which files
+are deliberately out of scope. Fill the Decisions Made and Out of scope sections first.
 
 HOW TO USE:
 1. Fill this in at the START of an implementation session (from your full spec)
@@ -12,7 +13,7 @@ HOW TO USE:
    then paste this document.
 4. Update "Current State" as you make progress.
 
-TIME TO FILL: 5 minutes. Time saved: 15+ minutes of context rebuilding per session.
+TIME TO FILL: 5 minutes.
 -->
 
 ## What We're Building
@@ -29,7 +30,7 @@ TIME TO FILL: 5 minutes. Time saved: 15+ minutes of context rebuilding per sessi
 **Out of scope (do NOT touch):**
 - [file or feature that should not change]
 
-## Critical Requirements (from S1 + S3)
+## Critical Requirements (from Failure modes + Integration)
 <!-- Only the requirements most likely to be missed. Max 5 bullets. -->
 - Error: [condition] → user sees [specific message/UI]
 - Error: [condition] → user sees [specific message/UI]
@@ -52,5 +53,5 @@ TIME TO FILL: 5 minutes. Time saved: 15+ minutes of context rebuilding per sessi
 - [Issue]: [what's blocking or needs attention]
 
 ---
-*Spec: `specs/[slug].md` — read the full spec for S2/S4/S5/S6 details*
+*Spec: `specs/[slug].md` — read for Acceptance, Copy, State, and QA details*
 *Session started: [DATE/TIME]*

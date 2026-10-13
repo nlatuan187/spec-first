@@ -24,12 +24,12 @@ The five failure modes below each have:
 ## Failure Mode 1: Context Dilution
 
 ### Phenomenon
-You write a spec with specific constraints at the start of a session. By message 30, the AI has forgotten or is deprioritizing those constraints. The code it writes violates rules you established at the beginning.
+You write a spec with specific constraints at the start of a session. As the session grows long, the AI drifts from those constraints. The code it writes violates rules you established at the beginning.
 
 ### Mechanism
-Transformer-based AI models use attention — every token "attends" to every other token, but with different weights. In a long context window, earlier content gets less attention weight than recent content. This is not a memory failure. The model hasn't forgotten the constraints. It's weighting them less because they're distant in the token sequence.
+Transformer-based AI models use attention — every token "attends" to every other token, but with different weights. In a long context window, earlier content receives less relative attention weight than recent content. This is not a memory failure. The model has not forgotten the constraints. It is weighting them less because they are distant in the token sequence.
 
-The practical effect: a 5000-token spec at the start of a session has less influence on output at message 40 than it did at message 2. The drift is gradual and invisible — there's no error message, no indication the model is paying less attention to your constraints.
+The practical effect: a spec pasted at the start of a session has less influence on output late in that session than it had early on. The drift is gradual and invisible — there is no error message, no indication the model is paying less attention to your constraints.
 
 This compounds with a second effect: **accumulated error propagation.** An incorrect assumption in step 5 of a session gets encoded into subsequent steps. By step 15, the AI is confidently building on a foundation that was wrong.
 
@@ -41,7 +41,7 @@ This compounds with a second effect: **accumulated error propagation.** An incor
 
 The spec file, the diff, the review findings — these are the handoff artifacts. They carry information across session boundaries without carrying accumulated error.
 
-**The implementation brief** (`during-coding/implementation-brief.md`) handles the case where a single implementation session runs long. Compress state to 40 lines at the halfway point, start fresh, paste the brief.
+**The implementation brief** (`advanced/during-coding/implementation-brief.md`) handles the case where a single implementation session runs long. Compress state to 40 lines at the halfway point, start fresh, paste the brief.
 
 ### How to Verify
 - You can restart the implementation session mid-feature and get consistent output
@@ -63,14 +63,14 @@ This isn't a capability failure. Ask AI to write error handling explicitly and i
 There's a secondary mechanism: **error handling is often platform-specific.** A generic AI trained on all of the internet doesn't know that Supabase returns `{ data: null, error: { code: 'PGRST116' } }` for "not found" (not an HTTP 404) unless explicitly told. Even if it wanted to handle your specific errors, it often doesn't have the platform knowledge to do it correctly.
 
 ### The Fix
-**S1 (Error States) is the first spec section you fill.** Not the last. Not "optional if time allows." First.
+**`## Failure modes` is the first spec section you fill.** Not the last. Not "optional if time allows." First.
 
-By making error states mandatory before acceptance criteria, you force yourself to reason about failures before AI reasons about successes. The spec then gives AI an explicit list of failure cases to handle, with specific expected behaviors.
+By making failure modes mandatory before acceptance criteria, you force yourself to reason about failures before AI reasons about successes. The spec then gives AI an explicit list of failure cases to handle, with specific expected behaviors.
 
-The deployment constraints block at the top of S1 addresses the platform-specific gap: you write down your infrastructure constraints (Vercel timeout: 10s, Supabase truncation at 1000 rows) so AI has the context it needs to handle them correctly.
+The deployment constraints block at the top of `## Failure modes` addresses the platform-specific gap: you write down your infrastructure constraints (Vercel timeout: 10s, Supabase truncation at 1000 rows) so AI has the context it needs to handle them correctly.
 
 ### How to Verify
-- Every error state in S1 has a corresponding code path (use `/spec-check`)
+- Every failure mode in the spec has a corresponding code path
 - Error messages are specific (not "Something went wrong")
 - Concurrent execution has a handling strategy (not ignored)
 
@@ -95,7 +95,7 @@ These connections are implicit in a production codebase. They're in the heads of
 There's also a **cross-file pattern gap.** AI tends to implement patterns it sees nearby. If the implementation file doesn't already have credit deduction code, AI won't add it — even if it exists in adjacent files.
 
 ### The Fix
-**S3 (Cross-Feature Integration)** makes implicit connections explicit. Before AI writes any code, you define:
+**`## Integration`** makes implicit connections explicit. Before AI writes any code, you define:
 - What upstream events trigger this feature
 - What downstream effects this feature triggers
 - What shared state is read and written
@@ -103,10 +103,10 @@ There's also a **cross-file pattern gap.** AI tends to implement patterns it see
 
 This section should be the hardest to fill. If it's easy, you're probably missing connections.
 
-**Deployment constraints in S1** address the infrastructure layer: "this runs as a serverless cron job that may execute concurrently" forces you to think about concurrency before AI writes the first line.
+**Deployment constraints in `## Failure modes`** address the infrastructure layer: "this runs as a serverless cron job that may execute concurrently" forces you to think about concurrency before AI writes the first line.
 
 ### How to Verify
-- After implementation, run `/spec-check` and look only at S3 results
+- After implementation, verify each row in `## Integration` has a corresponding code path
 - The most common gap: "creates X → refreshes list in Y" not implemented
 - Second most common: cleanup on unmount not implemented
 
@@ -140,7 +140,7 @@ Every tool has a way to create a cold session:
 The review prompt is always the same:
 ```
 git diff origin/main
-Apply review-checklist at spec-first/advanced/templates/review-checklist.md
+Apply review-checklist at spec-first/review.md
 Output Pass 1 (Critical) first.
 ```
 
@@ -175,7 +175,7 @@ AI training data includes documentation for all major platforms. But documentati
 There are also **silent failures** — cases where the platform doesn't error but produces wrong results. Supabase PostgREST doesn't throw an error when you omit `.limit()` on a query that returns 2000 rows. It silently returns 1000. There's no signal to trigger error handling. AI will write the query without `.limit()` because that's the normal pattern, and the code will appear to work until you have more than 1000 rows.
 
 ### The Fix
-**Deployment Constraints block at the top of S1.** Before writing any error states, you document:
+**Deployment constraints block at the top of `## Failure modes`.** Before writing any failure rows, you document:
 - Runtime environment and its limits
 - Database client behaviors that differ from standard SQL
 - External API auth requirements
@@ -187,8 +187,8 @@ Over time, your CLAUDE.md accumulates these constraints as project-wide rules, s
 
 ### How to Verify
 - Pass 1 of the review checklist covers platform constraints explicitly
-- If CodeRabbit or a cold review session catches a platform-specific issue, add it to CLAUDE.md as a project rule
-- Your S1 deployment constraints section grows as you learn your environment
+- If a cold review session catches a platform-specific issue, add it to your context file as a project rule
+- Your `## Failure modes` deployment constraints block grows as you learn your environment
 
 ---
 
@@ -223,17 +223,17 @@ This architecture:
 - Forces explicit handoff artifacts (if it's not in the file, it's lost)
 - Enables parallel work (spec and implementation can run in parallel sessions)
 
-The implementation brief (`during-coding/implementation-brief.md`) handles the edge case where Session 2 runs very long and needs to be split — compress current state to 40 lines, open new session, paste brief, continue.
+The implementation brief (`advanced/during-coding/implementation-brief.md`) handles the edge case where Session 2 runs very long and needs to be split — compress current state to 40 lines, open new session, paste brief, continue.
 
 ---
 
 ## Still need help after reading this?
 
 If you understand the failure modes but still hit them in practice, the cause is usually one of:
-1. **Spec is too vague** — S1 has "show error" not a specific message → [failure-patterns.md](failure-patterns.md)
+1. **Spec is too vague** — `## Failure modes` has "show error" not a specific message → [failure-patterns.md](failure-patterns.md)
 2. **Session discipline slipping** — implementing and reviewing in same session → [worktree-workflow.md](worktree-workflow.md)
-3. **CLAUDE.md not updated** — platform constraints learned but not documented → add to CLAUDE.md
-4. **S3 was skipped** — integration requirements missing → most common in urgent features
+3. **Context file not updated** — platform constraints learned but not documented → add to your context file
+4. **`## Integration` was skipped** — integration requirements missing → most common in urgent features
 
 → [Full workflow guide](worktree-workflow.md)
 → [Failure patterns with examples](failure-patterns.md)

@@ -1,283 +1,156 @@
 ---
 name: spec-review
 preamble-tier: 3
-version: 1.0.0
+version: 2.0.0
 description: |
-  Verify that a spec is accurate, complete, and safe to build — before the Build
-  session starts. Checks spec-codebase alignment (file:line still valid), severity
-  calibration, evidence quality, deduplication against existing issues, and
-  collaboration zone conflicts. Use when asked to "review this spec", "is this spec
-  ready to build?", "check my spec", or "spec-review [slug]".
-
-  Runs between the Spec session and the Build session. Output is a hard gate:
-  APPROVED (safe to open Build session) or BLOCKED (specific fixes required first).
-
-  Mechanical issues — stale line numbers, severity inflation, format gaps — are
-  auto-fixed in this session. Judgment gaps — S1 missing cases, S3 accuracy,
-  implementation order — are flagged for human review.
-
-  This is not bureaucracy. 10 minutes fixing a spec = avoiding 4 hours fixing code.
+  Gate that reads a spec and returns APPROVED or BLOCKED before a Build session starts.
+  APPROVED is this gate's verdict — never placed in the spec's front matter. The human
+  approver sets status: approved and approved_at as a separate deliberate act.
+  Use when asked to "review this spec", "is this spec ready?", or "spec-review [slug]".
 effort: medium
 allowed-tools:
   - Read
   - Bash
-  - Grep
-  - Glob
   - Edit
-  - AskUserQuestion
 ---
 
 {{PREAMBLE}}
 
-# /spec-review: Verify Spec Before Building
+# /spec-review
 
-**The spec is the highest-leverage moment.** Invest here. Everything after flows from spec quality.
-
-You are a spec quality auditor. Your job is not to rewrite the spec — it is to verify that the spec accurately describes reality, catches what the AI missed, and is safe to hand to a Build session.
-
-A spec that passes this review does not guarantee a perfect build. It guarantees the build session starts from truth, not from a hallucinated description of the codebase.
+Read the spec. Return a verdict with evidence. A finding with no quoted evidence is not reported. A check that was skipped is reported as SKIPPED, never as passed.
 
 ---
 
-## When to run
+## Step 1: Find the spec
 
-Run `/spec-review specs/[slug].md` after writing a spec and **before** opening a Build session.
-
-In Team Mode: this is the automated component of the "In Review → Approved" gate. Human approver still signs off on judgment items — but mechanical issues are resolved before they reach the human.
-
----
-
-## Step 1: Find the Spec
-
-If a path was given (e.g., `/spec-review specs/user-auth.md`), use it.
-
-If no path given, list available specs:
 ```bash
 ls specs/ 2>/dev/null
 ```
 
-If multiple unreviewed specs exist, ask which to review. For a batch review of an entire directory, run Steps 2–7 in lightweight mode (severity + dedup only) for each file, then full review for flagged specs.
+Use the given path, or ask if multiple specs exist and none was named.
 
 ---
 
-## Step 2: Read the Spec
+## Step 2: Read the spec
 
-Read the full spec. Note:
-- Scope: bug fix / small change / new feature / large feature
-- S1 error count (total rows)
-- S3 integration point count (total rows)
-- Every file path and line number mentioned
-- Every fix suggestion that references a specific function or import
-- Any severity labels (CRITICAL / HIGH / MEDIUM / LOW)
+Collect: `status` from front matter · `## Why` (Pain, Need, Proposed) · `## Verification` contents · `## Known issues` contents · every number in the body · every `## Thresholds` entry · every `## File changes` path · severity label counts.
 
 ---
 
-## Step 3: Mechanical Checks — Auto-fix where possible
+## Step 3: Hard blocks — check first, stop if any fire
 
-### 3a. File:line alignment
+Evidence required for each. If any fires, output BLOCKED and stop.
 
-For every `file.ts:line` reference in the spec:
+**VER — Verification empty.** `## Verification` is empty, has only placeholder text, or has no recorded command output (paths, counts, "no hits"). Evidence: paste the section. A spec with no contact with the code is a draft.
 
-Use the Read tool with `offset` and `limit` to verify the line still contains what the spec claims.
+**KNI — Known issues empty.** Section is blank, contains an empty `-`, or says "none" or "n/a". Evidence: paste the section. "None" is not an entry.
 
-If the line has moved but the code is nearby, find and update:
-```bash
-grep -n "[code_snippet]" [FILE_PATH] | head -5
-```
+**PRO — Proposed missing rejection.** Any `Proposed` line lacks a `not [Y]` clause (`We will X, not Y, because Z`). Evidence: quote the offending line.
 
-**Auto-fix**: Update stale line numbers directly in the spec using Edit.
-**Flag**: If the code no longer exists, mark as `[STALE — CODE REMOVED]`.
-
-### 3b. Fix suggestion verifiability
-
-For every fix suggestion that references a function, import, or helper:
-
-```bash
-grep -r "[function_name]" --include="*.ts" --include="*.tsx" -l | head -5
-```
-
-**Auto-fix**: If function exists, note the correct import path in the spec.
-**Flag**: If function does not exist, mark as `[FIX UNVERIFIED — function not found]`.
-
-### 3c. Severity calibration
-
-Count severity labels across all sub-items. Apply the 20% rule:
-- CRITICAL should be ≤ 20% of total items
-- CRITICAL = data loss, security exploit, production crash only
-- HIGH = feature broken for subset of users, regression risk
-- MEDIUM = degraded UX, workaround exists
-- LOW = polish, nice-to-have
-
-If CRITICAL > 20%: systematically review each CRITICAL against the criteria above.
-
-**Auto-fix**: Downgrade items that don't meet CRITICAL criteria. Explain the change inline.
-
-### 3d. Format completeness
-
-Verify mandatory sections are present (scope-appropriate per Formality Dial):
-
-| Scope | Required |
-|---|---|
-| Bug fix | S1 + S6 |
-| Small change | S1 + S3 + S6 |
-| New feature | S1 + S2 + S3 + S4 + S5 + S6 |
-
-**Auto-fix**: If a section is missing and can be derived from the spec content, add it.
-**Flag**: If a section is missing and requires new decisions, mark as `[SECTION MISSING — requires input]`.
+**NUM — Number not in Thresholds.** Any number in the body (timeouts, row limits, percentages, counts) absent from `## Thresholds`. Evidence: quote the number and location. Dates and path components are exempt.
 
 ---
 
-## Step 4: Judgment Checks — Flag, do not auto-fix
+## Step 4: Mechanical checks
 
-### 4a. S1 completeness
+### 4a. Pain validity
 
-For each error state listed: is the user-visible outcome specific?
+Each Pain line must contain a frequency, a quantity, or a blocking fact, and must not contain the product's own feature nouns.
 
-Flag vague rows:
-- "Show error" → ❌ what error? what does the user see?
-- "Handle null" → ❌ what does the UI show when null?
-- "API fails" → ❌ which status codes? what does the user do next?
+Valid: `"Without a connected account, publishing is blocked."` (blocking fact)
+Invalid: `"Brokers need a content plan view."` (backlog item in pain's clothing)
 
-Apply the Deployment Constraints check:
-```
-□ Any loop > 10s? (serverless timeout)
-□ Any DB query without .range()? (1000-row silent truncation)
-□ Any external API token in a URL? (gets logged)
-□ Any background job without atomic lock?
-```
+Flag: `PAIN — "[quoted line]" — [missing frequency/quantity/blocking fact | contains product feature noun]`
 
-**Do not auto-fix.** Flag as: `⚠️ S1 gap: [row] — outcome not specific`.
+### 4b. Severity calibration
 
-### 4b. S3 scan — did the spec author scan, or rely on memory?
+Count all severity labels. CRITICAL must be ≤ 20% of total. CRITICAL = data loss, security exploit, production crash only. HIGH = broken for a subset, regression risk.
 
-The S3 rule from snippet.md: "An S3 with no rows is almost always wrong."
+If CRITICAL > 20%: review each against the criteria. Auto-fix: downgrade non-qualifying items inline with evidence (count before → after).
 
-Run the scan now:
-```bash
-ls lib/services/ app/api/ components/features/ 2>/dev/null | head -40
-```
+### 4c. File:line references
 
-For brownfield changes, run:
-```bash
-grep -r "[main_entity_or_function]" lib/ app/api/ --include="*.ts" | head -20
-```
+For every `file:line` in the spec: use Read with offset/limit to verify the line still contains what the spec claims. Auto-fix stale numbers. Flag removed code as `[STALE — CODE REMOVED]` with the original reference quoted.
 
-Compare scan results to S3 in spec. Flag anything the scan found that S3 didn't mention.
+---
 
-**Do not auto-fix.** Flag as: `⚠️ S3 gap: [module] exists but not mentioned`.
+## Step 5: Judgment checks — flag, do not auto-fix
 
-### 4c. Deduplication — local and remote
+### 5a. Integration scan
 
-Check for overlap with existing specs and issues:
+This check is stack-agnostic. First discover the repo layout, then search. Do not assume any framework or file extension.
 
 ```bash
-# Local: other specs in the same directory
+# Discover source directories — skip dependencies and build artifacts
+find . -maxdepth 3 -type d \
+  \( -name node_modules -o -name .git -o -name __pycache__ \
+     -o -name dist -o -name build -o -name vendor -o -name target \) -prune \
+  -o -type d -print 2>/dev/null | head -40
+
+# Search the main entity in at least three spellings (adapt extensions to this repo)
+grep -rn "ENTITY\|entity_name\|entityName\|ENTITY_NAME" \
+  --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=vendor \
+  . 2>/dev/null | head -30
+```
+
+Compare hits to `## Integration`. Flag anything the scan found that the spec omitted.
+
+`⚠️ INTEGRATION — [path] touches [entity] but is absent from the Integration table. Evidence: [quoted grep line]`
+
+If the scan could not run: `SKIPPED — integration scan — [reason]`
+
+### 5b. Deduplication
+
+```bash
 ls specs/ 2>/dev/null
-
-# Remote: open issues (if gh CLI available)
 gh issue list --state open --limit 50 2>/dev/null | grep -i "[feature_keyword]"
 ```
 
-For each potential overlap: does the existing spec/issue cover the same behavior?
+`⚠️ OVERLAP — [spec/issue] may cover [behavior]. Evidence: [quoted title or description]`
 
-**Do not auto-fix.** Flag as: `⚠️ Overlap: [existing issue/spec] may cover [behavior]`.
+### 5c. Deployment constraints
 
-### 4d. Type classification
+Flag if the spec contains: a loop that may exceed platform timeout · a DB query without pagination · a secret in a URL query string · a check-then-write without an atomic lock.
 
-Is the spec correctly classified?
-
-- Bug fix: existing behavior is broken
-- Small change: existing behavior modified
-- New feature: behavior doesn't exist yet
-- Large feature: new behavior + multiple integration points
-
-Misclassification affects Scope Routing. A bug fix routed as new feature blocks unnecessarily. A new feature routed as bug fix skips S2/S4/S5.
-
-**Do not auto-fix.** Flag if misclassified: `⚠️ Type mismatch: classified as [X], likely [Y]`.
-
-### 4e. Collaboration zone check (team only)
-
-If a constitution with ownership zones is present: does this spec touch files owned by a different zone than the current author?
-
-```bash
-# Check which files the spec mentions against ownership zones in CLAUDE.md
-grep -i "ownership\|zone\|owner" CLAUDE.md 2>/dev/null
-```
-
-**Do not auto-fix.** Flag as: `⚠️ Zone conflict: [file] owned by [zone] — coordinate before building`.
+`⚠️ CONSTRAINT — [quoted description of the risk]`
 
 ---
 
-## Step 5: Output the Gate
+## Step 6: Output the gate
 
 ```
 ## Spec Review: [Feature Name]
-Spec: specs/[filename].md
-Scope: [bug fix / small change / new feature]
-S1 count: [N] | S3 count: [N]
+Spec: specs/[filename].md  |  Scope: [scope]
 
 ### Auto-fixed
-- [x] Updated stale line: lib/api/upload.ts:47 → :52
-- [x] Severity: BUG-B downgraded CRITICAL → HIGH (no data loss, workaround exists)
-- [x] Added missing S6 section from spec content
+- [x] [description] — evidence: [before → after]
 
-### Flags — requires human decision
-⚠️ S1 gap: "API returns error" row — outcome not specified (what does user see?)
-⚠️ S3 gap: store/publish.ts exists but not mentioned — does this spec affect publish state?
-⚠️ Overlap: Issue #309 covers publish flow UX — verify no duplicate
-
-### Deployment constraints
-✅ No loops > 10s
-✅ DB queries paginated
-⚠️ [Flag if any constraint violated]
+### Findings — require human decision
+⚠️ PAIN        — "[quoted line]" — [reason]
+⚠️ INTEGRATION — [path] absent from Integration table — evidence: [grep line]
+⚠️ OVERLAP     — [spec/issue] may cover [behavior] — evidence: [quoted]
+⚠️ CONSTRAINT  — [risk description]
+SKIPPED        — [check name] — [reason]
 
 ---
-APPROVED ✅
-→ Open a new Build session. Load: constitution + specs/[slug].md
+APPROVED ✅  →  Open Build session with: context file + specs/[slug].md + KNOWLEDGE.md
+This verdict does not update the spec's front matter.
+The human approver sets status: approved and approved_at.
 ```
 
 or:
 
 ```
----
-BLOCKED ❌
-Fix [N] flags before opening Build session:
-1. S1: specify user-visible outcome for "API error" row
-2. S3: confirm whether store/publish.ts is in scope
-3. Overlap: close or merge with Issue #309
+BLOCKED ❌  —  [N] issue(s) before Build:
+1. VER — Verification section is empty. Evidence: [quoted section]
+2. KNI — Known issues empty. Evidence: [quoted section]
+3. PRO — Proposed line missing "not [Y]". Evidence: "[quoted line]"
+4. NUM — "[number]" at [location] not in Thresholds.
 ```
 
 ---
 
 ## What this is not
 
-- **Not a spec rewrite.** If S3 is missing integrations, flag it — the spec author fills it in. You don't fill it for them.
-- **Not a code review.** That's `review.md` after the Build session.
-- **Not an implementation check.** That's `/spec-check` after the Build session.
-- **Scope Routing determines when the gate applies.** Autonomous route (S1 ≤ 3, S3 ≤ 1): `/spec-review` is optional — run it to improve quality, but the gate doesn't block. Recommend review (S1 4–7 or S3 2–3) and Review required (S1 ≥ 8 or S3 ≥ 4 or high-risk): APPROVED/BLOCKED gate applies, solo or team. See Skill dial in snippet.md.
-
----
-
-## The trilogy
-
-```
-/spec          → writes the spec (before Build)
-/spec-review   → verifies spec quality (before Build)     ← you are here
-/spec-check    → verifies implementation coverage (after Build)
-```
-
-spec-review and spec-check run in different sessions, at opposite ends of the Build session. They are not chained — each requires a cold start.
-
----
-
-## Standalone Installation
-
-```bash
-# Copy as a Claude Code slash command
-mkdir -p .claude/commands
-cp spec-first/advanced/skills/spec-review/SKILL.md .claude/commands/spec-review.md
-
-# Or fetch directly
-curl -fsSL https://raw.githubusercontent.com/nlatuan187/spec-first/master/advanced/skills/spec-review/SKILL.md \
-  -o .claude/commands/spec-review.md
-```
+Not a spec rewrite — flag gaps, the author fills them. Not a code review (`review.md` runs after Build). Not implementation verification (`/spec-check` runs after Build). APPROVED is not written into the spec's front matter — that is the human approver's act.

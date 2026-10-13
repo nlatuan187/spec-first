@@ -98,7 +98,7 @@ Read CLAUDE.md, then:
 /spec User profile photo upload — agents upload a profile photo (max 5MB, JPG/PNG/WebP), it appears immediately after upload. Related to profile page (#112).
 ```
 
-The `/spec` command generates a full S1-S6 spec and saves it to `specs/profile-photo-upload.md`.
+The `/spec` command generates a spec with all mandatory sections and saves it to `specs/profile-photo-upload.md`.
 
 **When done: close this session. The spec file is the handoff.**
 
@@ -112,11 +112,11 @@ Open a **new AI session**. No context from Session A.
 Read CLAUDE.md, then:
 Read specs/profile-photo-upload.md
 
-Apply the review checklist from spec-first/advanced/templates/review-checklist.md — but for SPECS, not code.
+Apply the review checklist from spec-first/review.md — but for SPECS, not code.
 Check:
-- S1: Does it cover auth failure, API failure, file too large, wrong format, concurrent upload?
-- S3: What other features does photo upload affect? User profile display, email notifications?
-- Deployment constraints: What are the S3 file size limits? What's the timeout on upload routes?
+- Failure modes: Does it cover auth failure, API failure, file too large, wrong format, concurrent upload?
+- Integration: What other features does photo upload affect? User profile display, email notifications?
+- Deployment constraints: What are the file size limits? What's the timeout on upload routes?
 
 Output any gaps as specific missing items.
 ```
@@ -140,7 +140,7 @@ Implement all files. Commit with: "feat(#123): user profile photo upload"
 
 AI implements across all relevant files — API route, service, component, migration.
 
-During a long implementation session, fill in `spec-first/during-coding/implementation-brief.md` to track progress. If context gets long: save the brief, end the session, start fresh and paste the brief.
+During a long implementation session, fill in `spec-first/advanced/during-coding/implementation-brief.md` to track progress. If context gets long: save the brief, end the session, start fresh and paste the brief.
 
 Run spec-check before ending:
 ```
@@ -161,7 +161,7 @@ Open a **new AI session**. No context from Session C.
 Read CLAUDE.md, then:
 git diff origin/main
 
-Apply Pass 1 (Critical) then Pass 2 (Informational) from spec-first/advanced/templates/review-checklist.md.
+Apply Pass 1 (Critical) then Pass 2 (Informational) from spec-first/review.md.
 Format: [file:line] Problem → recommended fix
 AUTO-FIX what you can. Flag the rest.
 ```
@@ -283,7 +283,7 @@ Longer features: separate sessions pay for themselves in review pass rate.
 
 **"What if the spec changes during implementation?"**
 
-Update the spec file. Don't fight reality. The spec is a living document during Session C. If you discover a constraint the spec didn't cover, add it to S1. If the integration is more complex than S3 described, update S3. End of Session C: the spec file reflects what was actually built.
+Update the spec file. Don't fight reality. The spec is a living document during Session C. If you discover a constraint the spec didn't cover, add it to `## Failure modes`. If the integration is more complex than `## Integration` described, update that section. End of Session C: the spec file reflects what was actually built.
 
 **"We use Cursor/Windsurf/Codex, not Claude Code. Does this work?"**
 

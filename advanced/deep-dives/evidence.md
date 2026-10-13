@@ -128,7 +128,7 @@ Accounting for:
 
 1. **Review time doesn't compress.** AI generates 100 lines in 3 seconds. Reviewing takes 5-10 minutes. Humans become the bottleneck.
 
-2. **The fix tax is real.** Fix:feat ratio of 2.93:1 means 75% of commits were fixing AI output. This improves with better specs (from 5:1 to 1.5:1) but never reaches zero.
+2. **The fix tax is real.** A fix:feat ratio of 2.93:1 means that among commits that were either a feature or a fix, roughly three in four were fixes. Across *all* commits, `fix:` was 47% (293 of 626). This improves with better specs (from 5:1 to 1.5:1) but never reaches zero.
 
 3. **Architecture is still slow.** Deciding *what* to build, *why*, and *how modules connect* takes the same time whether you code manually or not. Specs take 1-2 hours each.
 

@@ -12,6 +12,26 @@ Next.js 14 (App Router) · TypeScript strict · Supabase PostgreSQL
 Zustand 5 · Shadcn UI · TailwindCSS · Supabase Auth
 -->
 
+## Methodology
+
+This project follows the spec-first methodology (see `snippet.md`).
+
+**Three artifacts:**
+- `specs/<slug>.md` — written BEFORE code; a prediction.
+- `docs/system/<area>.md` — written AFTER code; an observation.
+- `KNOWLEDGE.md` — accumulates discoveries across specs.
+
+**Before writing a spec, run the seven checks in `verify.md`** and record the output in
+the spec's `## Verification` section. The checks catch invented paths, wrong column names,
+missing dependencies, and similar errors that produce review gaps.
+
+**7-step loop:** Clarify → Verify → Spec → Approve (human only) → Build → Review →
+Reconcile. Reconcile within one working day of merge: re-read the spec against the diff,
+correct what changed, and fold durable findings into `docs/system/<area>.md`.
+
+**Brownfield:** Do not start with a spec. Write `docs/system/<area>.md` from the existing
+code first, then spec the change against it.
+
 ## Critical Rules
 
 <!-- These are NON-NEGOTIABLE. AI agents read this file on every session.
@@ -28,9 +48,15 @@ Zustand 5 · Shadcn UI · TailwindCSS · Supabase Auth
 ## Directory Structure
 
 <!-- Map the codebase so the AI knows where things live.
-     Only include directories that matter. Skip node_modules, .next, etc. -->
+     Only include directories that matter to the AI's work. -->
 
 ```
+[replace with your actual structure]
+```
+
+<!--
+LANGUAGE-SPECIFIC EXAMPLE (Next.js / TypeScript — delete if not applicable):
+
 app/
 ├── api/           — API routes (REST)
 ├── [locale]/      — Pages (i18n)
@@ -48,23 +74,29 @@ lib/
 store/             — Zustand state management
 db/migrations/     — SQL migration files
 messages/          — i18n translation files
+-->
+
+## API / Data Contract
+
+<!-- Define the response or data shape so producers and consumers never disagree.
+     This is the #1 source of cross-boundary bugs. Use the language/format that fits
+     your stack (TypeScript, Python dataclass, protobuf, OpenAPI snippet, etc.). -->
+
+```
+[replace with your actual contract]
 ```
 
-## API Response Contract
+<!--
+LANGUAGE-SPECIFIC EXAMPLE (TypeScript REST API — delete if not applicable):
 
-<!-- Define the response wrapper so FE/BE never disagree on shape.
-     This is the #1 source of cross-boundary bugs. -->
-
-```typescript
 // Backend ALWAYS returns:
 { success: true, data: { /* actual payload */ } }
 { success: false, error: "message" }
 
 // Frontend MUST parse:
 const json = await res.json();
-const result = json.data;  // ✅ Correct
-// NOT: json.result or json.payload (wrong wrapper)
-```
+const result = json.data;
+-->
 
 ## Ownership Zones
 
@@ -104,6 +136,6 @@ GUIDELINES FOR CUSTOMIZING THIS FILE:
 4. Delete rules that no longer apply.
 5. This file evolves — week 1 version will differ from month 3 version.
 
-Version: 1.0
+Version: 2.0
 Last updated: [DATE]
 -->

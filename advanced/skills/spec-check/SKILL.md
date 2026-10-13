@@ -1,198 +1,150 @@
 ---
 name: spec-check
 preamble-tier: 3
-version: 1.0.0
+version: 2.0.0
 description: |
-  Verify that the current implementation covers all behavioral requirements
-  defined in a spec file. Checks S1 error states, S2 post-completion, S3
-  integration points, S4 copy, S5 state persistence, and S6 QA scenarios
-  against actual code. Use after implementing a feature, or when asked to
-  "check against spec", "verify spec coverage", "did I cover everything",
-  or "spec-check [feature]". Returns ✅/⚠️/❌ per section with specific gaps.
-
-  Also the required verification step after Scope Routing autonomous mode —
-  human spec review was skipped, /spec-check is the automated substitute.
-  Run before shipping any autonomous implementation.
+  Reconciliation gate: compare the merged diff against its spec. Checks that every
+  failure-mode row maps to a code path, every QA checkbox has evidence, and every
+  path/route/symbol in the spec still resolves. Produces the system-doc append text.
+  Run within one working day of merge.
 effort: medium
 allowed-tools:
   - Read
   - Bash
   - Grep
-  - Glob
-  - AskUserQuestion
 ---
 
 {{PREAMBLE}}
 
-# /spec-check: Verify Implementation Against Spec
+# /spec-check: Reconciliation Gate
 
-**When to run this**: Always after autonomous implementation (Scope Routing routed to autonomous → /spec-check is the verification loop that replaces the human review session). Optional but recommended after human-reviewed implementation.
-
-You are a spec compliance auditor. Your job is not to judge code quality — it is to verify that the implementation covers what the spec requires. A feature can be beautifully written and still fail this check.
+A spec is a prediction written before the code; by merge time, some predictions will be
+wrong. Surface every one that did not survive the build and produce the corrected text
+that belongs in the living system document.
 
 ---
 
-## Step 0: Spec Existence Gate
+## Step 0: Find the matching spec
 
-Before checking coverage, verify a spec exists for the work being checked.
+**A spec matches when its `## File changes` section names a file present in the diff.**
 
 ```bash
-ls specs/ 2>/dev/null
-git diff --name-only HEAD~5 2>/dev/null | head -20
+git diff --name-only HEAD~1 2>/dev/null
+grep -rln "## File changes" specs/ 2>/dev/null
 ```
 
-Compare recently changed files against available specs. If implementation files were modified but **no matching spec exists in `specs/`**:
+Read the `## File changes` section of each candidate and check for overlap with the diff.
+If no spec matches:
 
 ```
-⛔ SPEC MISSING — Code was written without a spec.
-
-Modified files with no matching spec:
-  - [list files]
-
-This code was generated from the AI's default probability distribution.
-Action: Write a retroactive spec BEFORE continuing. Use the Formality Dial:
-  - Bug fix → S1 + S6 (5 min)
-  - Small change → S1 + S3 + S6 (10 min)
-  - Feature → Full S1-S6 (20 min)
+⛔ NO MATCHING SPEC — no spec names these files.
+Modified: [list]
+Action: write a retroactive bug spec (Failure modes + QA + File changes), same day.
 ```
-
-**Do not proceed to coverage checking until a spec exists.** This is the enforcement point — SessionStart reminders decay with conversation length, but /spec-check loads fresh every time it runs.
 
 ---
 
-## Step 1: Find the Spec
+## Step 1: Read the spec
 
-If a spec path was provided as an argument (e.g., `/spec-check specs/user-auth.md`), use it.
+Read the full spec file. Extract:
 
-If no path given: look for matching spec files.
-```bash
-ls specs/ 2>/dev/null
-```
-
-Ask the user to confirm the correct spec file if multiple candidates exist.
+- Every row of `## Failure modes`
+- Every checkbox in `## QA`
+- Every path, route, and named symbol in `## File changes`, `## Code flow`, `## Data contract`, and `## Integration`
 
 ---
 
-## Step 2: Read the Spec
+## Step 2: Locate then read
 
-Read the full spec file. Extract each section:
-- **Business Goal**: Why was this built?
-- **Acceptance Criteria**: Testable outcomes
-- **S1**: Error conditions and expected user responses
-- **S2**: Post-completion flow
-- **S3**: Cross-feature integration points
-- **S4**: Copy review items
-- **S5**: State persistence decisions
-- **S6**: Manual QA scenarios
-
----
-
-## Step 3: Find the Implementation
-
-Search for relevant implementation files:
+Grep locates; reading decides. A grep hit confirms a file exists, not that a feature works.
 
 ```bash
-# Find recently modified files (likely implementation)
-git diff --name-only HEAD~5 2>/dev/null || git status --short
-
-# Find files by feature name
-grep -r "[FEATURE_NAME]" --include="*.ts" --include="*.tsx" -l 2>/dev/null | head -20
+# Locate the handler
+grep -rn "[condition, symbol, or error code]" [dir]/
+# Then read it to verify the guard and response
 ```
 
-Read the key implementation files: the API route, the service layer, the UI component.
+Do not mark a failure mode HANDLED from a grep hit alone. Read the handler.
 
 ---
 
-## Step 4: Check Each Section
+## Step 3: Check failure modes
 
-For each spec section, verify coverage in the implementation:
+For every row in `## Failure modes`:
 
-### S1 — Error States
-For every row in the spec's error table:
-- Is there an `if` / `try/catch` / guard that handles this condition?
-- Does the response/UI match what the spec says the user should see?
+1. Grep the codebase for the condition (error code, guard, catch, HTTP status).
+2. Read the located file to confirm the guard exists and the response matches the spec.
+3. Report:
+   - **HANDLED** — code path confirmed, response matches spec
+   - **UNHANDLED** — no handler found, or handler does not produce what the spec requires
 
-Flag: conditions in spec with no corresponding code path.
-
-### S2 — Post-Completion Flow
-- Does the success path navigate/redirect where the spec says?
-- Is auto-save implemented if the spec requires it?
-- Is the "navigate away" warning present if the spec requires it?
-
-### S3 — Cross-Feature Integration
-- Are the downstream effects implemented? (e.g., "creating X refreshes list Y")
-- Are shared state stores updated correctly?
-- Is cleanup implemented on unmount/leave?
-
-### S4 — Copy Review
-- Are hardcoded strings present that should be in i18n files?
-- Do error messages use human language (not "500 Internal Server Error")?
-- Is the feature name/label consistent with the spec?
-
-### S5 — State Persistence
-For each row in the state matrix:
-- Is data stored where the spec says (localStorage, DB, memory)?
-- Is cleanup implemented when the spec says it should happen?
-
-### S6 — QA Scenarios
-For each scenario:
-- Is the happy path reachable? (No early returns that short-circuit it)
-- Is the error path handled? (What happens when the API call fails?)
-- Is mobile layout considered? (responsive classes, no fixed pixel widths that break 375px)
+A row not checked is UNHANDLED.
 
 ---
 
-## Step 5: Output the Report
+## Step 4: Check QA
+
+For every checkbox in `## QA`:
+
+- **VERIFIED** — evidence exists: test output, CI run URL, screenshot, or log line
+- **UNVERIFIED** — no evidence, or check was skipped
+
+A skipped check is never reported as a pass.
+
+---
+
+## Step 5: List stale references
+
+Every path, route, and symbol named in the spec that does not exist in the merged code is
+stale. These are what the build changed and the spec did not record.
+
+```bash
+# Path
+git show HEAD:[path-from-spec] 2>/dev/null || echo "STALE: [path]"
+# Symbol (zero hits = stale)
+grep -rn "[symbol-from-spec]" [dir]/ 2>/dev/null | wc -l
+```
+
+---
+
+## Step 6: Produce the system-doc text
+
+Output text ready to append to `docs/system/<area>.md`. Include the post-build, corrected
+versions of:
+
+- **Invariants** — corrected against the merged code
+- **Thresholds** — values confirmed in the build
+- **Data contract** — routes and shapes as they now exist
+- **Known issues** — spec's list plus any found during this check
+
+Label each: `[corrected]` or `[unchanged]`.
+
+---
+
+## Step 7: Verdict
 
 ```
-## Spec Check: [Feature Name]
+## Spec Check: [spec title]
 Spec: specs/[filename].md
-Checked: [N] files
+Diff: [N] files, reconcile date: [YYYY-MM-DD]
 
-### S1 Error States — [✅ COVERED / ⚠️ PARTIAL / ❌ MISSING]
-[If partial/missing: list specific conditions from spec with no implementation]
-  ❌ "API returns 500" — no toast shown, only console.error at [file:line]
-  ⚠️ "Session expired" — redirect exists but toast message not shown
+Failure modes: [N] HANDLED / [N] UNHANDLED
+  UNHANDLED: [condition — where a handler is missing or wrong]
 
-### S2 Post-Completion — [✅ / ⚠️ / ❌]
-[Specific gaps]
+QA: [N] VERIFIED / [N] UNVERIFIED
+  UNVERIFIED: [scenario — what evidence is absent]
 
-### S3 Integration — [✅ / ⚠️ / ❌]
-[Specific gaps]
-  ❌ "Creating post → refreshes post list" — no invalidation/refetch at [file:line]
+Stale refs: [N]
+  [path or symbol] — named in [spec section], not found in merged code
 
-### S4 Copy — [✅ / ⚠️ / ❌]
-[Specific gaps]
-  ⚠️ Hardcoded "Error saving" at [file:line] — should be i18n key
+System doc append: [ready below / blocked by stale refs]
 
-### S5 State Persistence — [✅ / ⚠️ / ❌]
-[Specific gaps]
+[paste system-doc text here]
 
-### S6 QA Scenarios — [✅ / ⚠️ / ❌]
-[Specific gaps]
-  ❌ Double-click submit — no debounce or loading state lock at [file:line]
-
----
-Summary: [N] sections fully covered, [N] partial, [N] missing
-Critical gaps (block shipping): [list S1/S3 gaps]
-Minor gaps (fix before merge): [list S4/S6 gaps]
+STATUS: RECONCILED
 ```
 
----
+STATUS is RECONCILED only when: 0 unhandled failure modes + 0 unverified QA items +
+0 stale references. Otherwise: `NOT RECONCILED — [list what remains]`.
 
-## Notes
-
-- **You are checking behavior, not code quality.** A messy implementation that covers every spec requirement passes. A beautiful implementation missing error states fails.
-- **S1 and S3 are the highest-value checks.** They prevent 65% of review failures.
-- **Do not flag things not in the spec.** If the spec doesn't mention dark mode, don't fail on it.
-- **Flag ambiguous spec items as questions**, not failures. "Spec says 'show error' but doesn't specify the message — is this intentional?"
-
----
-
-## Standalone Installation
-
-```bash
-# Copy as a Claude Code slash command
-mkdir -p .claude/commands
-cp spec-first/advanced/skills/spec-check/SKILL.md .claude/commands/spec-check.md
-```
+Set `reconciled_at` in the spec only when STATUS is RECONCILED.
