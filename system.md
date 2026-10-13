@@ -5,6 +5,21 @@
 
 ---
 
+## Start here on an existing codebase
+
+On brownfield work this file comes **first**, before any spec. Pick the area you are
+about to change, read the code, and write down the four things the code cannot tell you
+by itself: the invariants, the numbers and why they are those numbers, what must never
+leave the server, and what is already known to be broken. That takes an afternoon and it
+is what every later spec reads.
+
+The common failure is the opposite order — write a spec against a codebase nobody has
+described, discover halfway through the build that the column is named something else,
+and patch the spec to match the code. At that point the spec has stopped being a
+decision and become a transcript.
+
+---
+
 ## Why this file exists
 
 A spec describes a change. It is written before the code and stops being true the moment

@@ -12,8 +12,8 @@ true about this repository** — the facts it cannot derive by reasoning: which 
 name this table actually uses, which number was measured and which was guessed, which
 design was already tried and rejected, what must never leave the server.
 
-Everything below exists to capture one of those facts, or to stop work until one is
-captured. Nothing below is here to make the model try harder.
+Everything below captures one of those facts, or stops work until one is captured.
+Nothing here is to make the model try harder.
 
 ---
 
@@ -28,6 +28,10 @@ captured. Nothing below is here to make the model try harder.
 A spec is a prediction. A system document is an observation. Predictions go stale and
 observations do not, so every spec must end by feeding the system document. A `specs/done/`
 folder that nobody folds back into a living document is an archive of stale predictions.
+
+**Starting on code that already exists?** Do not begin with a spec. Begin with
+`docs/system/<area>.md` for the area you are about to touch, written from the code in
+front of you. It is what the next ten specs will read. Then spec the change against it.
 
 ---
 
@@ -148,17 +152,9 @@ Mandatory for every scope except discovery:
 Include only when they carry information:
 `Mental model` · `Pre-reading` · `Thresholds` · `Code flow` · `Data contract` · `Copy` · `State`
 
-Earlier versions numbered six of these S1–S6. The numbers are kept as aliases so older
-specs, skills and checklists still resolve:
-
-| Old | Now |
-|---|---|
-| S1 Error States & Validation | `Failure modes` |
-| S2 Post-Completion Flow | folded into `Acceptance` + `State` |
-| S3 Cross-Feature Integration | `Integration` |
-| S4 UX Copy Review | `Copy` |
-| S5 State & Persistence Matrix | `State` |
-| S6 Manual QA Scenarios | `QA` |
+Earlier versions numbered six of these. The old names still resolve:
+S1 → `Failure modes` · S2 → folded into `Acceptance` + `State` · S3 → `Integration` ·
+S4 → `Copy` · S5 → `State` · S6 → `QA`.
 
 Two notes on the mandatory half, both learned the hard way:
 
@@ -177,34 +173,30 @@ Two notes on the mandatory half, both learned the hard way:
 | If you think | The answer |
 |---|---|
 | "Too simple to need a spec" | Simple changes have the most skipped edge cases. Bug scope is four sections. |
-| "I'll write it after prototyping" | You will rationalise away the failure modes you found while building. |
 | "The spec is in my head" | An unwritten spec has no failure modes. Every bug is a failure mode nobody wrote. |
-| "It's just a refactor" | Refactors without Integration break hidden callers. The grep is two minutes. |
 | "I don't know what I'm building yet" | Then it is Discovery. Write the questions, not a guessed solution. |
-| "Requirements changed, the spec is wrong now" | Update the spec, then build. An outdated spec is an unwritten spec. |
 | "It shipped, we're done" | Not until step 7. An unreconciled spec is the next person's wrong map. |
 
 ---
 
 ### Teams
 
-1. **The context file has an owner.** Changes go through review; anyone proposes, the owner merges.
-2. **The approver is not the author** on large and high-risk scope. `approved_at` is set by
-   the approver. An agent must never set it.
+1. **The context file has an owner.** Anyone proposes, the owner merges.
+2. **The approver is not the author** on large and high-risk scope. An agent must never
+   set `approved_at`.
 3. **Every PR names its spec** and has its QA boxes ticked.
 
-*Solo: you are both roles. Still write `approved_at` as a separate act — it is the moment you
-stop designing and start building, and conflating the two is how the design gets edited to
-match the code.*
+*Solo: you are both roles. Still set `approved_at` as a separate act — it is the moment
+you stop designing and start building, and conflating the two is how the design quietly
+gets edited to match the code.*
 
 ---
 
 ### Keeping this file short
 
-Rules late in a long context file get less attention than rules early in it. Keep your
-context file under about 200 lines: move stack details to their own files and reference
-them in one line, delete anything a linter or CI already enforces, and keep only
-constraints the model would otherwise violate. Delete the sections above that do not
+Keep your context file under about 200 lines: move stack details to their own files and
+reference them in one line, delete anything a linter or CI already enforces, and keep
+only constraints that would otherwise be violated. Delete the sections above that do not
 apply to you — ten relevant rules beat fifty diluted ones.
 
 Spec template → `spec.md` · Pre-spec checks → `verify.md` ·
