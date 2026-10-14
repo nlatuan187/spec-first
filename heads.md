@@ -31,6 +31,36 @@ disagrees differently every time it runs.
 Rules that are BLOCKING only for new code carry `(new)`. That is what lets a standard
 land on a codebase that does not yet meet it.
 
+The whole format:
+
+```markdown
+# Head of Data — standard
+Status: 3 of 7 rules enforced. Last ratchet 2026-04-02.
+
+| Id | Rule | Default severity | Scope |
+|---|---|---|---|
+| DA1 | Every response goes through the one response wrapper | BLOCKING | all |
+| DA2 | A renamed field names every reader in the same change | BLOCKING | all |
+| DA3 | New tables carry a tenant column and a row policy | BLOCKING | (new) |
+| DA4 | No identifier of a person in a log line | BLOCKING | all |
+| DA5 | Query keys are derived, never hand-written | NIT | (new) |
+
+Exceptions: `// data-exception: DA3 — <reason>`, honoured only when the reason is valid.
+```
+
+And the ledger it ratchets against:
+
+```markdown
+# Head of Data — ledger
+| Date | Change | Counter | Before | After | Class |
+|---|---|---|---|---|---|
+| 2026-04-02 | #118 | raw role comparisons | 14 | 12 | DEBT |
+| 2026-04-02 | #118 | responses bypassing the wrapper | 3 | 3 | DEBT |
+```
+
+Two counters are enough to start. A counter nobody can compute from a grep is a counter
+that will stop being filled in.
+
 ---
 
 ## Triage first — most changes need no head at all
@@ -110,6 +140,8 @@ at a time, and write the verdict down before opening the next. One read that int
 be thorough is not four reviews; it is one review with a longer prompt, and it will find
 what you were already worried about.
 
-Measured, on the repository this layer came from: of the four heads, Data was the one
-that caught a cross-file data-path break the other three missed. If you only ever run
-one, run that one.
+One data point, not a measurement: in the repository this layer came from, Data was the
+head that caught a cross-file data-path break the other three had passed — one incident,
+on one codebase. It is the reason Data is the one head kept on the expensive model there.
+If you only ever run one, that is the one to start with, and your own ledger will tell you
+within a few months whether it is the right choice for your codebase.

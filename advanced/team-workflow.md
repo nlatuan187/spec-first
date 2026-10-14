@@ -145,7 +145,16 @@ Dev B (implementer)
 Dev C (reviewer) or Dev A
   Review Session   →  cold session, reads diff + review.md
   → QA (S6) acceptance criteria verified
+                                ↓
+Standing reviewers (heads.md) — only the ones triage marks LIGHT or FULL
+  Gate Session     →  judges the diff against docs/standards/<head>.md
+  → every in-scope head PASS, or the approver overrules in writing
 ```
+
+The head gate is the step a team adds when more than one person changes the same areas
+and the spec stops being enough to catch drift. Until then, delete that block. Triage,
+finding classes and overrule authority are in [`heads.md`](../heads.md); run it on the
+spec before approval as well, not only on the diff.
 
 ---
 

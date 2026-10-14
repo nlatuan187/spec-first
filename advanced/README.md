@@ -1,8 +1,10 @@
 # advanced/
 
-Everything here is optional. The six files at the repo root are the method:
+Everything here is optional. The method is the five files at the repo root:
 [snippet.md](../snippet.md) · [spec.md](../spec.md) · [verify.md](../verify.md) ·
-[system.md](../system.md) · [review.md](../review.md) · [heads.md](../heads.md).
+[system.md](../system.md) · [review.md](../review.md). A sixth,
+[heads.md](../heads.md), is the layer you add when more than one person is changing the
+same areas — root-level because it is a gate, not because every project needs it.
 
 This index is generated from what is on disk. If a row here has no file, that is a bug —
 `scripts/check.sh` fails on it. Never add a row for something not yet written.

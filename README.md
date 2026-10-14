@@ -50,8 +50,8 @@ context pulls toward.
 
 > That reviewer asks whether the code did what the spec said. On anything touching a
 > migration, an auth path or a shared function, a second kind of reviewer asks whether
-> the system should look like this now. That is `heads.md`, and it is optional until
-> more than one person is changing the same areas.
+> the system should look like this now. That is `heads.md`. Solo on a small codebase,
+> skip it; it starts paying once more than one person changes the same areas.
 
 **7. Reconcile.** Within a working day of merge: re-read the spec against the merged
 diff, correct every path and symbol that changed, fold the durable parts into
@@ -128,6 +128,7 @@ too heavy — drop a level.
 
 Mandatory sections (every scope except discovery):
 `Why` · `Verification` · `Failure modes` · `Invariants` · `File changes` · `QA` · `Known issues`
+On feature and large, also `Guards` — the rulings and hazards a long build loses first.
 
 The old S1–S6 names still resolve: S1 → Failure modes · S3 → Integration · S4 → Copy · S5 → State · S6 → QA.
 

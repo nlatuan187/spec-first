@@ -43,6 +43,17 @@ inventory items at once.
 
 ---
 
+## Guards
+
+- Approver ruled on 2026-04-03: generation is reachable from the item detail page only. No
+  entry point in the list toolbar, no bulk action — those were asked for and refused.
+- The provider key is read server-side only. It must not reach the client bundle, a client
+  error payload, or a log line, including on the failure paths below.
+- Do not merge before the rate-limit table exists in staging. The generation route reads it
+  on every request and fails closed if it is missing.
+
+---
+
 ## Verification
 
 Run 2026-04-01 against `main` @ `f1c9a48`.
