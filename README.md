@@ -48,6 +48,11 @@ designing and start building.
 built the code cannot review it — "this is correct" is the continuation its own
 context pulls toward.
 
+> That reviewer asks whether the code did what the spec said. On anything touching a
+> migration, an auth path or a shared function, a second kind of reviewer asks whether
+> the system should look like this now. That is `heads.md`, and it is optional until
+> more than one person is changing the same areas.
+
 **7. Reconcile.** Within a working day of merge: re-read the spec against the merged
 diff, correct every path and symbol that changed, fold the durable parts into
 `docs/system/<area>.md`, set `reconciled_at`.
@@ -137,6 +142,7 @@ The old S1–S6 names still resolve: S1 → Failure modes · S3 → Integration 
 | [`verify.md`](verify.md) | Seven pre-spec checks. Run before writing a spec. |
 | [`system.md`](system.md) | System-document template. Where shipped specs land. |
 | [`review.md`](review.md) | Two-pass code review checklist. |
+| [`heads.md`](heads.md) | Four standing reviewers who judge the change against the system, not the spec. |
 | [`install.sh`](install.sh) | Auto-detect + append installer. |
 | [`hooks/`](hooks/) | Enforcement hook (blocks code without approved spec). Claude Code only. |
 | [`advanced/README.md`](advanced/README.md) | Index of everything optional — the five slash commands, team workflow, calibration, examples, integrations. |

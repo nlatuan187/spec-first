@@ -25,13 +25,11 @@ Nothing here is to make the model try harder.
 | `docs/system/<area>.md` | written **after** the code | permanent — corrected, never discarded |
 | `KNOWLEDGE.md` | written when you discover something | permanent |
 
-A spec is a prediction. A system document is an observation. Predictions go stale and
-observations do not, so every spec must end by feeding the system document. A `specs/done/`
-folder that nobody folds back into a living document is an archive of stale predictions.
+A spec is a prediction, a system document an observation. Predictions go stale, so every spec
+ends by feeding the system document. A `specs/done/` nobody folds back is an archive.
 
-**Starting on code that already exists?** Begin with `docs/system/<area>.md` for the area
-you are touching, written from the code in front of you — not with a spec. It is what the
-next ten specs read.
+**Starting on code that already exists?** Begin with `docs/system/<area>.md` written from the
+code in front of you, not with a spec. It is what the next ten specs read.
 
 ---
 
@@ -84,18 +82,16 @@ high-risk scope the approver is not the author. Until then, status stays `draft`
 Handle every row of Failure modes explicitly in code. If the project has tests, write them
 from QA first.
 
-**6. Review.** A different session than the one that wrote the code. A session that wrote
-code cannot review it — not because it lacks the ability, but because "this is correct" is
-the continuation its own context is pulling toward.
+**6. Review.** A different session than the one that wrote the code — not for lack of
+ability, but because "this is correct" is the continuation its own context pulls toward.
 
 **7. Reconcile.** Within a working day of merge: re-read the spec against the merged diff,
 correct every path and symbol that changed during the build, append what you learned to
 `## Known issues`, fold the durable parts into `docs/system/<area>.md`, set `reconciled_at`.
 
-*Measured, on a corpus of sixteen hand-written feature documents: the twelve written after
-their code kept 70 of 70 path references and 46 of 49 route references accurate over five
-months. The one written ahead of the code held two of the three dead references in the set.
-Forward-written documentation is not wrong — it is perishable. Step 7 is the refrigeration.*
+*Measured on sixteen hand-written feature documents: the twelve written after their code kept
+70 of 70 path references and 46 of 49 route references accurate over five months; the one
+written ahead held two of the three dead references in the set. Step 7 is the refrigeration.*
 
 ---
 
@@ -104,8 +100,8 @@ Forward-written documentation is not wrong — it is perishable. Step 7 is the r
 **1. No source edit without an approved spec that names the file.**
 Not "a spec exists somewhere". The spec's `## File changes` must name this path or a
 directory above it, and its status must be `approved` or `implementing`. The `pre-tool-use`
-hook enforces this; without the hook, this paragraph is the enforcement.
-Emergency: `touch .spec-first-bypass`, fix, then write the retroactive spec.
+hook enforces this; without it, this paragraph does. Emergency: `touch .spec-first-bypass`,
+fix, then write the retroactive spec.
 
 **2. Failure rows before the happy path.**
 Open `## Failure modes` by answering: what breaks, who is unauthorised, what is missing or
@@ -147,20 +143,28 @@ Append to `KNOWLEDGE.md` when you learn something non-obvious that outlives this
 ordering constraint, a silent failure, a platform limit. Once is noise, twice belongs in
 `KNOWLEDGE.md`, three times is a rule for the context file. Read it before every build.
 
+**10. A capability is scoped to the flow it was asked for.**
+No second entry point — toolbar, menu item, empty state — because the backend now exists.
+"The API is already there" justifies a cheap implementation, never an extra surface. More
+than was asked goes under Known issues as "not doing". Tell subagents the allowed surfaces.
+
+**11. Carry the Guards section, not the whole spec.**
+A build loses rulings before it loses the spec. Approver decisions, hazards and "do not merge
+until" live in `## Guards` — paste it into every subagent prompt, re-read it after compaction.
+
 ---
 
 ### Spec sections
 
 Mandatory for every scope except discovery:
 `Why` (Pain · Need · Proposed · Non-goals) · `Verification` · `Failure modes` ·
-`Invariants` · `File changes` · `QA` · `Known issues`
+`Invariants` · `File changes` · `QA` · `Known issues`. On feature and large, also `Guards`.
 
 Include only when they carry information:
 `Mental model` · `Pre-reading` · `Thresholds` · `Code flow` · `Data contract` · `Copy` · `State`
 
-Earlier versions numbered six of these. The old names still resolve:
-S1 → `Failure modes` · S2 → folded into `Acceptance` + `State` · S3 → `Integration` ·
-S4 → `Copy` · S5 → `State` · S6 → `QA`.
+Old S-names still resolve: S1 → `Failure modes` · S2 → `Acceptance` + `State` ·
+S3 → `Integration` · S4 → `Copy` · S5 → `State` · S6 → `QA`.
 
 Two notes on the mandatory half, both learned the hard way:
 
@@ -198,10 +202,9 @@ designing and start building, and merging the two is how the design gets edited 
 
 ### Keeping this file short
 
-Keep your context file under about 200 lines: move stack details to their own files and
-reference them in one line, delete anything a linter or CI already enforces, and keep
-only constraints that would otherwise be violated. Delete the sections above that do not
-apply to you — ten relevant rules beat fifty diluted ones.
+Keep your context file under about 200 lines: move stack details out, delete what a linter or
+CI already enforces, keep only constraints that would otherwise be violated. Delete what does
+not apply — ten relevant rules beat fifty.
 
-Spec template → `spec.md` · Pre-spec checks → `verify.md` ·
-Living docs → `system.md` · Review checklist → `review.md`
+Spec template → `spec.md` · Pre-spec checks → `verify.md` · Living docs → `system.md` ·
+Review checklist → `review.md` · Standing reviewers → `heads.md`

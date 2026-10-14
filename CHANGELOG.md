@@ -4,6 +4,51 @@ All notable changes to spec-first are documented here. When `snippet.md` changes
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.2.0] — 2026-10-14
+
+Merged from the internal knowledge repository the method is practised in — four projects,
+their decision and lesson files, and the task harness that sits on top of them. v2 merged
+the methodology written after the fork; this merges the mechanisms that grew around it
+while it was being used daily. What is here is only the part that holds with no particular
+stack, no particular tracker and no particular agent runtime.
+
+### Added — `heads.md`, the standing reviewers
+The step-6 reviewer asks whether the code did what the spec said. Nothing in the loop asked
+whether the system should look like this now, so a change could satisfy its spec exactly and
+still move the codebase somewhere nobody chose. Four standing reviewers — Architect, Data,
+Design, UX — each own one domain across the whole product and judge against a written
+standard file rather than against the feature's intent.
+
+The parts that keep it from becoming theatre, all of them bought in practice: per-head
+triage into SKIP / LIGHT / FULL so four reviewers do not run on every change; four finding
+classes where only BLOCKING blocks, because a reviewer that reports everything wrong with
+the repository gets ignored as a whole; a round cap of two on the same finding; overrule
+authority held by the approver alone and written down; and a review of the spec before
+approval, not only of the diff before merge.
+
+### Added — `advanced/knowledge.md`
+`KNOWLEDGE.md` was named as one of the three artifacts and never specified. It now has an
+entry shape (claim as heading, kind, date, what it cost), four kinds that are not
+interchangeable, and the three deletions that keep it short enough to actually be read
+before every build — delete fixed bugs, promote the third repeat into the context file,
+fold decisions into the system document.
+
+### Added — `## Guards` in the spec, mandatory on feature and large
+A long build does not lose the spec; it loses the ruling made four hours earlier. Every
+approver decision, hazard and "do not merge until" goes in one short section that is pasted
+into every subagent prompt and re-read after every compaction.
+
+### Added — two rules in `snippet.md`
+Rule 10, the surface rule: a capability is scoped to the flow it was asked for, and an
+existing backend justifies a cheap implementation, never an extra entry point. Rule 11
+carries Guards. `snippet.md` stays inside its own 210-line limit; six paragraphs elsewhere
+in the file were compressed to pay for them.
+
+### Fixed
+`advanced/deep-dives/worktree-workflow.md` referenced `spec-first/review.md`, a path that
+only exists if the repository is checked out as a subdirectory of the project. `.omc/` —
+an agent runtime's scratch state — had been committed in v2 and is now ignored.
+
 ## [2.1.0] — 2026-10-13
 
 Found by walking one realistic scenario end to end: a marketer asks an agent to change a

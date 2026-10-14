@@ -1,8 +1,8 @@
 # advanced/
 
-Everything here is optional. The five files at the repo root are the method:
+Everything here is optional. The six files at the repo root are the method:
 [snippet.md](../snippet.md) · [spec.md](../spec.md) · [verify.md](../verify.md) ·
-[system.md](../system.md) · [review.md](../review.md).
+[system.md](../system.md) · [review.md](../review.md) · [heads.md](../heads.md).
 
 This index is generated from what is on disk. If a row here has no file, that is a bug —
 `scripts/check.sh` fails on it. Never add a row for something not yet written.
@@ -28,6 +28,7 @@ what makes it mean something.
 | File | Read it when |
 |---|---|
 | [ETHOS.md](ETHOS.md) | You want to know why the method is shaped this way before adopting it |
+| [knowledge.md](knowledge.md) | `KNOWLEDGE.md` has started collecting entries and you need to keep it readable |
 | [team-workflow.md](team-workflow.md) | More than one person writes specs — ownership, the approval gate, the PR template |
 | [calibration.md](calibration.md) | The defaults do not fit your codebase and you want to measure your own |
 | [feedback-triage.md](feedback-triage.md) | You have a pile of raw user feedback and need issues out of it |

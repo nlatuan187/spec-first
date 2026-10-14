@@ -28,8 +28,21 @@ reconciled_at:         # set after the post-merge reconciliation pass
 
   MANDATORY for every scope except discovery:
     Why · Verification · Failure modes · Invariants · File changes · QA · Known issues
+  MANDATORY for feature and large:
+    Guards
   OPTIONAL, include only when they carry information:
     Mental model · Pre-reading · Thresholds · Code flow · Data contract · Copy · State
+
+  SURFACE RULE: a capability is scoped to the flow it was asked for. Do not add a second
+  entry point — a toolbar button, a menu item, an empty state — because the backend now
+  exists. "The API is already there" justifies a cheap implementation, never an extra
+  surface. Anything worth adding beyond the ask goes under Known issues as "not doing",
+  never folded into File changes.
+
+  EDIT RULE: when review finds a defect, rewrite the affected text in place and delete
+  what it replaced. Do not append a correction below the wrong sentence. A spec that
+  narrates its own review history makes the reader work out which half is current, and
+  the build session will read the wrong half.
 -->
 
 ---
@@ -94,6 +107,29 @@ trivial — move up a level and fill in the rest of this template.
 **Non-goals** — what this change deliberately does NOT do.
 
 <!-- Each line is a refusal someone might otherwise reasonably attempt. -->
+
+---
+
+## Guards
+
+<!--
+  The constraints that must survive a context window. Every decision the approver made,
+  every "do not merge until", every hazard that is not visible from the code being
+  edited. Mandatory on feature and large scope.
+
+  This section exists because of how the build fails: not by forgetting the spec, but by
+  keeping the part it was last reading and dropping the ruling made four hours earlier.
+  A long session, a compaction, a fresh subagent — each one is a chance to lose it.
+
+  Paste this section, and only this section, into every subagent prompt. Re-read it
+  after any compaction. Keep it short enough that doing so costs nothing.
+
+  ✅ "Approver ruled on 03-14: no second entry point for quick-create. Only the upload modal."
+  ✅ "Do not merge before the migration runs on staging — the backfill is not idempotent."
+  ✅ "`f1_source` must not appear in any response body, including error payloads."
+-->
+
+- [constraint, and who set it, and when]
 
 ---
 
