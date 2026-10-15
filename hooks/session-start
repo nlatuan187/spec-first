@@ -55,8 +55,17 @@ if [ -d "$SPECS_DIR" ]; then
     # Re-inject them verbatim on every session start, resume and compaction.
     case "$st" in
       approved|implementing)
-        g=$(tr -d '\r' < "$f" | sed -n '/^## Guards$/,/^## /p' | sed '1d;/^## /d' \
-          | awk '/<!--/{c=1} c==0{print} /-->/{c=0}' | sed '/^[[:space:]]*$/d')
+        # One pass: from "## Guards" to the next heading that is not inside a fenced
+        # block, dropping HTML comments and blank lines.
+        g=$(tr -d '\r' < "$f" | awk '
+          !inside && /^## Guards$/ { inside = 1; next }
+          !inside { next }
+          /^(```|~~~)/ { fence = !fence; print; next }
+          !fence && /^## / { exit }
+          /<!--/ { comment = 1 }
+          comment { if (/-->/) comment = 0; next }
+          /^[ \t]*$/ { next }
+          { print }')
         [ -n "$g" ] && guards="${guards}${slug}:"$'\n'"${g}"$'\n\n'
         ;;
     esac
