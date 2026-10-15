@@ -55,7 +55,7 @@ if [ -d "$SPECS_DIR" ]; then
     # Re-inject them verbatim on every session start, resume and compaction.
     case "$st" in
       approved|implementing)
-        g=$(sed -n '/^## Guards$/,/^## /p' "$f" | sed '1d;/^## /d' \
+        g=$(tr -d '\r' < "$f" | sed -n '/^## Guards$/,/^## /p' | sed '1d;/^## /d' \
           | awk '/<!--/{c=1} c==0{print} /-->/{c=0}' | sed '/^[[:space:]]*$/d')
         [ -n "$g" ] && guards="${guards}${slug}:"$'\n'"${g}"$'\n\n'
         ;;
