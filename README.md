@@ -129,6 +129,7 @@ too heavy — drop a level.
 Mandatory sections (every scope except discovery):
 `Why` · `Verification` · `Failure modes` · `Invariants` · `File changes` · `QA` · `Known issues`
 On feature and large, also `Guards` — the rulings and hazards a long build loses first.
+On discovery, instead: `Why` · `Open questions` · `Options`.
 
 The old S1–S6 names still resolve: S1 → Failure modes · S3 → Integration · S4 → Copy · S5 → State · S6 → QA.
 

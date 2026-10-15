@@ -144,13 +144,12 @@ ordering constraint, a silent failure, a platform limit. Once is noise, twice be
 `KNOWLEDGE.md`, three times is a rule for the context file. Read it before every build.
 
 **10. A capability is scoped to the flow it was asked for.**
-No second entry point — toolbar, menu item, empty state — because the backend now exists.
-"The API is already there" justifies a cheap implementation, never an extra surface. More
-than was asked goes under Known issues as "not doing". Tell subagents the allowed surfaces.
+No second entry point — toolbar, menu, empty state — because the backend now exists. A cheap
+build, never an extra surface; the rest is Known issues, "not doing". Tell subagents which.
 
 **11. Carry the Guards section, not the whole spec.**
-A build loses rulings before it loses the spec. Approver decisions, hazards and "do not merge
-until" live in `## Guards` — paste it into every subagent prompt, re-read it after compaction.
+A build loses rulings before the spec. Approver decisions, hazards and "do not merge until"
+live in `## Guards` — paste into every subagent prompt, re-read after compaction.
 
 ---
 
@@ -159,12 +158,13 @@ until" live in `## Guards` — paste it into every subagent prompt, re-read it a
 Mandatory for every scope except discovery:
 `Why` (Pain · Need · Proposed · Non-goals) · `Verification` · `Failure modes` ·
 `Invariants` · `File changes` · `QA` · `Known issues`. On feature and large, also `Guards`.
+On discovery, instead: `Why` · `Open questions` · `Options`.
 
 Include only when they carry information:
 `Mental model` · `Pre-reading` · `Thresholds` · `Code flow` · `Data contract` · `Copy` · `State`
 
-Old S-names still resolve: S1 → `Failure modes` · S2 → `Acceptance` + `State` ·
-S3 → `Integration` · S4 → `Copy` · S5 → `State` · S6 → `QA`.
+Old S-names still resolve: S1 → `Failure modes` · S2 → `Acceptance` + `State` · S3 →
+`Integration` · S4 → `Copy` · S5 → `State` · S6 → `QA`.
 
 Two notes on the mandatory half, both learned the hard way:
 
