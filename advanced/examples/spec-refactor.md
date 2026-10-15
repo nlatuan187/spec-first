@@ -60,6 +60,9 @@ Run 2026-06-10 against `main` @ `8b2d3c1`.
 7. Prior art — searched `calendarEvents`, `useCalendarStore`, `handleEventAdd`,
    `CALENDAR_KEY`, `calendarStore` — all references are in `store/calendar.ts` and
    `components/calendar/CalendarSection.ts`. No duplicate calendar persistence layer found.
+8. Reachability — both are reachable from `app/calendar/page.tsx` → live. The older
+   `components/calendar/EventList.legacy.tsx` is still imported as a fallback when the
+   virtualised list fails → legacy-but-live; this refactor must not change its behaviour.
 
 ---
 

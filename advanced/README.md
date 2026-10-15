@@ -1,8 +1,10 @@
 # advanced/
 
-Everything here is optional. The five files at the repo root are the method:
+Everything here is optional. The method is the five files at the repo root:
 [snippet.md](../snippet.md) · [spec.md](../spec.md) · [verify.md](../verify.md) ·
-[system.md](../system.md) · [review.md](../review.md).
+[system.md](../system.md) · [review.md](../review.md). A sixth,
+[heads.md](../heads.md), is the layer you add when more than one person is changing the
+same areas — root-level because it is a gate, not because every project needs it.
 
 This index is generated from what is on disk. If a row here has no file, that is a bug —
 `scripts/check.sh` fails on it. Never add a row for something not yet written.
@@ -14,7 +16,7 @@ whatever directory they read commands from.
 
 | Command | File | What it does |
 |---|---|---|
-| `/spec` | [skills/spec/SKILL.md](skills/spec/SKILL.md) | Routes by scope, runs the seven checks, writes `specs/<slug>.md` as `status: draft` |
+| `/spec` | [skills/spec/SKILL.md](skills/spec/SKILL.md) | Routes by scope, runs the eight checks, writes `specs/<slug>.md` as `status: draft` |
 | `/spec-review` | [skills/spec-review/SKILL.md](skills/spec-review/SKILL.md) | Reads a spec, returns a verdict with evidence. Blocks on an empty Verification or Known issues section |
 | `/spec-check` | [skills/spec-check/SKILL.md](skills/spec-check/SKILL.md) | Compares shipped code against its spec. Reads handlers rather than grepping for filenames |
 | `/spec-reconcile` | [skills/spec-reconcile/SKILL.md](skills/spec-reconcile/SKILL.md) | The post-merge step. Corrects the spec against the diff, folds the durable half into `docs/system/` |
@@ -28,6 +30,7 @@ what makes it mean something.
 | File | Read it when |
 |---|---|
 | [ETHOS.md](ETHOS.md) | You want to know why the method is shaped this way before adopting it |
+| [knowledge.md](knowledge.md) | `KNOWLEDGE.md` has started collecting entries and you need to keep it readable |
 | [team-workflow.md](team-workflow.md) | More than one person writes specs — ownership, the approval gate, the PR template |
 | [calibration.md](calibration.md) | The defaults do not fit your codebase and you want to measure your own |
 | [feedback-triage.md](feedback-triage.md) | You have a pile of raw user feedback and need issues out of it |

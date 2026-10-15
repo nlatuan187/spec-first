@@ -18,7 +18,7 @@ This file is the origin of the rule, recorded so it does not get rationalised aw
 
 ---
 
-## The seven checks
+## The eight checks
 
 Adapt the commands to your stack. The check is mandatory; the command is not.
 
@@ -31,6 +31,7 @@ Adapt the commands to your stack. The check is mandatory; the command is not.
 | 5 | **Secrets in URLs** | "auth is handled elsewhere" | `grep -rn "?token=\|?session=\|?key=\|?api_key=" app/ src/` |
 | 6 | **Atomicity** | a check-then-write you did not notice | For any dedup / lock / idempotency: confirm a single atomic operation (`INSERT … ON CONFLICT`, unique constraint, compare-and-swap) rather than read-then-write |
 | 7 | **Prior art** | a feature you are about to rebuild | `grep -rn "<the-noun>" --include='*.<ext>' . \| head -30` with **at least three spellings** |
+| 8 | **Reachability** | "the file is there, so that is the code that runs" | from the file checks 2 and 7 found, walk importers back to a shipped entry point: `grep -rn "from '.*<module>'" --include='*.<ext>' .` |
 
 **Check 7 needs its own rule.** A single spelling misses the thing you are looking for.
 A real example: searching `auto-save` missed `autoSaveTimerRef`; searching `tone` missed
@@ -39,6 +40,22 @@ A real example: searching `auto-save` missed `autoSaveTimerRef`; searching `tone
 ```bash
 grep -rn "auto.save\|autosave\|autoSave\|AUTO_SAVE\|debounce.*save" src/ lib/
 ```
+
+**Check 8 is what stops a spec being written against code that no longer runs.** Checks 2
+and 7 prove a path exists and a prior implementation exists. Neither proves it ships. Four
+states, and only the first is safe to spec against without a label:
+
+| State | Test | What to write |
+|---|---|---|
+| **Live** | reachable from a shipped entry point — a route file, a page, a job registration, a `main` | name it as the path |
+| **Legacy-but-live** | still imported, kept as a fallback | name it, labelled as the fallback — never as the primary flow |
+| **Unreleased** | merged but behind a default-off flag, or not surfaced | name it, labelled not-shipped, with the flag |
+| **Dead** | no importer from any entry point, test or script | do not cite it at all |
+
+A filename is not a signal: `v2`, `new`, `old` and `legacy` in a path say what somebody
+intended, not what runs. Trust the importer chain. If one area keeps costing you this
+check, write the result down once as `docs/system/<area>.md` — that is what the system
+document is for, and the next spec reads it instead of re-deriving it.
 
 ---
 
@@ -63,6 +80,9 @@ Run 2026-10-13 against `main` @ `a1b2c3d`.
    changes it to `ON CONFLICT DO NOTHING`.
 7. Prior art — `retry`, `retries`, `RETRY_LIMIT`, `backoff` → existing helper at
    `lib/net/retry.ts:14`. Reuse it; do not write a second one.
+8. Reachability — `lib/net/retry.ts` is imported by `app/api/properties/import/
+   confirm/route.ts` → live. The older `lib/retry/index.ts` has no importer outside its
+   own test → dead, not cited in this spec.
 ```
 
 "No hits" is a result. Write it down. A check with no recorded outcome did not happen.
@@ -91,6 +111,6 @@ These checks find *facts about the repository*. They do not find facts about **u
 - A latency budget comes from a measurement, not from an opinion.
 - A platform limit comes from the platform's documentation, with the URL recorded.
 
-If a number appears in your spec and none of the seven checks could have produced it,
+If a number appears in your spec and none of the eight checks could have produced it,
 `## Thresholds` must say where it came from — including "chosen arbitrarily on
 2026-10-13", which is honest and tells the next reader the number is free to change.

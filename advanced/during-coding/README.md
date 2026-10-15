@@ -3,7 +3,7 @@
 The spec-first methodology has three moments where AI needs structure:
 
 ```
-BEFORE coding   →  spec.md + verify.md              →  spec + seven checks
+BEFORE coding   →  spec.md + verify.md              →  spec + eight checks
 DURING coding   →  this folder                      →  /spec-check  (verify coverage)
 AFTER coding    →  review.md                        →  /review (quality) + reconcile
 ```
@@ -61,7 +61,7 @@ A 40-line compressed template. Fill it at the start of an implementation session
 ## Workflow
 
 ```
-1. Run verify.md's seven checks; record output in spec's ## Verification
+1. Run verify.md's eight checks; record output in spec's ## Verification
 2. Write spec (spec.md) with Verification filled; a human approves it
 3. Build: new session → "Read CLAUDE.md + approved spec + KNOWLEDGE.md, then implement"
 4. Fill implementation-brief.md as you work; restart sessions via the brief when needed

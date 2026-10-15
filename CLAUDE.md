@@ -8,7 +8,7 @@
 spec-first/
 ├── snippet.md           ← THE product — paste into CLAUDE.md, .cursorrules, AGENTS.md, etc.
 ├── spec.md              ← Spec template (EARS acceptance, failure modes, invariants)
-├── verify.md            ← The seven pre-spec checks
+├── verify.md            ← The eight pre-spec checks
 ├── system.md            ← Living system-document template (where shipped specs land)
 ├── review.md            ← Two-pass code review checklist
 ├── install.sh           ← curl-friendly installer

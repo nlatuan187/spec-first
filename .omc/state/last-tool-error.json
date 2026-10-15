@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cd /Users/tuannguyen/.superset/elandhub-inventory/elandhub-inventory && echo \\\"=== hooks authorship ===\\\" && git log --all --format=\\\"%an|%s\\\" -- .claude/hooks | head -20 && echo \\\"=== hea...",
-  "error": "Exit code 1\n=== hooks authorship ===\nNguyen Quoc Dat|chore(claude): track the .claude knowledge base so every session shares it\nNguyen Quoc Dat|fix(claude): keep prettier out of the .claude knowledge base\nNguyen Quoc Dat|chore(claude): track the .claude knowledge base so every session shares it\n=== heads-gate in settings? ===\n0",
-  "timestamp": "2026-10-13T07:13:49.124Z",
-  "retry_count": 1
-}

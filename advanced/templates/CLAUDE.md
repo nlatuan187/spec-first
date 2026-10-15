@@ -21,7 +21,7 @@ This project follows the spec-first methodology (see `snippet.md`).
 - `docs/system/<area>.md` — written AFTER code; an observation.
 - `KNOWLEDGE.md` — accumulates discoveries across specs.
 
-**Before writing a spec, run the seven checks in `verify.md`** and record the output in
+**Before writing a spec, run the eight checks in `verify.md`** and record the output in
 the spec's `## Verification` section. The checks catch invented paths, wrong column names,
 missing dependencies, and similar errors that produce review gaps.
 

@@ -25,13 +25,11 @@ Nothing here is to make the model try harder.
 | `docs/system/<area>.md` | written **after** the code | permanent — corrected, never discarded |
 | `KNOWLEDGE.md` | written when you discover something | permanent |
 
-A spec is a prediction. A system document is an observation. Predictions go stale and
-observations do not, so every spec must end by feeding the system document. A `specs/done/`
-folder that nobody folds back into a living document is an archive of stale predictions.
+A spec is a prediction, a system document an observation. Predictions go stale, so every spec
+ends by feeding the system document. A `specs/done/` nobody folds back is an archive.
 
-**Starting on code that already exists?** Begin with `docs/system/<area>.md` for the area
-you are touching, written from the code in front of you — not with a spec. It is what the
-next ten specs read.
+**Starting on code that already exists?** Begin with `docs/system/<area>.md` written from the
+code in front of you, not with a spec. It is what the next ten specs read.
 
 ---
 
@@ -40,7 +38,7 @@ next ten specs read.
 | Scope | Trigger | Write |
 |---|---|---|
 | **Trivial** | wording, a label, a copy string, a constant — reversible, no new behaviour, no new data | four lines (below). Nothing else. |
-| **Discovery** | the solution is not known yet | Why + Open questions + Options. **Stop.** Do not write a solution spec for a guess. |
+| **Discovery** | the solution is not known yet | Why + Open questions + Options, three or more, one of them "do less". **Stop.** Do not write a solution spec for a guess. |
 | **Emergency** | production is down | fix first, then a retroactive bug spec the same day |
 | **Bug** | something is broken | Why + Failure modes + QA + File changes |
 | **Small** | under a day, behaviour change | add Acceptance |
@@ -55,7 +53,7 @@ stops there rather than demanding a level that does not exist.
 
 **A trivial spec is four lines of front matter plus four lines of body** — see the Trivial
 block at the top of `spec.md`. It is still a spec: still named, still approved by a person,
-still claiming its file. The seven pre-spec checks do not apply at this scope; they
+still claiming its file. The eight pre-spec checks do not apply at this scope; they
 establish facts about code structure, and a copy string changes none of them. If the change
 turns out to touch behaviour, data, or a second file, it was never trivial — move up a level.
 
@@ -67,9 +65,9 @@ turns out to touch behaviour, data, or a second file, it was never trivial — m
 or the number of distinct changes is unclear, ask. Then wait. Do not write a spec over an
 unanswered question.
 
-**2. Verify.** Run the seven checks in `verify.md` and record the output. These replace
-assumptions about the codebase with observed facts. A spec whose `## Verification`
-section is empty is a draft, whatever else it contains.
+**2. Verify.** Run the eight checks in `verify.md` and record the output. They replace
+assumptions with observed facts — including check 8, whether the code you found still runs
+or is dead. A spec whose `## Verification` section is empty is a draft.
 
 *This rule was bought with 11 review gaps in two specs written from memory on a single day:
 invented paths, the wrong column convention, a missing dependency, a token in a URL.*
@@ -84,18 +82,16 @@ high-risk scope the approver is not the author. Until then, status stays `draft`
 Handle every row of Failure modes explicitly in code. If the project has tests, write them
 from QA first.
 
-**6. Review.** A different session than the one that wrote the code. A session that wrote
-code cannot review it — not because it lacks the ability, but because "this is correct" is
-the continuation its own context is pulling toward.
+**6. Review.** A different session than the one that wrote the code — not for lack of
+ability, but because "this is correct" is the continuation its own context pulls toward.
 
 **7. Reconcile.** Within a working day of merge: re-read the spec against the merged diff,
 correct every path and symbol that changed during the build, append what you learned to
 `## Known issues`, fold the durable parts into `docs/system/<area>.md`, set `reconciled_at`.
 
-*Measured, on a corpus of sixteen hand-written feature documents: the twelve written after
-their code kept 70 of 70 path references and 46 of 49 route references accurate over five
-months. The one written ahead of the code held two of the three dead references in the set.
-Forward-written documentation is not wrong — it is perishable. Step 7 is the refrigeration.*
+*Measured on sixteen hand-written feature documents: the twelve written after their code kept
+70 of 70 path references and 46 of 49 route references accurate over five months; the one
+written ahead held two of the three dead references in the set. Step 7 is the refrigeration.*
 
 ---
 
@@ -104,8 +100,8 @@ Forward-written documentation is not wrong — it is perishable. Step 7 is the r
 **1. No source edit without an approved spec that names the file.**
 Not "a spec exists somewhere". The spec's `## File changes` must name this path or a
 directory above it, and its status must be `approved` or `implementing`. The `pre-tool-use`
-hook enforces this; without the hook, this paragraph is the enforcement.
-Emergency: `touch .spec-first-bypass`, fix, then write the retroactive spec.
+hook enforces this; without it, this paragraph does. Emergency: `touch .spec-first-bypass`,
+fix, then write the retroactive spec.
 
 **2. Failure rows before the happy path.**
 Open `## Failure modes` by answering: what breaks, who is unauthorised, what is missing or
@@ -123,19 +119,19 @@ no claim about the filesystem cannot be falsified by a rename — that is why th
 outlives every other.
 
 **5. Every number carries its reason.**
-`## Thresholds` takes `Rule | Value | Reason | Source`. "Arbitrary, chosen [date]" is a
-valid reason and a useful one: it tells the next reader the number is free to change. A
-bare constant in code loses this permanently.
+`## Thresholds` takes `Rule | Value | Reason | Source`. "Arbitrary, chosen [date]" is valid
+and useful: it tells the next reader the number is free to change. A constant loses this.
 
 **6. Known issues is mandatory and "none" is not an entry.**
 Observation plus mechanism, no proposed fix — keeping the fix out is what keeps the section
 cheap enough to actually write. This is the only part of the document that cannot be
 reconstructed from the code, and in practice it is the part still accurate a year later.
 
-**7. Enumerate integrations from the codebase.**
+**7. Enumerate integrations from the codebase, then follow the value.**
 `ls` finds files, `grep` finds relationships, and a single spelling finds neither. Search
-hyphenated, camelCase, snake_case and UPPER_SNAKE together. A change to existing code with
-no integration rows is almost always an incomplete spec.
+hyphenated, camelCase, snake_case and UPPER_SNAKE together. Changing a shared function: name
+every caller, in both directions. Adding a field that crosses layers: name every hop that
+must carry it — a reader that drops it looks exactly like a feature that was never built.
 
 **8. After two failed fixes, stop.**
 Before the first attempt, state the root cause: *"the error is caused by [X] because [Y]."*
@@ -147,20 +143,28 @@ Append to `KNOWLEDGE.md` when you learn something non-obvious that outlives this
 ordering constraint, a silent failure, a platform limit. Once is noise, twice belongs in
 `KNOWLEDGE.md`, three times is a rule for the context file. Read it before every build.
 
+**10. A capability is scoped to the flow it was asked for.**
+No second entry point — toolbar, menu, empty state — because the backend now exists. A cheap
+build, never an extra surface; the rest is Known issues, "not doing". Tell subagents which.
+
+**11. Carry the Guards section, not the whole spec.**
+A build loses rulings before the spec. Approver decisions, hazards and "do not merge until"
+live in `## Guards` — paste into every subagent prompt, re-read after compaction.
+
 ---
 
 ### Spec sections
 
 Mandatory for every scope except discovery:
 `Why` (Pain · Need · Proposed · Non-goals) · `Verification` · `Failure modes` ·
-`Invariants` · `File changes` · `QA` · `Known issues`
+`Invariants` · `File changes` · `QA` · `Known issues`. On feature and large, also `Guards`.
+On discovery, instead: `Why` · `Open questions` · `Options`.
 
 Include only when they carry information:
 `Mental model` · `Pre-reading` · `Thresholds` · `Code flow` · `Data contract` · `Copy` · `State`
 
-Earlier versions numbered six of these. The old names still resolve:
-S1 → `Failure modes` · S2 → folded into `Acceptance` + `State` · S3 → `Integration` ·
-S4 → `Copy` · S5 → `State` · S6 → `QA`.
+Old S-names still resolve: S1 → `Failure modes` · S2 → `Acceptance` + `State` · S3 →
+`Integration` · S4 → `Copy` · S5 → `State` · S6 → `QA`.
 
 Two notes on the mandatory half, both learned the hard way:
 
@@ -198,10 +202,9 @@ designing and start building, and merging the two is how the design gets edited 
 
 ### Keeping this file short
 
-Keep your context file under about 200 lines: move stack details to their own files and
-reference them in one line, delete anything a linter or CI already enforces, and keep
-only constraints that would otherwise be violated. Delete the sections above that do not
-apply to you — ten relevant rules beat fifty diluted ones.
+Keep your context file under about 200 lines: move stack details out, delete what a linter or
+CI already enforces, keep only constraints that would otherwise be violated. Delete what does
+not apply — ten relevant rules beat fifty.
 
-Spec template → `spec.md` · Pre-spec checks → `verify.md` ·
-Living docs → `system.md` · Review checklist → `review.md`
+Spec template → `spec.md` · Pre-spec checks → `verify.md` · Living docs → `system.md` ·
+Review checklist → `review.md` · Standing reviewers → `heads.md`

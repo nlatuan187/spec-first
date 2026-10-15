@@ -13,7 +13,7 @@ see [INTEGRATIONS.md](../advanced/INTEGRATIONS.md).
 | Hook | Event | Purpose |
 |------|-------|---------|
 | `pre-tool-use` | Before Write or Edit | **Enforcement** — blocks source edits when no approved spec claims the file |
-| `session-start` | New session opens | Injects v2 reminder, active spec stage, KNOWLEDGE.md, session state, unreconciled spec warning |
+| `session-start` | New session opens | Injects v2 reminder, active spec stage, the active spec's Guards, KNOWLEDGE.md, session state, unreconciled spec warning |
 | `pre-compact` | Context compaction | Reminds AI to save learnings and spec state before context is lost |
 | `session-end` | Session closes | Prompts learnings capture, session state update, and reconciliation of any shipped spec |
 | `run-hook.cmd` | *(wrapper)* | Polyglot bash/batch — makes hooks work on Unix and Windows |
@@ -80,10 +80,15 @@ At every session start, injects a `<spec-first-active>` block containing:
    and the gate rule
 2. **Active specs** — scanned from `specs/` front-matter `status` fields; shows which
    work is in progress and at what stage (draft, in-review, approved, implementing)
-3. **Unreconciled warning** — names every spec whose `shipped_at` is set but
+3. **Guards** — the `## Guards` body of every spec at `approved` or `implementing`,
+   verbatim, comments stripped. Rulings and hazards are what a long session loses first,
+   and re-deriving a ruling the approver already made is how a build drifts. The hook is
+   registered with no matcher, so it fires on resume and after compaction too — that is
+   what makes `## Guards` an anchor rather than a section nobody re-reads
+4. **Unreconciled warning** — names every spec whose `shipped_at` is set but
    `reconciled_at` is empty; this is work the user has forgotten and must not leave
-4. **KNOWLEDGE.md** — full contents, if the file exists and is non-empty
-5. **Session state** — contents of `.claude/session-state.md`, if it exists
+5. **KNOWLEDGE.md** — full contents, if the file exists and is non-empty
+6. **Session state** — contents of `.claude/session-state.md`, if it exists
 
 ### `pre-compact`
 

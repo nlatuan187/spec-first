@@ -54,6 +54,9 @@ Run 2026-04-12 against `main` @ `d4e8a21`.
 7. Prior art — searched `deduct`, `atomicDeduct`, `credit_deduct`, `CREDIT_DEDUCT` — no
    existing atomic helper. Migration file `db/migrations/012_credits_schema.sql` defines the
    table structure but not a deduction function.
+8. Reachability — `lib/credits.ts` is imported by `app/api/generate/route.ts` and the
+   billing webhook → live, and it is the only deduction path. No second copy to keep in
+   step.
 
 ---
 

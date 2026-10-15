@@ -4,6 +4,93 @@ All notable changes to spec-first are documented here. When `snippet.md` changes
 
 Format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.3.0] — 2026-10-15
+
+A second pass over the same internal repository, file by file this time rather than by the
+parts that were remembered. v2.2 took the governance layer and stopped; the audit found
+five mechanisms that were in daily use there and had no equivalent here, four of them
+bought by a specific production incident.
+
+### Added — check 8, reachability
+Checks 2 and 7 prove a path exists and a prior implementation exists. Neither proves it
+ships, and a spec written against code that no longer runs reads exactly like a correct
+one. Check 8 walks importers back to a shipped entry point and sorts what it finds into
+live, legacy-but-live, unreleased and dead — only the first may be cited without a label,
+and a filename is never the signal. The checks are now eight everywhere, including the
+template, the `/spec` skill and all four examples.
+
+### Added — the session-start hook re-injects `## Guards`
+v2.2 added the Guards section and left it as a section. Nothing re-read it, so it was lost
+at exactly the moment it was written for. The hook now extracts the `## Guards` body of
+every spec at `approved` or `implementing`, strips comments and injects it verbatim; it is
+registered with no matcher, so this also happens on resume and after compaction.
+
+### Added — the blast-radius rule
+Two directions, one rule, both paid for in production. Changing a function with more than
+one caller: enumerate the callers and check both directions — what now reaches it, and what
+it now returns. Adding a value that crosses layers: name every hop that must carry it,
+because an intermediate reader that quietly drops it produces no error and no null, only a
+wrong result that is indistinguishable from the feature never having been wired. In
+`spec.md` under Integration and folded into `snippet.md` rule 7.
+
+### Added — `## Options`, and a "do less" that is mandatory
+The scope ladder told discovery scope to write Options; the template never defined the
+section. It now exists: at least three options, one of which is to ship less or to change
+nothing; concerns decomposed before any tool is named; every claim marked FACT (with a
+file:line or a URL) or ASSUMPTION; and a one-sentence rejection line per option, written
+while the reason is still known, because that line is what the decision record keeps.
+
+### Added — three review items that catch silent wrong results
+A fallback standing in for missing data hides the gap it is covering. A shared primitive
+changed without a screenshot diff of the views that reuse it. A gate measurement taken from
+the working tree while a pre-commit formatter is still about to rewrite the file — and an
+incremental build reporting success on a file it decided was unchanged.
+
+## [2.2.0] — 2026-10-14
+
+Merged from the internal knowledge repository the method is practised in — four projects,
+their decision and lesson files, and the task harness that sits on top of them. v2 merged
+the methodology written after the fork; this merges the mechanisms that grew around it
+while it was being used daily. What is here is only the part that holds with no particular
+stack, no particular tracker and no particular agent runtime.
+
+### Added — `heads.md`, the standing reviewers
+The step-6 reviewer asks whether the code did what the spec said. Nothing in the loop asked
+whether the system should look like this now, so a change could satisfy its spec exactly and
+still move the codebase somewhere nobody chose. Four standing reviewers — Architect, Data,
+Design, UX — each own one domain across the whole product and judge against a written
+standard file rather than against the feature's intent.
+
+The parts that keep it from becoming theatre, all of them bought in practice: per-head
+triage into SKIP / LIGHT / FULL so four reviewers do not run on every change; four finding
+classes where only BLOCKING blocks, because a reviewer that reports everything wrong with
+the repository gets ignored as a whole; a round cap of two on the same finding; overrule
+authority held by the approver alone and written down; and a review of the spec before
+approval, not only of the diff before merge.
+
+### Added — `advanced/knowledge.md`
+`KNOWLEDGE.md` was named as one of the three artifacts and never specified. It now has an
+entry shape (claim as heading, kind, date, what it cost), four kinds that are not
+interchangeable, and the three deletions that keep it short enough to actually be read
+before every build — delete fixed bugs, promote the third repeat into the context file,
+fold decisions into the system document.
+
+### Added — `## Guards` in the spec, mandatory on feature and large
+A long build does not lose the spec; it loses the ruling made four hours earlier. Every
+approver decision, hazard and "do not merge until" goes in one short section that is pasted
+into every subagent prompt and re-read after every compaction.
+
+### Added — two rules in `snippet.md`
+Rule 10, the surface rule: a capability is scoped to the flow it was asked for, and an
+existing backend justifies a cheap implementation, never an extra entry point. Rule 11
+carries Guards. `snippet.md` stays inside its own 210-line limit; six paragraphs elsewhere
+in the file were compressed to pay for them.
+
+### Fixed
+`advanced/deep-dives/worktree-workflow.md` referenced `spec-first/review.md`, a path that
+only exists if the repository is checked out as a subdirectory of the project. `.omc/` —
+an agent runtime's scratch state — had been committed in v2 and is now ignored.
+
 ## [2.1.0] — 2026-10-13
 
 Found by walking one realistic scenario end to end: a marketer asks an agent to change a
