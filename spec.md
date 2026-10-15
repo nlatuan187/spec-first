@@ -128,7 +128,7 @@ trivial — move up a level and fill in the rest of this template.
 
   ✅ "Approver ruled on 03-14: no second entry point for quick-create. Only the upload modal."
   ✅ "Do not merge before the migration runs on staging — the backfill is not idempotent."
-  ✅ "`f1_source` must not appear in any response body, including error payloads."
+  ✅ "`supplier_id` must not appear in any response body, including error payloads."
 -->
 
 - [constraint, and who set it, and when]
@@ -210,7 +210,7 @@ Run [YYYY-MM-DD] against `[branch]` @ `[sha]`.
       plus the records it produced."
 
   Security belongs here. State the deny-list by name:
-  ✅ "**`f1_source` is never exposed.** It is excluded from every select path. Any new
+  ✅ "**`supplier_id` is never exposed.** It is excluded from every select path. Any new
       query that reaches this table must carry the same exclusion, with a code comment
       saying so."
 -->

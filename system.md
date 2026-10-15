@@ -106,8 +106,8 @@ The document says it; the code comment says it. Deleting the document does not d
 rule, and refactoring the query trips over the comment.
 
 ```
-docs:  Never exposed: f1_source — excluded from every select path.
-code:  // SECURITY: f1_source is NEVER selected or exposed in any query.
+docs:  Never exposed: supplier_id — excluded from every select path.
+code:  // SECURITY: supplier_id is NEVER selected or exposed in any query.
 ```
 
 This is the one duplication worth keeping. It is also the one that actually held.
