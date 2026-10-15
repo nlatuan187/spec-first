@@ -17,6 +17,12 @@ git diff --staged   # read every changed line — no exceptions
 
 **Gate**: Build passes + every changed line read.
 
+Run the build clean, not incrementally — an incremental type-check or compile reuses a
+cache and can report success on a file it decided was unchanged. And take any measurement
+the gate depends on (line counts, file sizes, a violation count) from the committed tree,
+not the working tree: a formatter running in a pre-commit hook changes the file after you
+measured it.
+
 ### Layer 2 — Automated (on PR creation)
 
 Drop an AI-review config in your repo root. Run it on every PR; collect severity-rated findings.
@@ -99,6 +105,16 @@ If no issues: "Review: No issues found."
 - Status transition without an atomic guard (`UPDATE … WHERE status = expected`)
 - Destructive operation (delete, truncate, drop) without an existence check
 
+#### Silent wrong results
+
+The defects in this block raise no error, log nothing, and return a plausible value. They are
+the ones a passing test suite is worst at catching.
+
+- A fallback standing in for missing data — a placeholder id, a default value, an alternate screen. The symptom disappears and the real gap stops being detectable. Return an error instead; if a fallback is genuinely required, log the condition that triggered it at error level
+- A value that crosses a layer boundary and is read by an intermediate step that does not forward it. Trace sender → each reader → handler → consumer. Dropped silently, it is indistinguishable from the feature never having been wired
+- A change to a function with more than one caller, reviewed only in the direction the author was thinking about. Enumerate the callers and check both directions: what now reaches it, and what it now returns
+- A new durable signal — a flag, a warning, a badge reason — written in one place and never traced through its whole lifecycle: every writer, every rollback or reset path, every short-circuit that skips the write, and every render gate that reads it
+
 #### Race Conditions
 
 - Find-or-create without a unique index → concurrent calls create duplicates
@@ -143,6 +159,7 @@ If no issues: "Review: No issues found."
 
 - Loading, error, and empty states not all handled → blank screen or crash on real traffic
 - Persisted state (browser storage, disk, cookie) stores sensitive data (tokens, PII)
+- A shared primitive — a base component, a global style, a token — changed without evidence that the views reusing it are unaffected. Name the views the change reaches and prove it with a before/after screenshot diff, not by eye. "I did not touch that screen" is not a claim a diff of a shared file can support
 
 #### i18n
 

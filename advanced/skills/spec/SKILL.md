@@ -3,7 +3,7 @@ name: spec
 preamble-tier: 2
 version: 2.0.0
 description: |
-  Generate a v2 feature spec. Routes by scope, runs seven verification checks,
+  Generate a v2 feature spec. Routes by scope, runs eight verification checks,
   writes specs/<slug>.md from spec.md, sets status: draft. Use when asked to
   "write a spec for", "spec out a feature", or "I want to build [feature]".
 effort: medium
@@ -42,8 +42,8 @@ Then pick the scope that fits. Use the lightest one that covers the change:
 
 | Scope | Trigger | Sections required |
 |---|---|---|
-| **trivial** | wording, label, copy string, constant — reversible, one file, no new behaviour or data | the Trivial block in `spec.md` and nothing else. **Skip the seven checks**: they establish facts about code structure and a copy string changes none. |
-| **discovery** | solution not known | Why + Open questions + Options — **stop, no solution sections** |
+| **trivial** | wording, label, copy string, constant — reversible, one file, no new behaviour or data | the Trivial block in `spec.md` and nothing else. **Skip the eight checks**: they establish facts about code structure and a copy string changes none. |
+| **discovery** | solution not known | Why + Open questions + Options (≥3, one is "do less"; mark each claim FACT/ASSUMPTION) — **stop, no solution sections** |
 | **emergency** | production down | fix first; retroactive bug spec same day |
 | **bug** | something is broken | Why + Failure modes + QA + File changes |
 | **small** | under a day, behaviour change | add Acceptance |
@@ -58,7 +58,7 @@ spec for a guess. The output file still goes to `specs/<slug>.md` with `status: 
 
 ## Step 3: Verify (gate — do not skip)
 
-Read `verify.md`. Run all seven checks against the actual codebase.
+Read `verify.md`. Run all eight checks against the actual codebase.
 
 The checks are:
 1. Naming convention — what column/field names does this area actually use?
@@ -68,6 +68,8 @@ The checks are:
 5. Secrets in URLs — any token/session/key in query strings near this code?
 6. Atomicity — any read-then-write that needs an atomic operation?
 7. Prior art — does something like this already exist? Search at least three spellings.
+8. Reachability — is what you found live, legacy-but-live, unreleased or dead? Walk
+   importers back to a shipped entry point. A filename is not a signal.
 
 Record one line per check. "No hits" is a valid result — write it down.
 If a check cannot be run (e.g. no codebase present), write why and what assumption
@@ -90,7 +92,7 @@ Write `specs/<slug>.md` by filling the template from `spec.md`. Rules:
 
 - Copy the YAML front matter. Set `status: draft`. Leave `approved_at` blank — you must
   never set it. Leave `shipped_at` and `reconciled_at` blank.
-- Fill `## Verification` with the seven recorded results from Step 3.
+- Fill `## Verification` with the eight recorded results from Step 3.
 - Fill every mandatory section for the chosen scope. Replace every placeholder with
   real content — placeholders are not content.
 - Failure modes: fill the table rows before writing the happy path. The last column
@@ -120,7 +122,7 @@ Spec written: specs/[slug].md
 Scope: [scope]
 Status: draft
 
-Verification recorded: [list the seven check results as one-liners]
+Verification recorded: [list the eight check results as one-liners]
 
 Nothing will build until a human sets status: approved and approved_at in the YAML
 front matter. The pre-tool-use hook enforces this — any source edit without an approved

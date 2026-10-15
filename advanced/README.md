@@ -16,7 +16,7 @@ whatever directory they read commands from.
 
 | Command | File | What it does |
 |---|---|---|
-| `/spec` | [skills/spec/SKILL.md](skills/spec/SKILL.md) | Routes by scope, runs the seven checks, writes `specs/<slug>.md` as `status: draft` |
+| `/spec` | [skills/spec/SKILL.md](skills/spec/SKILL.md) | Routes by scope, runs the eight checks, writes `specs/<slug>.md` as `status: draft` |
 | `/spec-review` | [skills/spec-review/SKILL.md](skills/spec-review/SKILL.md) | Reads a spec, returns a verdict with evidence. Blocks on an empty Verification or Known issues section |
 | `/spec-check` | [skills/spec-check/SKILL.md](skills/spec-check/SKILL.md) | Compares shipped code against its spec. Reads handlers rather than grepping for filenames |
 | `/spec-reconcile` | [skills/spec-reconcile/SKILL.md](skills/spec-reconcile/SKILL.md) | The post-merge step. Corrects the spec against the diff, folds the durable half into `docs/system/` |

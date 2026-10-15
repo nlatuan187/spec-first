@@ -38,7 +38,7 @@ code in front of you, not with a spec. It is what the next ten specs read.
 | Scope | Trigger | Write |
 |---|---|---|
 | **Trivial** | wording, a label, a copy string, a constant — reversible, no new behaviour, no new data | four lines (below). Nothing else. |
-| **Discovery** | the solution is not known yet | Why + Open questions + Options. **Stop.** Do not write a solution spec for a guess. |
+| **Discovery** | the solution is not known yet | Why + Open questions + Options, three or more, one of them "do less". **Stop.** Do not write a solution spec for a guess. |
 | **Emergency** | production is down | fix first, then a retroactive bug spec the same day |
 | **Bug** | something is broken | Why + Failure modes + QA + File changes |
 | **Small** | under a day, behaviour change | add Acceptance |
@@ -53,7 +53,7 @@ stops there rather than demanding a level that does not exist.
 
 **A trivial spec is four lines of front matter plus four lines of body** — see the Trivial
 block at the top of `spec.md`. It is still a spec: still named, still approved by a person,
-still claiming its file. The seven pre-spec checks do not apply at this scope; they
+still claiming its file. The eight pre-spec checks do not apply at this scope; they
 establish facts about code structure, and a copy string changes none of them. If the change
 turns out to touch behaviour, data, or a second file, it was never trivial — move up a level.
 
@@ -65,9 +65,9 @@ turns out to touch behaviour, data, or a second file, it was never trivial — m
 or the number of distinct changes is unclear, ask. Then wait. Do not write a spec over an
 unanswered question.
 
-**2. Verify.** Run the seven checks in `verify.md` and record the output. These replace
-assumptions about the codebase with observed facts. A spec whose `## Verification`
-section is empty is a draft, whatever else it contains.
+**2. Verify.** Run the eight checks in `verify.md` and record the output. They replace
+assumptions with observed facts — including check 8, whether the code you found still runs
+or is dead. A spec whose `## Verification` section is empty is a draft.
 
 *This rule was bought with 11 review gaps in two specs written from memory on a single day:
 invented paths, the wrong column convention, a missing dependency, a token in a URL.*
@@ -119,19 +119,19 @@ no claim about the filesystem cannot be falsified by a rename — that is why th
 outlives every other.
 
 **5. Every number carries its reason.**
-`## Thresholds` takes `Rule | Value | Reason | Source`. "Arbitrary, chosen [date]" is a
-valid reason and a useful one: it tells the next reader the number is free to change. A
-bare constant in code loses this permanently.
+`## Thresholds` takes `Rule | Value | Reason | Source`. "Arbitrary, chosen [date]" is valid
+and useful: it tells the next reader the number is free to change. A constant loses this.
 
 **6. Known issues is mandatory and "none" is not an entry.**
 Observation plus mechanism, no proposed fix — keeping the fix out is what keeps the section
 cheap enough to actually write. This is the only part of the document that cannot be
 reconstructed from the code, and in practice it is the part still accurate a year later.
 
-**7. Enumerate integrations from the codebase.**
+**7. Enumerate integrations from the codebase, then follow the value.**
 `ls` finds files, `grep` finds relationships, and a single spelling finds neither. Search
-hyphenated, camelCase, snake_case and UPPER_SNAKE together. A change to existing code with
-no integration rows is almost always an incomplete spec.
+hyphenated, camelCase, snake_case and UPPER_SNAKE together. Changing a shared function: name
+every caller, in both directions. Adding a field that crosses layers: name every hop that
+must carry it — a reader that drops it looks exactly like a feature that was never built.
 
 **8. After two failed fixes, stop.**
 Before the first attempt, state the root cause: *"the error is caused by [X] because [Y]."*

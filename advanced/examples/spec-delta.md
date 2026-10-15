@@ -60,6 +60,9 @@ Run 2026-04-30 against `main` @ `c7f3b19`.
 7. Prior art — searched `buildStructuredFacts`, `structured_facts`, `STRUCTURED_FACTS`,
    `factBlock` — no existing implementation. `TONE_PROMPTS` exists at `lib/ai/provider.ts:18`;
    reuse it, do not define a second map.
+8. Reachability — `lib/ai/provider.ts` is imported by `lib/ai/manager.ts`, which the
+   generate route calls → live. `lib/ai/legacy-prompt.ts` has no importer outside its own
+   test → dead; not touched by this spec.
 
 ---
 

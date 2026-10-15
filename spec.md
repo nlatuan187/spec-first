@@ -30,6 +30,8 @@ reconciled_at:         # set after the post-merge reconciliation pass
     Why · Verification · Failure modes · Invariants · File changes · QA · Known issues
   MANDATORY for feature and large:
     Guards
+  MANDATORY for discovery:
+    Options
   OPTIONAL, include only when they carry information:
     Mental model · Pre-reading · Thresholds · Code flow · Data contract · Copy · State
 
@@ -136,7 +138,7 @@ trivial — move up a level and fill in the rest of this template.
 ## Verification
 
 <!--
-  Paste the recorded output of the seven checks in verify.md. One line per check.
+  Paste the recorded output of the eight checks in verify.md. One line per check.
   "No hits" is a result — write it down.
   A spec with this section empty is a draft, whatever else it contains.
 -->
@@ -150,6 +152,7 @@ Run [YYYY-MM-DD] against `[branch]` @ `[sha]`.
 5. Secrets in URLs —
 6. Atomicity —
 7. Prior art —
+8. Reachability —
 
 ---
 
@@ -222,6 +225,14 @@ Run [YYYY-MM-DD] against `[branch]` @ `[sha]`.
   Enumerate from the codebase, not from memory. `ls` finds files; `grep` finds relationships.
   Run both. A spec that touches existing code and lists no integration points is almost
   always wrong.
+
+  BLAST-RADIUS RULE. When the change touches a function more than one caller uses, or adds
+  a value that travels between layers, list the whole chain, not the two ends. Name every
+  caller of the changed function, in both directions — what now reaches it that did not
+  before, and what it now returns that a caller did not expect. For a new field, name every
+  hop that must carry it: sender, each intermediate reader, handler, store, render. An
+  intermediate reader that quietly drops the field produces no error and no null — just a
+  wrong result, which is indistinguishable from the feature never having been built.
 -->
 
 | Touches | Reads or writes | What breaks if this is wrong |
@@ -353,6 +364,36 @@ REMOVED:     [path] — [why]
 | Data | Lives where | Survives restart? | Cleared when |
 |---|---|:---:|---|
 | | | | |
+
+### Options
+<!--
+  Mandatory on discovery scope, where it is most of the spec. Omit elsewhere.
+
+  At least three, and one of them is "do less" — ship a smaller thing, or change nothing
+  and live with the pain. A list of three ways to build it is not a comparison; it is a
+  decision already made, written in a format that looks like one that has not been.
+
+  Decompose before you name a tool. Most "A vs B" framings compare transports — a queue
+  against a call, one store against another — for a problem with two or three independent
+  concerns that each want a different answer. Split the concerns first, choose per concern.
+
+  Mark every claim FACT or ASSUMPTION. A fact carries a file:line, a command's output, or
+  a documentation URL. An assumption — the load, the tolerance, the growth — is stated so
+  the reader can challenge the one that the recommendation rests on.
+
+  The rejection line is the deliverable. One sentence per rejected option, written now,
+  while the reason is known. These lines are what the decision record keeps; nobody can
+  reconstruct them in six months, and without them the same option is re-proposed.
+-->
+
+| Option | Cost | What it gives up | FACT / ASSUMPTION |
+|---|---|---|---|
+| Do less: | | | |
+| | | | |
+| | | | |
+
+**Chosen**: [option] — [why, against this codebase and these users, not against best practice]
+**Rejected**: [option] — [one sentence]. [option] — [one sentence].
 
 ---
 

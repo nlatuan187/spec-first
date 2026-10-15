@@ -161,7 +161,7 @@ mkdir -p .windsurf/workflows
 Read .windsurfrules.
 
 ## Step 2 — Run verify.md checks
-Run the seven checks. Paste output into ## Verification.
+Run the eight checks. Paste output into ## Verification.
 
 ## Step 3 — Write spec
 Create specs/<slug>.md from spec.md. Fill every mandatory section.

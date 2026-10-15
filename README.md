@@ -24,7 +24,7 @@ become a wrong map somebody follows.
 **1. Clarify.** Read the context file. If the trigger, the success condition, or the
 scope is unclear, ask once. Do not write a spec over an unanswered question.
 
-**2. Verify.** Run the seven checks in `verify.md` against the codebase. Paste the
+**2. Verify.** Run the eight checks in `verify.md` against the codebase. Paste the
 output into the spec's `## Verification` section. A spec with an empty Verification
 section is a draft, whatever else it contains.
 
@@ -93,7 +93,7 @@ Emergency: `touch .spec-first-bypass`, fix, then write the retroactive spec the 
 without reading the code. They invented file paths, used the wrong column convention
 (`user_id` where the table used `created_by`), missed a dependency, and missed a token
 in a URL query string. Review found 11 gaps across the two specs. Every gap was a fact
-that a single command would have surfaced. The seven checks in `verify.md` exist for
+that a single command would have surfaced. The eight checks in `verify.md` exist for
 this reason.
 
 **Why Reconcile is a gate, not a suggestion.** In a corpus of sixteen hand-written
@@ -118,7 +118,7 @@ too heavy — drop a level.
 | Scope | Write |
 |---|---|
 | Trivial | Wording, a label, a copy string, a constant. Four lines of front matter, four of body. |
-| Discovery | Why + Open questions + Options. Stop. Do not spec a guess. |
+| Discovery | Why + Open questions + Options. Stop. Do not spec a guess. One option is always "do less". |
 | Emergency | fix first, retroactive bug spec the same day |
 | Bug | Why + Failure modes + QA + File changes |
 | Small | add Acceptance |
@@ -140,7 +140,7 @@ The old S1–S6 names still resolve: S1 → Failure modes · S3 → Integration 
 |---|---|
 | [`snippet.md`](snippet.md) | The product. Paste into any AI context file. |
 | [`spec.md`](spec.md) | Spec template — all scopes and sections. |
-| [`verify.md`](verify.md) | Seven pre-spec checks. Run before writing a spec. |
+| [`verify.md`](verify.md) | Eight pre-spec checks. Run before writing a spec. |
 | [`system.md`](system.md) | System-document template. Where shipped specs land. |
 | [`review.md`](review.md) | Two-pass code review checklist. |
 | [`heads.md`](heads.md) | Four standing reviewers who judge the change against the system, not the spec. |
