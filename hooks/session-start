@@ -49,6 +49,8 @@ if [ -d "$SPECS_DIR" ]; then
   for f in "$SPECS_DIR"/*.md; do
     [ -e "$f" ] || continue
     slug=$(basename "$f" .md)
+    # Front matter is read from the first 25 lines. The template puts status on line 3;
+    # a spec that pushes it past line 25 with custom fields becomes invisible here.
     header=$(sed -n '1,25p' "$f")
     st=$(printf '%s' "$header" | sed -n 's/^status:[[:space:]]*\([a-z-]*\).*/\1/p' | head -1)
     # Guards of a spec being built are the first thing a long session loses.
@@ -56,13 +58,17 @@ if [ -d "$SPECS_DIR" ]; then
     case "$st" in
       approved|implementing)
         # One pass: from "## Guards" to the next heading that is not inside a fenced
-        # block, dropping HTML comments and blank lines.
+        # block, dropping comment-only lines and blank lines. CR is stripped first so a
+        # CRLF spec file matches; the heading may carry trailing whitespace.
+        # Only a line that STARTS a comment opens comment mode — a guard that mentions
+        # `<!--` mid-sentence is guard text, and treating it as a comment would silently
+        # eat every guard after it.
         g=$(tr -d '\r' < "$f" | awk '
-          !inside && /^## Guards$/ { inside = 1; next }
+          !inside && /^## Guards[ \t]*$/ { inside = 1; next }
           !inside { next }
-          /^(```|~~~)/ { fence = !fence; print; next }
+          /^[ \t]*(```|~~~)/ { fence = !fence; print; next }
           !fence && /^## / { exit }
-          /<!--/ { comment = 1 }
+          !fence && /^[ \t]*<!--/ { if (!/-->/) comment = 1; next }
           comment { if (/-->/) comment = 0; next }
           /^[ \t]*$/ { next }
           { print }')

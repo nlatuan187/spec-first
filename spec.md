@@ -316,6 +316,38 @@ REMOVED:     [path] — [why]
 
 ---
 
+## Options
+<!--
+  Mandatory on discovery scope, where it is most of the spec. Omit elsewhere.
+
+  At least three, and one of them is "do less" — ship a smaller thing, or change nothing
+  and live with the pain. A list of three ways to build it is not a comparison; it is a
+  decision already made, written in a format that looks like one that has not been.
+
+  Decompose before you name a tool. Most "A vs B" framings compare transports — a queue
+  against a call, one store against another — for a problem with two or three independent
+  concerns that each want a different answer. Split the concerns first, choose per concern.
+
+  Mark every claim FACT or ASSUMPTION. A fact carries a file:line, a command's output, or
+  a documentation URL. An assumption — the load, the tolerance, the growth — is stated so
+  the reader can challenge the one that the recommendation rests on.
+
+  The rejection line is the deliverable. One sentence per rejected option, written now,
+  while the reason is known. These lines are what the decision record keeps; nobody can
+  reconstruct them in six months, and without them the same option is re-proposed.
+-->
+
+| Option | Cost | What it gives up | FACT / ASSUMPTION |
+|---|---|---|---|
+| Do less: | | | |
+| | | | |
+| | | | |
+
+**Chosen**: [option] — [why, against this codebase and these users, not against best practice]
+**Rejected**: [option] — [one sentence]. [option] — [one sentence].
+
+---
+
 ## Optional sections
 
 ### Mental model
@@ -364,36 +396,6 @@ REMOVED:     [path] — [why]
 | Data | Lives where | Survives restart? | Cleared when |
 |---|---|:---:|---|
 | | | | |
-
-### Options
-<!--
-  Mandatory on discovery scope, where it is most of the spec. Omit elsewhere.
-
-  At least three, and one of them is "do less" — ship a smaller thing, or change nothing
-  and live with the pain. A list of three ways to build it is not a comparison; it is a
-  decision already made, written in a format that looks like one that has not been.
-
-  Decompose before you name a tool. Most "A vs B" framings compare transports — a queue
-  against a call, one store against another — for a problem with two or three independent
-  concerns that each want a different answer. Split the concerns first, choose per concern.
-
-  Mark every claim FACT or ASSUMPTION. A fact carries a file:line, a command's output, or
-  a documentation URL. An assumption — the load, the tolerance, the growth — is stated so
-  the reader can challenge the one that the recommendation rests on.
-
-  The rejection line is the deliverable. One sentence per rejected option, written now,
-  while the reason is known. These lines are what the decision record keeps; nobody can
-  reconstruct them in six months, and without them the same option is re-proposed.
--->
-
-| Option | Cost | What it gives up | FACT / ASSUMPTION |
-|---|---|---|---|
-| Do less: | | | |
-| | | | |
-| | | | |
-
-**Chosen**: [option] — [why, against this codebase and these users, not against best practice]
-**Rejected**: [option] — [one sentence]. [option] — [one sentence].
 
 ---
 

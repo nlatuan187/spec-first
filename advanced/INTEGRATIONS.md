@@ -11,7 +11,7 @@ The methodology is the portable layer; the templates and hook are the setup cost
 |---|---|
 | `snippet.md` | Paste into your context file. Core methodology in one file. |
 | `spec.md` | Spec template. Copy to `specs/<slug>.md` before each change. |
-| `verify.md` | Seven pre-spec checks. Run first; paste output into `## Verification`. |
+| `verify.md` | Eight pre-spec checks. Run first; paste output into `## Verification`. |
 | `system.md` | Living system document template. Copy to `docs/system/<area>.md` after the change ships. |
 
 ---
