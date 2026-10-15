@@ -63,10 +63,14 @@ if [ -d "$SPECS_DIR" ]; then
         # Only a line that STARTS a comment opens comment mode — a guard that mentions
         # `<!--` mid-sentence is guard text, and treating it as a comment would silently
         # eat every guard after it.
+        # Fences are tracked from the first line of the file, not from the heading: a
+        # ``` block earlier in the spec can contain a literal "## Guards", and that must
+        # not start the extraction.
         g=$(tr -d '\r' < "$f" | awk '
-          !inside && /^## Guards[ \t]*$/ { inside = 1; next }
+          { sub(/[ \t]+$/, "") }
+          /^[ \t]*(```|~~~)/ { fence = !fence; if (inside) print; next }
+          !inside && !fence && /^## Guards$/ { inside = 1; next }
           !inside { next }
-          /^[ \t]*(```|~~~)/ { fence = !fence; print; next }
           !fence && /^## / { exit }
           !fence && /^[ \t]*<!--/ { if (!/-->/) comment = 1; next }
           comment { if (/-->/) comment = 0; next }
